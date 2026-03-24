@@ -78,6 +78,7 @@ public class Player {
         boundingBox.updatePosition(position);
     }
     
+    //TODO In teoria questo metodo si dovrebbe poter eliminare
     public void keepInBounds(double x, double y) {
     	double currentX = position.getX();
         double currentY = position.getY();
@@ -102,8 +103,12 @@ public class Player {
         boundingBox.updatePosition(position);
     }
     
-    public Hitbox getBoudingBox() {
+    public Hitbox getBoundingBox() {
     	return boundingBox;
+    }
+    
+    public void setPosition(Point2D newPosition) {
+    	position = newPosition;
     }
     
     public Point2D getPosition() {

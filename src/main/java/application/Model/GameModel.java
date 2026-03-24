@@ -9,17 +9,30 @@ public class GameModel {
     private Player player1;
     private Player player2;
     
-    // Definizione della posizione del pavimento (100 pixel sopra il fondo della finestra)
-    private final double GROUND_LEVEL = GameConfig.WINDOW_HEIGHT - 100;
-
-    public GameModel() {
+    // Definizione della posizione del pavimento
+    private final double GROUND_LEVEL;
+    
+    // L'arena è larga il doppio dello schermo
+    private double WORLD_WIDTH = GameConfig.WINDOW_WIDTH * 2;
+    
+    // Posizione X della telecamera
+    private double cameraX = 0;
+    
+    // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
+    public GameModel(double bgWidth, double bgHeight) {
+    	// Imposto la larghezza del mondo come quella dell'immagine
+    	this.WORLD_WIDTH = bgWidth;
+    	// Imposto il pavimento della scena
+    	this.GROUND_LEVEL = GameConfig.WINDOW_HEIGHT - 100.0;
+    	
         // Presumo tu li inizializzi con coordinate iniziali, aggiusta se necessario
-    	player1 = new Player(new Point2D(200, 200)); 
-        player2 = new Player(new Point2D(400, 200));
+    	player1 = new Player(new Point2D(WORLD_WIDTH / 2 - 200, 200)); 
+        player2 = new Player(new Point2D(WORLD_WIDTH / 2 + 200, 200));
     }
 
     public Player getPlayer1() { return player1; }
     public Player getPlayer2() { return player2; }
+    public double getCameraX() { return cameraX; }	// Serve alla View
 
     public void update(InputManager input) {
         // 1. Leggiamo lo stato dei tasti X di entrambi i giocatori
@@ -30,31 +43,87 @@ public class GameModel {
         player1.applyPhysics(GROUND_LEVEL, isP1JumpHeld);
         player2.applyPhysics(GROUND_LEVEL, isP2JumpHeld);
         
-        // ==========================================
-        //         INPUT GIOCATORE 1
-        // ==========================================
+        // 3. Movimento (con LIMITI DELL'ARENA)
         double p1X = input.getLeftStickX(1);
         if (Math.abs(p1X) > 0.0) {
-            // (Adatta questa riga in base a come avevi implementato il tuo moveHorizontal)
             player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
-        
-        // Il metodo jump() scatterà solo se il giocatore ha i piedi per terra,
-        // quindi va bene chiamarlo a ogni tick in cui il tasto è premuto.
-        if (isP1JumpHeld) {
-            player1.jump();
-        }
+        if (isP1JumpHeld) player1.jump();
 
-        // ==========================================
-        //         INPUT GIOCATORE 2
-        // ==========================================
         double p2X = input.getLeftStickX(2);
         if (Math.abs(p2X) > 0.0) {
             player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
+        if (isP2JumpHeld) player2.jump();
+
+        // 4. LIMITI DEL MONDO (Muri invisibili)
+        // Impediamo ai giocatori di uscire dall'arena totale (WORLD_WIDTH)
+        keepPlayerInBounds(player1);
+        keepPlayerInBounds(player2);
+
+        // ==========================================
+        //         LOGICA DELLA TELECAMERA
+        // ==========================================
+        // Calcoliamo il punto centrale tra i due giocatori
+        double midpointX = (player1.getPosition().getX() + player2.getPosition().getX()) / 2.0;
         
-        if (isP2JumpHeld) {
-            player2.jump();
+        // Vogliamo che questo punto medio sia esattamente al centro del nostro schermo
+        double targetCameraX = midpointX - (GameConfig.WINDOW_WIDTH / 2.0);
+        
+        // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
+        if (targetCameraX < 0) {
+            targetCameraX = 0; // Blocco a sinistra
+        } else if (targetCameraX > (WORLD_WIDTH - GameConfig.WINDOW_WIDTH)) {
+            targetCameraX = WORLD_WIDTH - GameConfig.WINDOW_WIDTH; // Blocco a destra
+        }
+        
+        // Aggiorniamo la telecamera
+        cameraX = targetCameraX;
+        
+        // ==========================================
+        //         3. LIMITI DELLO SCHERMO
+        // ==========================================
+        // Ora che la telecamera si è mossa, chiudiamo i giocatori dentro la finestra visibile!
+        keepPlayerOnScreen(player1);
+        keepPlayerOnScreen(player2);
+    }
+    
+    // Metodo di supporto per i muri invisibili dell'arena
+    private void keepPlayerInBounds(Player p) {
+        double currentX = p.getPosition().getX();
+        // Controllo muro sinistro
+        if (currentX < 0) {
+            p.setPosition(new Point2D(0, p.getPosition().getY()));
+        } 
+        // Controllo muro destro (tenendo conto dello spessore del giocatore dalla sua bounding box)
+        else if (currentX > WORLD_WIDTH - GameConfig.pWidth) {
+            p.setPosition(new Point2D(WORLD_WIDTH - GameConfig.pWidth, p.getPosition().getY()));
+        }
+        
+        // Aggiorniamo la bounding box logica per riflettere la posizione bloccata
+        p.getBoundingBox().updatePosition(p.getPosition());
+    }
+    
+    // Metodo per impedire ai giocatori di uscire dall'inquadratura della telecamera
+    private void keepPlayerOnScreen(Player p) {
+        // Il bordo sinistro dello schermo corrisponde esattamente a dove si trova la telecamera
+        double leftScreenEdge = cameraX;
+        
+        // Il bordo destro dello schermo è la telecamera + la larghezza della finestra,
+        // a cui sottraiamo la larghezza del giocatore per non far uscire metà del suo corpo
+        double rightScreenEdge = cameraX + GameConfig.WINDOW_WIDTH - GameConfig.pWidth;
+
+        double currentX = p.getPosition().getX(); // Oppure p.getX() a seconda di come l'hai chiamato
+
+        // Controllo se esce a SINISTRA dello schermo
+        if (currentX < leftScreenEdge) {
+            p.setPosition(new javafx.geometry.Point2D(leftScreenEdge, p.getPosition().getY()));
+            p.getBoundingBox().updatePosition(p.getPosition());
+        } 
+        // Controllo se esce a DESTRA dello schermo
+        else if (currentX > rightScreenEdge) {
+            p.setPosition(new javafx.geometry.Point2D(rightScreenEdge, p.getPosition().getY()));
+            p.getBoundingBox().updatePosition(p.getPosition());
         }
     }
 }

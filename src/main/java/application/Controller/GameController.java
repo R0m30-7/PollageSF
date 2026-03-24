@@ -19,8 +19,8 @@ public class GameController {
 
     public GameController(Stage stage) {
         this.stage = stage;
-        this.model = new GameModel();
         this.view = new GameView();
+        this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
         this.inputManager = new InputManager();
     }
 
