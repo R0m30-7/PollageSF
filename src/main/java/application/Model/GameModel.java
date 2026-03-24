@@ -18,6 +18,10 @@ public class GameModel {
     // Posizione X della telecamera
     private double cameraX = 0;
     
+    // Variabili per memorizzare il salto nel frame precedente
+    private boolean wasP1JumpHeld = false;
+    private boolean wasP2JumpHeld = false;
+    
     // Serve per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
     private double currentWindowHeight = 1080;
@@ -52,13 +56,13 @@ public class GameModel {
         if (Math.abs(p1X) > 0.0) {
             player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
-        if (isP1JumpHeld) player1.jump();
+        if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
 
         double p2X = input.getLeftStickX(2);
         if (Math.abs(p2X) > 0.0) {
             player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
-        if (isP2JumpHeld) player2.jump();
+        if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
 
         // 4. LIMITI DEL MONDO (Muri invisibili)
         // Impediamo ai giocatori di uscire dall'arena totale (WORLD_WIDTH)
@@ -90,6 +94,10 @@ public class GameModel {
         // Ora che la telecamera si è mossa, chiudiamo i giocatori dentro la finestra visibile!
         keepPlayerOnScreen(player1);
         keepPlayerOnScreen(player2);
+        
+        // Memorizzazione dello stato attuale per il salto
+        wasP1JumpHeld = isP1JumpHeld;
+        wasP2JumpHeld = isP2JumpHeld;
     }
     
     // Metodo di supporto per i muri invisibili dell'arena
