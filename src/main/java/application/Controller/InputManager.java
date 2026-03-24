@@ -13,34 +13,30 @@ public class InputManager {
 
     public InputManager() {
         allControllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
-        System.out.println("🎮 Sistema di input inizializzato. Premi un tasto su un controller per unirti alla partita!");
+        System.out.println("🎮 Sistema di input inizializzato. Muovi una levetta o premi un tasto per unirti!");
     }
 
+    // --- AGGIORNAMENTO E ASSEGNAZIONE CONTROLLER ---
     public void update() {
         for (Controller c : allControllers) {
             if (c.getType() == Controller.Type.GAMEPAD || c.getType() == Controller.Type.STICK) {
                 c.poll(); 
                 
-                // 1. Controlliamo se QUESTO controller ha un tasto premuto
-                boolean isAnyButtonPressed = false;
+                boolean isAnyInputDetected = false;
                 for (Component comp : c.getComponents()) {
-                    if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                        if (comp.getPollData() != 0.0f) {
-                            isAnyButtonPressed = true;
-                            break;
-                        }
+                    // Controlliamo se preme un pulsante o muove una levetta oltre la deadzone
+                    if (Math.abs(comp.getPollData()) > 0.5f) {
+                        isAnyInputDetected = true;
+                        break;
                     }
                 }
 
-                // 2. ASSEGNAZIONE AUTOMATICA (Drop-in)
-                if (isAnyButtonPressed) {
-                    // Se il Player 1 è libero, e il controller NON è già del Player 2
+                // Assegnazione Automatica (Drop-in)
+                if (isAnyInputDetected) {
                     if (player1Gamepad == null && c != player2Gamepad) {
                         player1Gamepad = c;
                         System.out.println("✅ Giocatore 1 unito! Controller: " + c.getName());
-                    } 
-                    // Se il Player 2 è libero, e il controller NON è già del Player 1
-                    else if (player2Gamepad == null && c != player1Gamepad) {
+                    } else if (player2Gamepad == null && c != player1Gamepad) {
                         player2Gamepad = c;
                         System.out.println("✅ Giocatore 2 unito! Controller: " + c.getName());
                     }
@@ -49,20 +45,18 @@ public class InputManager {
         }
     }
 
-    // --- METODI PER LEGGERE LE LEVETTE ---
-    // Passiamo 1 o 2 come parametro per decidere di quale giocatore vogliamo leggere l'input
-
+    // --- METODI PER IL MOVIMENTO ---
     public double getLeftStickX(int playerNumber) {
         Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         if (gamepad != null) {
             Component xAxis = gamepad.getComponent(Component.Identifier.Axis.X);
             if (xAxis != null) {
                 double value = xAxis.getPollData();
-                if (Math.abs(value) < 0.15) return 0.0; // Deadzone
+                if (Math.abs(value) < 0.15) return 0.0; 
                 return value;
             }
         }
-        return 0.0; // Se il giocatore non ha ancora un controller, restituisce 0 (sta fermo)
+        return 0.0; 
     }
 
     public double getLeftStickY(int playerNumber) {
@@ -71,10 +65,27 @@ public class InputManager {
             Component yAxis = gamepad.getComponent(Component.Identifier.Axis.Y);
             if (yAxis != null) {
                 double value = yAxis.getPollData();
-                if (Math.abs(value) < 0.15) return 0.0; // Deadzone
+                if (Math.abs(value) < 0.15) return 0.0; 
                 return value;
             }
         }
         return 0.0;
+    }
+
+    // --- IL METODO DEL SALTO CORRETTO ---
+    public boolean isJumpButtonPressed(int playerNumber) {
+        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
+        
+        if (gamepad != null) {
+            // Cerchiamo specificamente il tasto "A" (come lo chiama Linux) o i tasti standard (0, 1) per compatibilità futura
+            Component buttonA = gamepad.getComponent(Component.Identifier.Button.A);
+            Component button0 = gamepad.getComponent(Component.Identifier.Button._0);
+            Component button1 = gamepad.getComponent(Component.Identifier.Button._1);
+            
+            if (buttonA != null && buttonA.getPollData() != 0.0f) return true;
+            if (button0 != null && button0.getPollData() != 0.0f) return true;
+            if (button1 != null && button1.getPollData() != 0.0f) return true;
+        }
+        return false;
     }
 }

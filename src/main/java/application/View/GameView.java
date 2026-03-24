@@ -16,8 +16,8 @@ public class GameView {
         this.root = new Pane();
         
         // Inizializza i renderer dei giocatori
-        this.rendererP1 = new PlayerRenderer(Color.BLUE);
-        this.rendererP2 = new PlayerRenderer(Color.RED);
+        this.rendererP1 = new PlayerRenderer("1");
+        this.rendererP2 = new PlayerRenderer("2");
         
         // Aggiungi i nodi grafici al root
         this.root.getChildren().addAll(rendererP1.getNode(), rendererP2.getNode());

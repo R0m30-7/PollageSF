@@ -8,37 +8,74 @@ import javafx.geometry.Point2D;
 
 public class Player {
 	private Point2D position;
-    private final double SPEED = 1.5;
+    private final double SPEED = 2.0;
     
-    private Hitbox boudingBox;
+    // Variabili per la fisica
+    private double velocityY = 0.0;
+    private boolean isGrounded = false;
+    
+    // Variabili per il salto
+    private final double GRAVITY = 0.2;
+    private final double JUMP_STRENGTH = -8.0;	// Negativo perché la y aumenta dal basso verso l'alto
+    
+    private Hitbox boundingBox;
 
     // Costruttore per impostare la posizione iniziale
     public Player(Point2D position) {
         this.position = position;
         
-        this.boudingBox = new Hitbox(position);
+        this.boundingBox = new Hitbox(position);
     }
     
-    public void Move(PlayerState DIR) {
-    	double newX, newY;
-    	newX = position.getX();
-    	newY = position.getY();
-    	
-    	if(DIR == PlayerState.UP) {
-    		newX = position.getX();
-        	newY = position.getY() - SPEED;
-    	} else if(DIR == PlayerState.DOWN) {
-    		newX = position.getX();
-        	newY = position.getY() + SPEED;
-    	} else if(DIR == PlayerState.LEFT) {
-    		newX = position.getX() - SPEED;
-    		newY = position.getY();
-    	} else if(DIR == PlayerState.RIGHT) {
-    		newX = position.getX() + SPEED;
-        	newY = position.getY();
-    	}
-    	position = new Point2D(newX, newY);
-    	boudingBox.updatePosition(position);
+    // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
+    public void moveHorizontal(PlayerState DIR) {
+        double newX = position.getX();
+        
+        if (DIR == PlayerState.LEFT) {
+            newX -= SPEED;
+        } else if (DIR == PlayerState.RIGHT) {
+            newX += SPEED;
+        }
+        
+        position = new Point2D(newX, position.getY());
+        boundingBox.updatePosition(position);
+    }
+
+    // 3. IL SALTO (La vera spinta verso l'alto)
+    public void jump() {
+        // Può saltare solo se non è già in aria
+        if (isGrounded) {
+            velocityY = JUMP_STRENGTH;
+            isGrounded = false;
+        }
+    }
+    
+    public void applyPhysics(double groundLevelY, boolean isJumpHeld) {
+        // Se il giocatore sta andando verso l'alto (velocityY negativo) 
+        // MA ha rilasciato il tasto del salto...
+        if (velocityY < 0 && !isJumpHeld) {
+            // ...applichiamo una gravità "pesante" per fargli tagliare il salto (scendere in fretta)
+            // più è alto il numero e più il taglio è brusco
+            velocityY += GRAVITY * 2.5; 
+        } else {
+            // Gravità normale (quando scende o quando tiene premuto)
+            velocityY += GRAVITY; 
+        }
+        
+        double newX = position.getX();
+        double newY = position.getY() + velocityY;
+        
+        // Controlliamo se ha toccato il pavimento
+        if (newY >= groundLevelY) {
+            newY = groundLevelY; 
+            velocityY = 0.0;     
+            isGrounded = true;   
+        } else {
+            isGrounded = false;  
+        }
+        
+        position = new Point2D(newX, newY);
+        boundingBox.updatePosition(position);
     }
     
     public void keepInBounds(double x, double y) {
@@ -62,11 +99,11 @@ public class Player {
 
         // Aggiorniamo la posizione corretta e la hitbox
         position = new Point2D(currentX, currentY);
-        boudingBox.updatePosition(position);
+        boundingBox.updatePosition(position);
     }
     
     public Hitbox getBoudingBox() {
-    	return boudingBox;
+    	return boundingBox;
     }
     
     public Point2D getPosition() {
