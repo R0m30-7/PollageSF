@@ -30,6 +30,23 @@ public class GameController {
         
         // 2. Chiediamo a PlayScene di creare la scena passandole il root della nostra View
         Scene scene = playScene.getScene(view.getRoot());
+        
+        // --- ASCOLTATORI DI RIDIMENSIONAMENTO ---
+        // Se l'utente allarga o stringe la finestra...
+        scene.widthProperty().addListener((obs, oldVal, newVal) -> {
+            double newW = newVal.doubleValue();
+            double currentH = scene.getHeight(); // Prendiamo l'altezza attuale
+            model.updateWindowSize(newW, currentH);
+            view.updateWindowSize(newW, currentH);
+        });
+
+        // Se l'utente alza o abbassa la finestra...
+        scene.heightProperty().addListener((obs, oldVal, newVal) -> {
+            double currentW = scene.getWidth(); // Prendiamo la larghezza attuale
+            double newH = newVal.doubleValue();
+            model.updateWindowSize(currentW, newH);
+            view.updateWindowSize(currentW, newH);
+        });
 
         // 3. Impostiamo la finestra e avviamo il gioco
         stage.setTitle(GameConfig.GAME_TITLE_STRING);

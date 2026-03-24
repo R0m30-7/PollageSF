@@ -1,84 +1,104 @@
 package application.View;
 
 import application.Model.GameModel;
-import application.Utils.GameConfig;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 
 public class GameView {
     
-    // Dichiarazione delle variabili grafiche
     private Pane root;
     private PlayerRenderer rendererP1;
     private PlayerRenderer rendererP2;
     
-    // Immagine di sfondo
+    // Variabili per lo sfondo
     private ImageView backgroundView;
+    private Pane backgroundContainer; // Contenitore che ci permette di tagliare l'immagine
+    private Rectangle clip;           // La maschera "invisibile" che taglia l'eccesso
+    
+    // Dimensioni reali dell'immagine
     private double bgWidth;
     private double bgHeight;
     
     public GameView() {
-        // Inizializza il contenitore principale
         this.root = new Pane();
         
-        // --- PREPARAZIONE DELLO SFONDO ---
-        // L'immagine dovrebbe essere idealmente larga quanto WORLD_WIDTH (es. 1600px o più)
+        // --- 1. CARICAMENTO IMMAGINE ---
         try {
             Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/twinTowers.png"));
-            backgroundView = new ImageView(bgImage);
+            this.backgroundView = new ImageView(bgImage);
             
-            // 1. Salviamo le dimensioni reali dell'immagine per passarle al Model
             this.bgWidth = bgImage.getWidth();
             this.bgHeight = bgImage.getHeight();
-            
-            // 2. ALLINEAMENTO IN BASSO A SINISTRA
-            // Spingiamo l'immagine in alto di (AltezzaFinestra - AltezzaImmagine)
-            // Se l'immagine è più alta della finestra, offsetY sarà negativo e la taglierà in alto!
-            double offsetY = GameConfig.WINDOW_HEIGHT - this.bgHeight;
-            backgroundView.setY(offsetY);
-            
         } catch (Exception e) {
-            System.out.println("Sfondo non trovato, imposto un colore neutro o lascio vuoto.");
-            backgroundView = new ImageView(); // Fallback in caso di errore
-            
-            // Valori di emergenza
+            System.out.println("Sfondo non trovato, uso valori di emergenza.");
+            this.backgroundView = new ImageView(); 
             this.bgWidth = 1600; 
-            this.bgHeight = GameConfig.WINDOW_HEIGHT;
+            this.bgHeight = 720;
         }
         
-        // Inizializza i renderer dei giocatori
+        // --- 2. CONTENITORE E TAGLIO ---
+        // Mettiamo l'immagine dentro un contenitore separato
+        this.backgroundContainer = new Pane(this.backgroundView);
+        
+        // Creiamo la maschera iniziale (es. 720 di altezza di default)
+        this.clip = new Rectangle(this.bgWidth, 720);
+        this.backgroundContainer.setClip(this.clip); // Applichiamo il taglio!
+        
+        // Allineamento iniziale in basso a sinistra
+        double offsetY = 720 - this.bgHeight;
+        this.backgroundView.setY(offsetY);
+        
+        // --- 3. GIOCATORI ---
         this.rendererP1 = new PlayerRenderer("1");
         this.rendererP2 = new PlayerRenderer("2");
         
-        // Aggiungi i nodi grafici al root
-        this.root.getChildren().addAll(backgroundView, rendererP1.getNode(), rendererP2.getNode());
+        // Aggiungiamo il contenitore (non l'immagine diretta!) e i lottatori
+        this.root.getChildren().addAll(this.backgroundContainer, rendererP1.getNode(), rendererP2.getNode());
     }
 
-    public Pane getRoot() {
-        return root;
-    }
-    
-    // Getter per far leggere le dimensioni al GameController/GameModel
+    public Pane getRoot() { return root; }
     public double getBgWidth() { return bgWidth; }
     public double getBgHeight() { return bgHeight; }
 
     public void render(GameModel model) {
-        // Prendiamo la posizione della telecamera
-    	double camX = model.getCameraX();
+        double camX = model.getCameraX();
     	
-    	// Spostiamo lo sfondo all'indietro rispetto alla telecamera
-    	backgroundView.setLayoutX(-camX);
+    	// Spostiamo l'intero CONTENITORE all'indietro rispetto alla telecamera
+    	this.backgroundContainer.setLayoutX(-camX);
     	
-    	// Spostamento dei giocatori sottraendo la telecamera
+    	// Spostamento dei giocatori
     	double p1ScreenX = model.getPlayer1().getPosition().getX() - camX;
-    	double p1ScreenY = model.getPlayer1().getPosition().getY();		// La y non ha telecamera
+    	double p1ScreenY = model.getPlayer1().getPosition().getY();
     	rendererP1.getNode().setLayoutX(p1ScreenX);
     	rendererP1.getNode().setLayoutY(p1ScreenY);
     	
     	double p2ScreenX = model.getPlayer2().getPosition().getX() - camX;
-    	double p2ScreenY = model.getPlayer2().getPosition().getY();		// La y non ha telecamera
+    	double p2ScreenY = model.getPlayer2().getPosition().getY();
     	rendererP2.getNode().setLayoutX(p2ScreenX);
     	rendererP2.getNode().setLayoutY(p2ScreenY);
+    }
+
+    // ==========================================
+    // NUOVO: METODO CHIAMATO DAL CONTROLLER QUANDO RIDIMENSIONI LA FINESTRA
+    // ==========================================
+    public void updateWindowSize(double newWidth, double newHeight) {
+        
+        // 1. Aggiorniamo la maschera: taglierà l'immagine alla nuova altezza della finestra!
+        if (this.clip != null) {
+            this.clip.setHeight(newHeight);
+        }
+        
+        // 2. Aggiorniamo le dimensioni del contenitore
+        if (this.backgroundContainer != null) {
+            this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
+        }
+        
+        // 3. Il cuore della logica: ricalcoliamo la coordinata Y per tenere l'immagine ancorata in basso!
+        if (this.backgroundView != null) {
+            double offsetY = newHeight - this.bgHeight;
+            this.backgroundView.setY(offsetY);
+        }
     }
 }

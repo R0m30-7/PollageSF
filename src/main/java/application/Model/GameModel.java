@@ -10,7 +10,7 @@ public class GameModel {
     private Player player2;
     
     // Definizione della posizione del pavimento
-    private final double GROUND_LEVEL;
+    private double GROUND_LEVEL;
     
     // L'arena è larga il doppio dello schermo
     private double WORLD_WIDTH = GameConfig.WINDOW_WIDTH * 2;
@@ -18,12 +18,16 @@ public class GameModel {
     // Posizione X della telecamera
     private double cameraX = 0;
     
+    // Serve per l'aggiornamento in tempo reale della finestra
+    private double currentWindowWidth = 1920;
+    private double currentWindowHeight = 1080;
+    
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
     	// Imposto la larghezza del mondo come quella dell'immagine
     	this.WORLD_WIDTH = bgWidth;
     	// Imposto il pavimento della scena
-    	this.GROUND_LEVEL = GameConfig.WINDOW_HEIGHT - 100.0;
+    	this.GROUND_LEVEL = currentWindowHeight - 100.0;
     	
         // Presumo tu li inizializzi con coordinate iniziali, aggiusta se necessario
     	player1 = new Player(new Point2D(WORLD_WIDTH / 2 - 200, 200)); 
@@ -68,13 +72,13 @@ public class GameModel {
         double midpointX = (player1.getPosition().getX() + player2.getPosition().getX()) / 2.0;
         
         // Vogliamo che questo punto medio sia esattamente al centro del nostro schermo
-        double targetCameraX = midpointX - (GameConfig.WINDOW_WIDTH / 2.0);
+        double targetCameraX = midpointX - (currentWindowWidth / 2.0);
         
         // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
         if (targetCameraX < 0) {
             targetCameraX = 0; // Blocco a sinistra
-        } else if (targetCameraX > (WORLD_WIDTH - GameConfig.WINDOW_WIDTH)) {
-            targetCameraX = WORLD_WIDTH - GameConfig.WINDOW_WIDTH; // Blocco a destra
+        } else if (targetCameraX > (WORLD_WIDTH - currentWindowWidth)) {
+            targetCameraX = WORLD_WIDTH - currentWindowWidth; // Blocco a destra
         }
         
         // Aggiorniamo la telecamera
@@ -111,7 +115,7 @@ public class GameModel {
         
         // Il bordo destro dello schermo è la telecamera + la larghezza della finestra,
         // a cui sottraiamo la larghezza del giocatore per non far uscire metà del suo corpo
-        double rightScreenEdge = cameraX + GameConfig.WINDOW_WIDTH - GameConfig.pWidth;
+        double rightScreenEdge = cameraX + currentWindowWidth- GameConfig.pWidth;
 
         double currentX = p.getPosition().getX(); // Oppure p.getX() a seconda di come l'hai chiamato
 
@@ -124,6 +128,26 @@ public class GameModel {
         else if (currentX > rightScreenEdge) {
             p.setPosition(new javafx.geometry.Point2D(rightScreenEdge, p.getPosition().getY()));
             p.getBoundingBox().updatePosition(p.getPosition());
+        }
+    }
+    
+    // Aggiornare larghezza, altezza e pavimento della finestra
+    public void updateWindowSize(double newWidth, double newHeight) {
+        this.currentWindowWidth = newWidth;
+        this.currentWindowHeight = newHeight;
+
+        // Il pavimento è sempre relativo all'altezza della finestra (es. 50 pixel sopra il fondo)
+        this.GROUND_LEVEL = newHeight - 100.0;
+
+        // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
+        // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su!
+        if (player1.getPosition().getY() > this.GROUND_LEVEL) {
+            player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.GROUND_LEVEL));
+            player1.getBoundingBox().updatePosition(player1.getPosition());
+        }
+        if (player2.getPosition().getY() > this.GROUND_LEVEL) {
+            player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.GROUND_LEVEL));
+            player2.getBoundingBox().updatePosition(player2.getPosition());
         }
     }
 }
