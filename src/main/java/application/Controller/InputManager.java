@@ -22,23 +22,26 @@ public class InputManager {
             if (c.getType() == Controller.Type.GAMEPAD || c.getType() == Controller.Type.STICK) {
                 c.poll(); 
                 
-                boolean isAnyInputDetected = false;
+                boolean isButtonPressed = false;
                 for (Component comp : c.getComponents()) {
                     // Controlliamo se preme un pulsante o muove una levetta oltre la deadzone
-                    if (Math.abs(comp.getPollData()) > 0.5f) {
-                        isAnyInputDetected = true;
-                        break;
+                    if (comp.getIdentifier() instanceof Component.Identifier.Button) {
+                        // Se il pulsante è premuto
+                    	if(comp.getPollData() > 0.5f) {
+                    		isButtonPressed = true;
+                    		break;
+                    	}
                     }
                 }
 
-                // Assegnazione Automatica (Drop-in)
-                if (isAnyInputDetected) {
+                // Assegnazione Automatica (Drop-in) SOLO se è stato premuto un tasto vero
+                if (isButtonPressed) {
                     if (player1Gamepad == null && c != player2Gamepad) {
                         player1Gamepad = c;
-                        System.out.println("✅ Giocatore 1 unito! Controller: " + c.getName());
+                        // System.out.println("✅ Giocatore 1 unito! Controller: " + c.getName());
                     } else if (player2Gamepad == null && c != player1Gamepad) {
                         player2Gamepad = c;
-                        System.out.println("✅ Giocatore 2 unito! Controller: " + c.getName());
+                        // System.out.println("✅ Giocatore 2 unito! Controller: " + c.getName());
                     }
                 }
             }
