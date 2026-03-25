@@ -12,17 +12,20 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
     	// Carica delle impostazioni salvate
-    	application.Utils.Settings configSettings = application.Utils.Settings.getInstance();
+    	application.Utils.Settings config = application.Utils.Settings.getInstance();
     	
     	// Impostiamo la scena del menu principale
     	primaryStage.setScene(new MainMenuScene().getScenaMenu(primaryStage));
     	
-    	// Impostiamo le dimensioni di base della finestra
-        primaryStage.setWidth(GameConfig.WINDOW_WIDTH);
-        primaryStage.setHeight(GameConfig.WINDOW_HEIGHT);
+    	// Impostiamo le dimensioni caricate o, altrimenti, di default
+    	primaryStage.setWidth(config.getWindowWidth());
+        primaryStage.setHeight(config.getWindowHeight());
+        
+        // Blocco del ridimensionamento manuale
+        primaryStage.setResizable(false);
         
         // Applichiamo lo schermo intero se l'utente l'aveva salvato
-        primaryStage.setFullScreen(configSettings.isFullscreen());
+        primaryStage.setFullScreen(config.isFullscreen());
         
         primaryStage.show();
     }

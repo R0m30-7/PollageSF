@@ -13,7 +13,7 @@ public class GameModel {
     private double GROUND_LEVEL;
     
     // L'arena è larga il doppio dello schermo
-    private double WORLD_WIDTH = GameConfig.WINDOW_WIDTH * 2;
+    private double WORLD_WIDTH = application.Utils.Settings.getInstance().getWindowWidth() * 2;
     
     // Posizione X della telecamera
     private double cameraX = 0;

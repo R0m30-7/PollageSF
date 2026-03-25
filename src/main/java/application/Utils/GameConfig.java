@@ -7,8 +7,6 @@ package application.Utils;
 public class GameConfig {
 	private GameConfig() {}
 	
-	public static final int WINDOW_WIDTH = 800;
-	public static final int WINDOW_HEIGHT = 600;
 	public static final String GAME_TITLE_STRING = "Giochini";
 	
 	public static final int TARGET_TPS = 200;

@@ -13,6 +13,8 @@ public class Settings {
     private boolean isFullscreen;
     private boolean isAudioOn;
     private int numberOfPlayers;
+    private double windowWidth;
+    private double windowHeight;
 
     // 2. Costruttore privato! Si può chiamare solo da dentro questa classe
     private Settings() {
@@ -20,6 +22,10 @@ public class Settings {
         this.isFullscreen = false;
         this.isAudioOn = true;
         this.numberOfPlayers = 2;
+        
+        // Risoluzione di default
+        this.windowWidth = 1280.0;
+        this.windowHeight = 720.0;
         
         // Appena viene creato, prova a caricare i salvataggi
         load();
@@ -44,6 +50,9 @@ public class Settings {
                 this.isFullscreen = Boolean.parseBoolean(props.getProperty("isFullscreen", "false"));
                 this.isAudioOn = Boolean.parseBoolean(props.getProperty("isAudioOn", "true"));
                 this.numberOfPlayers = Integer.parseInt(props.getProperty("numberOfPlayers", "2"));
+                
+                this.windowWidth = Double.parseDouble(props.getProperty("windowWidth", "1280.0"));
+                this.windowHeight = Double.parseDouble(props.getProperty("windowHeight", "720.0"));
             } catch (Exception e) {
                 System.out.println("Errore caricamento impostazioni: " + e.getMessage());
             }
@@ -55,6 +64,9 @@ public class Settings {
         props.setProperty("isFullscreen", String.valueOf(isFullscreen));
         props.setProperty("isAudioOn", String.valueOf(isAudioOn));
         props.setProperty("numberOfPlayers", String.valueOf(numberOfPlayers));
+        
+        props.setProperty("windowWidth", String.valueOf(windowWidth));
+        props.setProperty("windowHeight", String.valueOf(windowHeight));
 
         try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
             props.store(fos, "Impostazioni di Gioco");
@@ -72,4 +84,10 @@ public class Settings {
     
     public boolean isAudioOn() { return isAudioOn; }
     public void setIsAudioOn(boolean audioOn) { isAudioOn = audioOn; }
+    
+    public double getWindowWidth() { return windowWidth; }
+    public void setWindowWidth(double width) { this.windowWidth = width; }
+    
+    public double getWindowHeight() { return windowHeight; }
+    public void setWindowHeight(double height) { this.windowHeight = height; }
 }

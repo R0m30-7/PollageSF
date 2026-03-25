@@ -23,6 +23,20 @@ public class SettingsScene {
 
         // --- RECUPERA LE IMPOSTAZIONI ATTUALI ---
         Settings settings = Settings.getInstance();
+        
+        // --- RISOLUZIONE ---
+        Label resLabel = new Label("Risoluzione Finestra:");
+        resLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        ComboBox<String> resolutionBox = new ComboBox<>();
+        // Aggiungiamo le risoluzioni più famose (16:9)
+        resolutionBox.getItems().addAll("720x460", "800x600","1280x720", "1366x768", "1600x900", "1920x1080");
+        
+        // Selezioniamo di default quella attualmente in uso
+        String currentRes = (int)settings.getWindowWidth() + "x" + (int)settings.getWindowHeight();
+        if (!resolutionBox.getItems().contains(currentRes)) {
+            resolutionBox.getItems().add(currentRes); // Se nel file c'era una risoluzione strana, la aggiunge alla lista
+        }
+        resolutionBox.setValue(currentRes);
 
         // 1. Schermo Intero (CheckBox)
         CheckBox fullscreenCheck = new CheckBox("Schermo Intero");
@@ -46,7 +60,12 @@ public class SettingsScene {
         saveBackButton.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
         
         saveBackButton.setOnAction(e -> {
-            // Aggiorna le impostazioni in memoria
+        	// Aggiorna le impostazioni in memoria
+        	// Estraiamo la larghezza e l'altezza dalla stringa (es: da "1280x720" a 1280 e 720)
+            String[] resParts = resolutionBox.getValue().split("x");
+            settings.setWindowWidth(Double.parseDouble(resParts[0]));
+            settings.setWindowHeight(Double.parseDouble(resParts[1]));
+            
             settings.setFullscreen(fullscreenCheck.isSelected());
             settings.setIsAudioOn(audioCheck.isSelected());
             settings.setNumberOfPlayers(playersBox.getValue());
@@ -58,12 +77,17 @@ public class SettingsScene {
             stage.setTitle("Main Menu");
             stage.setScene(previousScene);
             
+            // Applica la nuova risoluzione e ri-centra la finestra nello schermo
+            stage.setWidth(settings.getWindowWidth());
+            stage.setHeight(settings.getWindowHeight());
+            stage.centerOnScreen(); // Se ingrandisci, serve per non farla uscire fuori dal monitor
+            
             // Applica il fullscreen subito allo Stage
             stage.setFullScreen(settings.isFullscreen());
         });
 
-        root.getChildren().addAll(title, fullscreenCheck, audioCheck, playersLabel, playersBox, saveBackButton);
+        root.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck, audioCheck, playersLabel, playersBox, saveBackButton);
 
-        return new Scene(root, 1280, 720); // Usa la tua risoluzione base
+        return new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());
     }
 }
