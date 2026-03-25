@@ -42,12 +42,19 @@ public class MainMenuScene {
 	        // Diciamo al controller di preparare e avviare il gioco
 	        controller.startGame();
 			stage.centerOnScreen();
+			stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
 		});
 		MenuButList[1].setAction(() -> {
 			stage.setTitle("Settings Menu");
 			
-			//SettingsScene settingsScene = new SettingsScene();
-			//stage.setScene(settingsScene.getSettingsScene(stage));
+			SettingsScene settingsScene = new SettingsScene();
+			Scene currentMenuScene = root.getScene();
+			
+			// Passiamo allo stage la scena ATTUALE (mainMenuScene)
+			stage.setScene(settingsScene.getSettingsScene(stage, currentMenuScene));
+			
+			// Forziamo il fullscreen se era attivo
+			stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
 		});
 		MenuButList[2].setAction(() -> {
 			System.exit(0);

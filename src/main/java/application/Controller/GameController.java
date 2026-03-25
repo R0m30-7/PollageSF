@@ -96,29 +96,39 @@ public class GameController {
                 long frameTime = now - lastTime;
                 lastTime = now;
                 
-                if(waitingForControllers) {
-                	// --- MODALITÀ MENU IN PAUSA ---
-                    inputManager.update(); // Sentiamo se si collegano
+                if (waitingForControllers) {
+                    // --- MODALITÀ MENU IN PAUSA ---
+                    inputManager.update(); 
                     
-                    // Aggiorniamo le etichette se trovano un controller
+                    // Leggiamo quanti giocatori devono giocare
+                    int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+                    
                     if (inputManager.isPlayer1Connected()) {
                         p1Label.setText("Giocatore 1: CONNESSO! 🎮");
                         p1Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
                     }
-                    if (inputManager.isPlayer2Connected()) {
+                    
+                    // Aggiorniamo l'etichetta 2 solo se stiamo effettivamente aspettando un secondo giocatore
+                    if (numPlayers == 2 && inputManager.isPlayer2Connected()) {
                         p2Label.setText("Giocatore 2: CONNESSO! 🎮");
                         p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
                     }
 
-                    // Se sono entrambi connessi, chiudiamo il menu
-                    if (inputManager.isPlayer1Connected() && inputManager.isPlayer2Connected()) {
+                    // --- LOGICA DI AVVIO INTELLIGENTE ---
+                    boolean canStartGame = false;
+                    
+                    if (numPlayers == 1 && inputManager.isPlayer1Connected()) {
+                        canStartGame = true; // Basta un controller!
+                    } else if (numPlayers == 2 && inputManager.isPlayer1Connected() && inputManager.isPlayer2Connected()) {
+                        canStartGame = true; // Servono entrambi i controller!
+                    }
+
+                    // Se i requisiti sono soddisfatti, via col gioco!
+                    if (canStartGame) {
                         closeConnectionMenu();
                     }
                     
-                    // IMPORTANTE: Resettiamo l'accumulatore, così quando togliamo la pausa
-                    // il gioco non cerca di "recuperare" i secondi persi sparando i giocatori nello spazio!
                     accumulator = 0; 
-                    
                 } else {
 	                // --- MODALITÀ GIOCO ATTIVO ---
                 	accumulator += frameTime;
@@ -140,10 +150,8 @@ public class GameController {
     
     // --- MENU CHE CHIEDE DI CONNETTERE I CONTROLLER ---
     private void createConnectionMenu() {
-        connectionMenu = new VBox(20); // 20 è lo spazio tra un elemento e l'altro
+        connectionMenu = new VBox(20); 
         connectionMenu.setAlignment(Pos.CENTER);
-        
-        // Uno sfondo leggermente scuro per far risaltare il testo sul blur
         connectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
 
         Label title = new Label("CONNETTI I CONTROLLER");
@@ -155,13 +163,17 @@ public class GameController {
         p2Label = new Label("Giocatore 2: IN ATTESA (Premi un tasto)");
         p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: yellow;");
 
-        Button bypassButton = new Button("Forza Avvio (Test 1 Controller)");
-        bypassButton.setStyle("-fx-font-size: 18px; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
+        // --- LEGGIAMO LE IMPOSTAZIONI ---
+        int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
         
-        // Se premi il pulsante, chiude il menu forzatamente!
-        bypassButton.setOnAction(e -> closeConnectionMenu());
+        // Se c'è un solo giocatore, il Giocatore 2 diventa la CPU (o comunque non serve il controller)
+        if (numPlayers == 1) {
+            p2Label.setText("Giocatore 2: CPU (Nessun controller richiesto)");
+            p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: gray;"); // Lo facciamo grigio per far capire che è disabilitato
+        }
 
-        connectionMenu.getChildren().addAll(title, p1Label, p2Label, bypassButton);
+        // (Abbiamo rimosso completamente il bypassButton!)
+        connectionMenu.getChildren().addAll(title, p1Label, p2Label);
     }
     
     // --- CHIUSURA DEL MENU CHE CHIEDE DI CONNETTERE I CONTROLLER ---
