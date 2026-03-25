@@ -44,7 +44,7 @@ public class SettingsScene {
         fullscreenCheck.setSelected(settings.isFullscreen());
 
         // 2. Audio (CheckBox)
-        CheckBox audioCheck = new CheckBox("Abilita Audio");
+        CheckBox audioCheck = new CheckBox("Audio");
         audioCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
         audioCheck.setSelected(settings.isAudioOn());
 
@@ -54,6 +54,17 @@ public class SettingsScene {
         ComboBox<Integer> playersBox = new ComboBox<>();
         playersBox.getItems().addAll(1, 2); // Opzioni disponibili
         playersBox.setValue(settings.getNumberOfPlayers());
+        
+        // --- IMPOSTAZIONI FPS E HUD ---
+        Label fpsSettingLabel = new Label("FPS:");
+        fpsSettingLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        ComboBox<Integer> fpsBox = new ComboBox<>();
+        fpsBox.getItems().addAll(10, 15, 24, 30, 60, 120, 144, 200, 240); // Risoluzioni di aggiornamento classiche
+        fpsBox.setValue(settings.getTargetFps());
+
+        CheckBox showFpsCheck = new CheckBox("Mostra FPS");
+        showFpsCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        showFpsCheck.setSelected(settings.isShowFps());
 
         // --- BOTTONI SALVA E INDIETRO ---
         Button saveBackButton = new Button("Salva e Torna Indietro");
@@ -69,6 +80,9 @@ public class SettingsScene {
             settings.setFullscreen(fullscreenCheck.isSelected());
             settings.setIsAudioOn(audioCheck.isSelected());
             settings.setNumberOfPlayers(playersBox.getValue());
+            
+            settings.setTargetFps(fpsBox.getValue());
+            settings.setShowFps(showFpsCheck.isSelected());
             
             // Salva su file config.properties!
             settings.save();
@@ -86,7 +100,7 @@ public class SettingsScene {
             stage.setFullScreen(settings.isFullscreen());
         });
 
-        root.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck, audioCheck, playersLabel, playersBox, saveBackButton);
+        root.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck, audioCheck, playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck, saveBackButton);
 
         return new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());
     }

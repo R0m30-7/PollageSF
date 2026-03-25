@@ -30,6 +30,8 @@ public class GameController {
     private Label p2Label;
     
     private AnimationTimer gameLoop;
+    
+    private Label fpsLabel;
 
     public GameController(Stage stage) {
         this.stage = stage;
@@ -49,6 +51,16 @@ public class GameController {
     	// Creazione del menu da aggiungere sopra al gioco
     	createConnectionMenu();
     	mainRoot.getChildren().add(connectionMenu);
+    	
+    	// Creazione dell'etichetta degli FPS in alto a destra
+        fpsLabel = new Label("FPS: 0");
+        fpsLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: limegreen; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 2, 1.0, 0, 0);");
+        StackPane.setAlignment(fpsLabel, Pos.TOP_RIGHT);
+        StackPane.setMargin(fpsLabel, new javafx.geometry.Insets(10, 20, 10, 10)); 
+        
+        // Lo mostriamo solo se il giocatore ha messo la spunta!
+        fpsLabel.setVisible(application.Utils.Settings.getInstance().isShowFps());
+        mainRoot.getChildren().add(fpsLabel);
     	
     	// Passiamo a PlayScene la root con i livelli
         PlayScene playScene = new PlayScene();
@@ -91,12 +103,25 @@ public class GameController {
     private void startGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastTime = System.nanoTime();
-            private double accumulator = 0.0;
-
+            
+            private double physicsAccumulator = 0.0;
+            private double renderAccumulator = 0.0;
+            
+            // Variabili per il contatore FPS a schermo
+            private long lastFpsTime = 0;
+            private int framesRendered = 0;
+            
             @Override
             public void handle(long now) {
                 long frameTime = now - lastTime;
                 lastTime = now;
+                
+                // --- Contatore FPS a schermo ---
+                if (now - lastFpsTime >= 1_000_000_000) { // È passato 1 secondo
+                    fpsLabel.setText("FPS: " + framesRendered);
+                    framesRendered = 0;
+                    lastFpsTime = now;
+                }
                 
                 if (waitingForControllers) {
                     // --- MODALITÀ MENU IN PAUSA ---
@@ -130,20 +155,32 @@ public class GameController {
                         closeConnectionMenu();
                     }
                     
-                    accumulator = 0; 
+                    physicsAccumulator = 0;
+                    renderAccumulator = 0;
                 } else {
-	                // --- MODALITÀ GIOCO ATTIVO ---
-                	accumulator += frameTime;
-	
-	                while (accumulator >= GameConfig.TIME_PER_TICK) {
-	                    // 1. Scansiona i controller e assegna automaticamente chi preme i tasti
-	                    inputManager.update();      
-	                    // 2. Passa i dati al Model per muovere i giocatori attivi
-	                    model.update(inputManager); 
-	                    accumulator -= GameConfig.TIME_PER_TICK;
-	                }
-	                // 3. Disegna a schermo
-	                view.render(model);
+                	// --- Modalità gioco attivo ---
+                	// --- FISICA ---
+                    physicsAccumulator += frameTime;
+                    while (physicsAccumulator >= GameConfig.TIME_PER_TICK) {
+                        inputManager.update();      
+                        model.update(inputManager); 
+                        physicsAccumulator -= GameConfig.TIME_PER_TICK;
+                    }
+
+                    // --- RENDER GRAFICO (Variabile in base alle impostazioni) ---
+                    renderAccumulator += frameTime;
+                    
+                    // Leggiamo gli FPS scelti (es. 60, 120, 144) e calcoliamo ogni quanto disegnare
+                    double targetFrameTime = 1_000_000_000.0 / application.Utils.Settings.getInstance().getTargetFps();
+
+                    if (renderAccumulator >= targetFrameTime) {
+                        view.render(model); // Disegna lo schermo
+                        framesRendered++;   // Aumenta il contatore dei frame
+                        
+                        // Resettiamo l'accumulatore grafico scartando il tempo in eccesso
+                        // (Non vogliamo "recuperare" i render persi, causerebbe sfarfallio visivo)
+                        renderAccumulator %= targetFrameTime; 
+                    }
 	            }
             }
         };

@@ -15,6 +15,10 @@ public class Settings {
     private int numberOfPlayers;
     private double windowWidth;
     private double windowHeight;
+    
+    // Variabili per la gestione degli FPS
+    private int targetFps;
+    private boolean showFps;
 
     // 2. Costruttore privato! Si può chiamare solo da dentro questa classe
     private Settings() {
@@ -26,6 +30,8 @@ public class Settings {
         // Risoluzione di default
         this.windowWidth = 1280.0;
         this.windowHeight = 720.0;
+        
+        // Default Fps
         
         // Appena viene creato, prova a caricare i salvataggi
         load();
@@ -53,6 +59,10 @@ public class Settings {
                 
                 this.windowWidth = Double.parseDouble(props.getProperty("windowWidth", "1280.0"));
                 this.windowHeight = Double.parseDouble(props.getProperty("windowHeight", "720.0"));
+                
+                // Carico le impostazioni degli FPS
+                this.targetFps = Integer.parseInt(props.getProperty("targetFps", "200"));
+                this.showFps = Boolean.parseBoolean(props.getProperty("showFps", "false"));
             } catch (Exception e) {
                 System.out.println("Errore caricamento impostazioni: " + e.getMessage());
             }
@@ -67,6 +77,10 @@ public class Settings {
         
         props.setProperty("windowWidth", String.valueOf(windowWidth));
         props.setProperty("windowHeight", String.valueOf(windowHeight));
+        
+        // Salvataggio delle impostazioni degli FPS
+        props.setProperty("targetFps", String.valueOf(targetFps));
+        props.setProperty("showFps", String.valueOf(showFps));
 
         try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
             props.store(fos, "Impostazioni di Gioco");
@@ -90,4 +104,10 @@ public class Settings {
     
     public double getWindowHeight() { return windowHeight; }
     public void setWindowHeight(double height) { this.windowHeight = height; }
+    
+    public int getTargetFps() { return targetFps; }
+    public void setTargetFps(int fps) { this.targetFps = fps; }
+    
+    public boolean isShowFps() { return showFps; }
+    public void setShowFps(boolean show) { this.showFps = show; }
 }
