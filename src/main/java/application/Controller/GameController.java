@@ -214,7 +214,7 @@ public class GameController {
         };
         gameLoop.start();
     }
-    
+
     // --- Menu che chiede di connettere i controller, quello prima di entrare in game ---
     private void createConnectionMenu() {
         connectionMenu = new VBox(20); 
