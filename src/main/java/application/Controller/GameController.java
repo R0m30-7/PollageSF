@@ -29,6 +29,12 @@ public class GameController {
     private Label p1Label;
     private Label p2Label;
     
+    // Variabili per la pausa
+    private boolean isPaused = false;
+    private VBox pauseMenu;
+    private  boolean wasP1Pause = false;
+    private boolean wasP2Pause = false;
+    
     private AnimationTimer gameLoop;
     
     private Label fpsLabel;
@@ -51,6 +57,10 @@ public class GameController {
     	// Creazione del menu da aggiungere sopra al gioco
     	createConnectionMenu();
     	mainRoot.getChildren().add(connectionMenu);
+    	
+    	// AGGIUNGIAMO ANCHE IL MENU DI PAUSA AL PANINO (Nascosto)
+        createPauseMenu();
+        mainRoot.getChildren().add(pauseMenu);
     	
     	// Creazione dell'etichetta degli FPS in alto a destra
         fpsLabel = new Label("FPS: 0");
@@ -159,27 +169,45 @@ public class GameController {
                     renderAccumulator = 0;
                 } else {
                 	// --- Modalità gioco attivo ---
-                	// --- FISICA ---
-                    physicsAccumulator += frameTime;
-                    while (physicsAccumulator >= GameConfig.TIME_PER_TICK) {
-                        inputManager.update();      
-                        model.update(inputManager); 
-                        physicsAccumulator -= GameConfig.TIME_PER_TICK;
+                	// --- LETTURA TASTO PAUSA ---
+                    // Aggiorniamo i controller per leggere il tasto Pause
+                    inputManager.update(); 
+                    
+                    boolean isP1Pause = inputManager.isPauseButtonPressed(1);
+                    boolean isP2Pause = inputManager.isPauseButtonPressed(2);
+
+                    // Se il tasto viene premuto in questo preciso frame (e non lo era prima)
+                    if ((isP1Pause && !wasP1Pause) || (isP2Pause && !wasP2Pause)) {
+                        togglePause();
+                    }
+                    // Salviamo in memoria lo stato per il prossimo frame
+                    wasP1Pause = isP1Pause;
+                    wasP2Pause = isP2Pause;
+
+                    // --- GESTIONE DELLA FISICA ---
+                    if (isPaused) {
+                        // Se siamo in pausa, azzeriamo l'accumulatore fisico.
+                        // Questo evita che, togliendo la pausa, il gioco cerchi di "recuperare"
+                        // tutti i secondi persi sparando i giocatori nello spazio!
+                        physicsAccumulator = 0; 
+                    } else {
+                        // GIOCO ATTIVO! Facciamo muovere i giocatori.
+                        physicsAccumulator += frameTime;
+                        while (physicsAccumulator >= application.Utils.GameConfig.TIME_PER_TICK) {
+                            inputManager.update(); // Mantiene fluido il movimento     
+                            model.update(inputManager); 
+                            physicsAccumulator -= application.Utils.GameConfig.TIME_PER_TICK;
+                        }
                     }
 
-                    // --- RENDER GRAFICO (Variabile in base alle impostazioni) ---
+                    // --- 3. RENDER GRAFICO (Gira sempre, sia in gioco che in pausa) ---
                     renderAccumulator += frameTime;
-                    
-                    // Leggiamo gli FPS scelti (es. 60, 120, 144) e calcoliamo ogni quanto disegnare
                     double targetFrameTime = 1_000_000_000.0 / application.Utils.Settings.getInstance().getTargetFps();
 
                     if (renderAccumulator >= targetFrameTime) {
-                        view.render(model); // Disegna lo schermo
-                        framesRendered++;   // Aumenta il contatore dei frame
-                        
-                        // Resettiamo l'accumulatore grafico scartando il tempo in eccesso
-                        // (Non vogliamo "recuperare" i render persi, causerebbe sfarfallio visivo)
-                        renderAccumulator %= targetFrameTime; 
+                        view.render(model);
+                        framesRendered++;
+                        renderAccumulator %= targetFrameTime;
                     }
 	            }
             }
@@ -240,5 +268,49 @@ public class GameController {
         waitingForControllers = false;		// Sblocca il Game Loop
         connectionMenu.setVisible(false);	// Nasconde il menu
         view.getRoot().setEffect(null);		// Rimuove la sfocatura (blur) e mostra il gioco limpido!
+    }
+    
+    // --- MENU DI PAUSA IN GIOCO ---
+    private void createPauseMenu() {
+        pauseMenu = new VBox(20);
+        pauseMenu.setAlignment(Pos.CENTER);
+        pauseMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);"); // Sfondo scuro trasparente
+        pauseMenu.setVisible(false); // Inizialmente è nascosto!
+
+        Label title = new Label("PAUSA");
+        title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        Button resumeBtn = new Button("Riprendi Gioco");
+        resumeBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
+        resumeBtn.setOnAction(e -> togglePause()); // Cliccarlo toglie la pausa
+
+        Button backToMenuBtn = new Button("Torna al Menu");
+        backToMenuBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
+        backToMenuBtn.setOnAction(e -> {
+            if (gameLoop != null) gameLoop.stop();
+            application.Scenes.MainMenuScene mainMenu = new application.Scenes.MainMenuScene();
+            stage.setTitle("Main Menu");
+            stage.setScene(mainMenu.getScenaMenu(stage));
+            stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
+        });
+
+        Button quitBtn = new Button("Esci dal Gioco");
+        quitBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
+        quitBtn.setOnAction(e -> System.exit(0));
+
+        pauseMenu.getChildren().addAll(title, resumeBtn, backToMenuBtn, quitBtn);
+    }
+
+    // --- ATTIVA / DISATTIVA LA PAUSA E LA SFOCATURA ---
+    private void togglePause() {
+        isPaused = !isPaused;
+        
+        if (isPaused) {
+            pauseMenu.setVisible(true);
+            view.getRoot().setEffect(new GaussianBlur(25)); // Sfoca l'arena
+        } else {
+            pauseMenu.setVisible(false);
+            view.getRoot().setEffect(null); // Rimuove la sfocatura
+        }
     }
 }

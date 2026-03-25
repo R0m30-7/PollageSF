@@ -92,6 +92,28 @@ public class InputManager {
         return false;
     }
     
+    // --- METODO PER IL TASTO PAUSA (Options/Start) ---
+    public boolean isPauseButtonPressed(int playerNumber) {
+        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
+        
+        if (gamepad != null) {
+            // Cerchiamo i tasti Start/Options o i pulsanti generici 7, 8, 9 
+            // (su molti controller JInput mappa Select su 7 e Start su 8)
+            Component startBtn = gamepad.getComponent(Component.Identifier.Button.START);
+            Component selectBtn = gamepad.getComponent(Component.Identifier.Button.SELECT);
+            Component btn7 = gamepad.getComponent(Component.Identifier.Button._7);
+            Component btn8 = gamepad.getComponent(Component.Identifier.Button._8);
+            Component btn9 = gamepad.getComponent(Component.Identifier.Button._9);
+            
+            if (startBtn != null && startBtn.getPollData() > 0.5f) return true;
+            if (selectBtn != null && selectBtn.getPollData() > 0.5f) return true;
+            if (btn7 != null && btn7.getPollData() > 0.5f) return true;
+            if (btn8 != null && btn8.getPollData() > 0.5f) return true;
+            if (btn9 != null && btn9.getPollData() > 0.5f) return true;
+        }
+        return false;
+    }
+    
     // Getter necessari per capire se i controller sono connessi
     public boolean isPlayer1Connected() {
     	return player1Gamepad != null;
