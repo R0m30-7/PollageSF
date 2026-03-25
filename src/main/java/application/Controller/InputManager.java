@@ -88,4 +88,12 @@ public class InputManager {
         }
         return false;
     }
+    
+    // Getter necessari per capire se i controller sono connessi
+    public boolean isPlayer1Connected() {
+    	return player1Gamepad != null;
+    }
+    public boolean isPlayer2Connected() {
+    	return player2Gamepad != null;
+    }
 }

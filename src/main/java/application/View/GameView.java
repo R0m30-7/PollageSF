@@ -90,7 +90,7 @@ public class GameView {
             this.clip.setHeight(newHeight);
         }
         
-        // 2. Aggiorniamo le dimensioni del contenitore
+        // 2. Aggiorniamo le dimensioni del contenitore2
         if (this.backgroundContainer != null) {
             this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
         }
