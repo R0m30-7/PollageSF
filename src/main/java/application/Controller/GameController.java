@@ -28,6 +28,8 @@ public class GameController {
     private VBox connectionMenu;
     private Label p1Label;
     private Label p2Label;
+    
+    private AnimationTimer gameLoop;
 
     public GameController(Stage stage) {
         this.stage = stage;
@@ -87,7 +89,7 @@ public class GameController {
     }
 
     private void startGameLoop() {
-        AnimationTimer timer = new AnimationTimer() {
+        gameLoop = new AnimationTimer() {
             private long lastTime = System.nanoTime();
             private double accumulator = 0.0;
 
@@ -145,10 +147,10 @@ public class GameController {
 	            }
             }
         };
-        timer.start();
+        gameLoop.start();
     }
     
-    // --- MENU CHE CHIEDE DI CONNETTERE I CONTROLLER ---
+    // --- Menu che chiede di connettere i controller, quello prima di entrare in game ---
     private void createConnectionMenu() {
         connectionMenu = new VBox(20); 
         connectionMenu.setAlignment(Pos.CENTER);
@@ -171,9 +173,29 @@ public class GameController {
             p2Label.setText("Giocatore 2: CPU (Nessun controller richiesto)");
             p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: gray;"); // Lo facciamo grigio per far capire che è disabilitato
         }
+        
+        // --- Bottone torna al menu ---
+        Button backToMenuBtn = new Button("Menu Principale");
+        backToMenuBtn.setStyle("-fx-font-size: 18px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
+        
+        backToMenuBtn.setOnAction(e -> {
+            // 1. Fermiamo il loop per evitare che il gioco continui a girare in background
+            if (gameLoop != null) {
+                gameLoop.stop();
+            }
+            
+            // 2. Creiamo una nuova istanza del MainMenuScene
+            application.Scenes.MainMenuScene mainMenu = new application.Scenes.MainMenuScene();
+            
+            // 3. Impostiamo il titolo e ricarichiamo la scena
+            stage.setTitle("Main Menu");
+            stage.setScene(mainMenu.getScenaMenu(stage));
+            
+            // 4. Manteniamo le impostazioni di fullscreen
+            stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
+        });
 
-        // (Abbiamo rimosso completamente il bypassButton!)
-        connectionMenu.getChildren().addAll(title, p1Label, p2Label);
+        connectionMenu.getChildren().addAll(title, p1Label, p2Label, backToMenuBtn);
     }
     
     // --- CHIUSURA DEL MENU CHE CHIEDE DI CONNETTERE I CONTROLLER ---
