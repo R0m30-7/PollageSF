@@ -140,11 +140,14 @@ public class GameModel {
     }
     
     // Aggiornare larghezza, altezza e pavimento della finestra
-    public void updateWindowSize(double newWidth, double newHeight) {
+    public void updateWindowSize(double newWidth, double newHeight, double newWorldWidth) {
         this.currentWindowWidth = newWidth;
         this.currentWindowHeight = newHeight;
+        
+        // Il mondo di gioco si allarga e restringe in base allo zoom dello sfondo
+        this.WORLD_WIDTH = newWorldWidth;
 
-        // Il pavimento è sempre relativo all'altezza della finestra (es. 50 pixel sopra il fondo)
+        // Il pavimento è sempre relativo all'altezza della finestra
         this.GROUND_LEVEL = newHeight - 100.0;
 
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,

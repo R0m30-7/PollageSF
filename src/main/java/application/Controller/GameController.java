@@ -58,16 +58,24 @@ public class GameController {
         scene.widthProperty().addListener((obs, oldVal, newVal) -> {
             double newW = newVal.doubleValue();
             double currentH = scene.getHeight(); // Prendiamo l'altezza attuale
-            model.updateWindowSize(newW, currentH);
+            
+            // Prima aggiorniamo la view così calcola lo zoom
             view.updateWindowSize(newW, currentH);
+            
+            // Diciamo poi al Model di aggiornare i limiti passando il nuovo bgWidth della View
+            model.updateWindowSize(newW, currentH, view.getBgWidth());
         });
 
         // Se l'utente alza o abbassa la finestra...
         scene.heightProperty().addListener((obs, oldVal, newVal) -> {
             double currentW = scene.getWidth(); // Prendiamo la larghezza attuale
             double newH = newVal.doubleValue();
-            model.updateWindowSize(currentW, newH);
+            
+            // Prima aggiorniamo la view così calcola lo zoom
             view.updateWindowSize(currentW, newH);
+            
+            // Diciamo poi al Model di aggiornare i limiti passando il nuovo bgWidth della View
+            model.updateWindowSize(currentW, newH, view.getBgWidth());	
         });
 
         // 3. Impostiamo la finestra e avviamo il gioco

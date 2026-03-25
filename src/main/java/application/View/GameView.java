@@ -17,20 +17,22 @@ public class GameView {
     private Pane backgroundContainer; // Contenitore che ci permette di tagliare l'immagine
     private Rectangle clip;           // La maschera "invisibile" che taglia l'eccesso
     
-    // Dimensioni reali dell'immagine
+    // Dimensioni dell'immagine di sfondo
     private double bgWidth;
     private double bgHeight;
+    private double originalBgWidth;
+    private double originalBgHeight;
     
     public GameView() {
         this.root = new Pane();
         
-        // --- 1. CARICAMENTO IMMAGINE ---
+        // --- CARICAMENTO DELL'IMMAGINE DI SFONDO ---
         try {
             Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/twinTowers.png"));
             this.backgroundView = new ImageView(bgImage);
             
-            this.bgWidth = bgImage.getWidth();
-            this.bgHeight = bgImage.getHeight();
+            this.originalBgWidth = bgImage.getWidth();
+            this.originalBgHeight = bgImage.getHeight();
         } catch (Exception e) {
             System.out.println("Sfondo non trovato, uso valori di emergenza.");
             this.backgroundView = new ImageView(); 
@@ -38,16 +40,19 @@ public class GameView {
             this.bgHeight = 720;
         }
         
-        // --- 2. CONTENITORE E TAGLIO ---
+        // Dice all'ImageView di non deformare le proporzioni dell'immagine
+        this.backgroundView.setPreserveRatio(true);
+        
+        // --- CONTENITORE E TAGLIO ---
         // Mettiamo l'immagine dentro un contenitore separato
         this.backgroundContainer = new Pane(this.backgroundView);
         
         // Creiamo la maschera iniziale (es. 720 di altezza di default)
-        this.clip = new Rectangle(this.bgWidth, 720);
+        this.clip = new Rectangle(this.originalBgWidth, 720);
         this.backgroundContainer.setClip(this.clip); // Applichiamo il taglio!
         
         // Allineamento iniziale in basso a sinistra
-        double offsetY = 720 - this.bgHeight;
+        double offsetY = 720 - this.originalBgHeight;
         this.backgroundView.setY(offsetY);
         
         // --- 3. GIOCATORI ---
@@ -56,6 +61,10 @@ public class GameView {
         
         // Aggiungiamo il contenitore (non l'immagine diretta!) e i lottatori
         this.root.getChildren().addAll(this.backgroundContainer, rendererP1.getNode(), rendererP2.getNode());
+        
+        // Inizializzazione dei valori fittizi per l'avvio
+        this.bgWidth = this.originalBgWidth;
+        this.bgHeight = this.originalBgHeight;
     }
 
     public Pane getRoot() { return root; }
@@ -81,24 +90,42 @@ public class GameView {
     }
 
     // ==========================================
-    // NUOVO: METODO CHIAMATO DAL CONTROLLER QUANDO RIDIMENSIONI LA FINESTRA
+    // METODO CHIAMATO DAL CONTROLLER QUANDO VIENE RIDIMENSIONATA LA FINESTRA
     // ==========================================
     public void updateWindowSize(double newWidth, double newHeight) {
+    	// Calcoliamo di quanto dovremmo zoomMare l'immagine per coprire la finestra
+        double scaleX = newWidth / this.originalBgWidth;
+        double scaleY = newHeight / this.originalBgHeight;
         
-        // 1. Aggiorniamo la maschera: taglierà l'immagine alla nuova altezza della finestra!
+        // Prendiamo la scala MAGGIORE. Così siamo sicuri al 100% che non ci siano spazi bianchi
+        double scale = Math.max(scaleX, scaleY);
+        
+        // Non rimpicciolire mai l'immagine sotto la sua misura originale
+        scale = Math.max(1.0, scale);
+
+        // Calcoliamo le nuove dimensioni "Zoommate" dell'arena
+        this.bgWidth = this.originalBgWidth * scale;
+        this.bgHeight = this.originalBgHeight * scale;
+
+        // Applichiamo le nuove dimensioni all'immagine grafica
+        if (this.backgroundView != null) {
+            this.backgroundView.setFitWidth(this.bgWidth);
+            this.backgroundView.setFitHeight(this.bgHeight);
+            
+            // L'ancoraggio in basso a sinistra
+            double offsetY = newHeight - this.bgHeight;
+            this.backgroundView.setY(offsetY);
+        }
+
+        // Aggiorniamo la maschera che taglia lo schermo
         if (this.clip != null) {
+            this.clip.setWidth(this.bgWidth);
             this.clip.setHeight(newHeight);
         }
         
-        // 2. Aggiorniamo le dimensioni del contenitore2
+        // Aggiorniamo il contenitore
         if (this.backgroundContainer != null) {
             this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
-        }
-        
-        // 3. Il cuore della logica: ricalcoliamo la coordinata Y per tenere l'immagine ancorata in basso!
-        if (this.backgroundView != null) {
-            double offsetY = newHeight - this.bgHeight;
-            this.backgroundView.setY(offsetY);
         }
     }
 }
