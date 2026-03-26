@@ -5,15 +5,28 @@ import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
 
 public class InputManager {
+    // Rendiamo l'InputManager un Singleton in modo che il Menu Principale
+    // e il Gioco leggano gli stessi controller!
+    private static InputManager instance;
+    
     private Controller[] allControllers;
     
     // Riferimenti ai due controller separati
     private Controller player1Gamepad; 
     private Controller player2Gamepad;
 
-    public InputManager() {
+    // Costruttore privato per il Singleton
+    private InputManager() {
         allControllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
         System.out.println("🎮 Sistema di input inizializzato. Muovi una levetta o premi un tasto per unirti!");
+    }
+
+    // Metodo per ottenere l'istanza globale
+    public static InputManager getInstance() {
+        if (instance == null) {
+            instance = new InputManager();
+        }
+        return instance;
     }
 
     // --- AGGIORNAMENTO E ASSEGNAZIONE CONTROLLER ---
@@ -24,9 +37,8 @@ public class InputManager {
                 
                 boolean isButtonPressed = false;
                 for (Component comp : c.getComponents()) {
-                    // Controlliamo se preme un pulsante o muove una levetta oltre la deadzone
+                    // Controlliamo che l'input sia effettivamente un bottone, e non un asse
                     if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                        // Se il pulsante è premuto
                     	if(comp.getPollData() > 0.5f) {
                     		isButtonPressed = true;
                     		break;
@@ -38,10 +50,10 @@ public class InputManager {
                 if (isButtonPressed) {
                     if (player1Gamepad == null && c != player2Gamepad) {
                         player1Gamepad = c;
-                        // System.out.println("✅ Giocatore 1 unito! Controller: " + c.getName());
+                        System.out.println("✅ Giocatore 1 unito! Controller: " + c.getName());
                     } else if (player2Gamepad == null && c != player1Gamepad) {
                         player2Gamepad = c;
-                        // System.out.println("✅ Giocatore 2 unito! Controller: " + c.getName());
+                        System.out.println("✅ Giocatore 2 unito! Controller: " + c.getName());
                     }
                 }
             }
@@ -75,30 +87,22 @@ public class InputManager {
         return 0.0;
     }
 
-    // --- IL METODO DEL SALTO CORRETTO ---
+    // --- IL METODO DEL SALTO ---
     public boolean isJumpButtonPressed(int playerNumber) {
         Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         
         if (gamepad != null) {
-            // Cerchiamo specificamente il tasto "A" (come lo chiama Linux) o i tasti standard (0, 1) per compatibilità futura
             Component buttonA = gamepad.getComponent(Component.Identifier.Button.A);
-            Component button0 = gamepad.getComponent(Component.Identifier.Button._0);
-            Component button1 = gamepad.getComponent(Component.Identifier.Button._1);
-            
             if (buttonA != null && buttonA.getPollData() != 0.0f) return true;
-            if (button0 != null && button0.getPollData() != 0.0f) return true;
-            if (button1 != null && button1.getPollData() != 0.0f) return true;
         }
         return false;
     }
     
-    // --- METODO PER IL TASTO PAUSA (Options/Start) ---
+    // --- METODO PER IL TASTO PAUSA ---
     public boolean isPauseButtonPressed(int playerNumber) {
         Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         
         if (gamepad != null) {
-            // Cerchiamo i tasti Start/Options o i pulsanti generici 7, 8, 9 
-            // (su molti controller JInput mappa Select su 7 e Start su 8)
             Component startBtn = gamepad.getComponent(Component.Identifier.Button.START);
             Component selectBtn = gamepad.getComponent(Component.Identifier.Button.SELECT);
             Component btn7 = gamepad.getComponent(Component.Identifier.Button._7);
@@ -110,6 +114,41 @@ public class InputManager {
             if (btn7 != null && btn7.getPollData() > 0.5f) return true;
             if (btn8 != null && btn8.getPollData() > 0.5f) return true;
             if (btn9 != null && btn9.getPollData() > 0.5f) return true;
+        }
+        return false;
+    }
+    
+    // --- METODI PER AZIONI DI COMBATTIMENTO ---
+    
+    public boolean isPunchButtonPressed(int playerNumber) {
+        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
+        if (gamepad != null) {
+            for (Component comp : gamepad.getComponents()) {
+                // IL FILTRO CRUCIALE: Se non è un bottone, lo ignoriamo! 
+                // Questo impedisce alla levetta X di far partire i pugni
+                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
+                    String btnName = comp.getIdentifier().getName(); 
+                    if ((btnName.equals("X") || btnName.equals("Square") || btnName.equals("2")) && comp.getPollData() > 0.5f) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isDefendButtonPressed(int playerNumber) {
+        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
+        if (gamepad != null) {
+            for (Component comp : gamepad.getComponents()) {
+                // IL FILTRO CRUCIALE: Solo bottoni!
+                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
+                    String btnName = comp.getIdentifier().getName();
+                    if ((btnName.equals("B") || btnName.equals("Circle") || btnName.equals("1")) && comp.getPollData() > 0.5f) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }

@@ -43,7 +43,7 @@ public class GameController {
         this.stage = stage;
         this.view = new GameView();
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
-        this.inputManager = new InputManager();
+        this.inputManager = InputManager.getInstance();
     }
 
     public void startGame() {

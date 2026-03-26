@@ -28,7 +28,7 @@ public class GameView {
         
         // --- CARICAMENTO DELL'IMMAGINE DI SFONDO ---
         try {
-            Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/broBase.jpeg"));
+            Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/culoLand.jpeg"));
             this.backgroundView = new ImageView(bgImage);
             
             this.originalBgWidth = bgImage.getWidth();
@@ -74,19 +74,23 @@ public class GameView {
     public void render(GameModel model) {
         double camX = model.getCameraX();
     	
-    	// Spostiamo l'intero CONTENITORE all'indietro rispetto alla telecamera
+    	// Spostiamo l'intero SFONDO all'indietro rispetto alla telecamera
     	this.backgroundContainer.setLayoutX(-camX);
     	
-    	// Spostamento dei giocatori
-    	double p1ScreenX = model.getPlayer1().getPosition().getX() - camX;
-    	double p1ScreenY = model.getPlayer1().getPosition().getY();
-    	rendererP1.getNode().setLayoutX(p1ScreenX);
-    	rendererP1.getNode().setLayoutY(p1ScreenY);
+    	// --- LA MAGIA CHE MANCAVA ---
+    	// Chiamiamo finalmente i renderer per fargli ricalcolare vita, pugni e difese!
+    	rendererP1.render(model.getPlayer1());
+    	rendererP2.render(model.getPlayer2());
     	
-    	double p2ScreenX = model.getPlayer2().getPosition().getX() - camX;
-    	double p2ScreenY = model.getPlayer2().getPosition().getY();
-    	rendererP2.getNode().setLayoutX(p2ScreenX);
-    	rendererP2.getNode().setLayoutY(p2ScreenY);
+    	// --- SPOSTAMENTO TELECAMERA SUI GIOCATORI ---
+    	// Visto che PlayerRenderer posiziona già il corpo e i pugni alle coordinate 
+        // assolute (px, py), qui dobbiamo solo far scorrere il loro "livello" all'indietro 
+        // in base a dove si trova la telecamera.
+    	rendererP1.getNode().setLayoutX(-camX);
+    	rendererP1.getNode().setLayoutY(0); // La Y è gestita dal PlayerRenderer
+    	
+    	rendererP2.getNode().setLayoutX(-camX);
+    	rendererP2.getNode().setLayoutY(0);
     }
 
     // ==========================================

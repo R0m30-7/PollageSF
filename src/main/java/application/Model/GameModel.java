@@ -22,6 +22,10 @@ public class GameModel {
     private boolean wasP1JumpHeld = false;
     private boolean wasP2JumpHeld = false;
     
+    // Variabili per memorizzare il pugno nel frame precedente
+    private boolean wasP1PunchHeld = false;
+    private boolean wasP2PunchHeld = false;
+    
     // Serve per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
     private double currentWindowHeight = 1080;
@@ -39,6 +43,10 @@ public class GameModel {
         // Spawn dei giocatori al centro del mondo
     	player1 = new Player(new Point2D(WORLD_WIDTH / 2 - 200, spawnY)); 
         player2 = new Player(new Point2D(WORLD_WIDTH / 2 + 200, spawnY));
+        
+        // Impostiamo le direzioni iniziali
+        player1.setFacingRight(true); 
+        player2.setFacingRight(false);
     }
 
     public Player getPlayer1() { return player1; }
@@ -46,9 +54,17 @@ public class GameModel {
     public double getCameraX() { return cameraX; }	// Serve alla View
 
     public void update(InputManager input) {
+    	// Aggiornamento tick per la durata dei pugni
+    	player1.updateTicks();
+    	player2.updateTicks();
+    	
         // 1. Leggiamo lo stato dei tasti X di entrambi i giocatori
         boolean isP1JumpHeld = input.isJumpButtonPressed(1);
         boolean isP2JumpHeld = input.isJumpButtonPressed(2);
+        
+        // Leggiamo lo stato dei pugni
+        boolean isP1PunchHeld = input.isPunchButtonPressed(1);
+        boolean isP2PunchHeld = input.isPunchButtonPressed(2);
 
         // 2. Applichiamo la fisica passando lo stato del tasto!
         player1.applyPhysics(GROUND_LEVEL, isP1JumpHeld);
@@ -60,12 +76,22 @@ public class GameModel {
             player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
         if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
+        
+        if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
+        
+        player1.setDefending(input.isDefendButtonPressed(1));
 
         double p2X = input.getLeftStickX(2);
         if (Math.abs(p2X) > 0.0) {
             player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
         if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
+        if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
+        player2.setDefending(input.isDefendButtonPressed(2));
+        
+        // --- 3. LOGICA DI COMBATTIMENTO ---
+        handleCombat(player1, player2);
+        handleCombat(player2, player1);
 
         // 4. LIMITI DEL MONDO (Muri invisibili)
         // Impediamo ai giocatori di uscire dall'arena totale (WORLD_WIDTH)
@@ -122,6 +148,43 @@ public class GameModel {
         // Memorizzazione dello stato attuale per il salto
         wasP1JumpHeld = isP1JumpHeld;
         wasP2JumpHeld = isP2JumpHeld;
+        
+        wasP1PunchHeld = isP1PunchHeld;
+        wasP2PunchHeld = isP2PunchHeld;
+    }
+    
+    // ==========================================
+    //      IL MOTORE DEI DANNI E COLLISIONI
+    // ==========================================
+    private void handleCombat(Player attacker, Player defender) {
+        // Controlla se sta attaccando e se non ha già fatto danno in questa animazione
+        if (attacker.isPunching() && !attacker.hasDealtDamage()) {
+            
+            // 1. Calcola dove si trova la Hitbox del pugno nello spazio
+            double punchX = attacker.isFacingRight() 
+                    ? attacker.getPosition().getX() + GameConfig.pWidth 
+                    : attacker.getPosition().getX() - GameConfig.pPunchWidth;
+            double punchY = attacker.getPosition().getY() + (GameConfig.pHeight * 0.2);
+            
+            // 2. Crea una Hitbox invisibile per il calcolo matematico
+            Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), GameConfig.pPunchWidth, GameConfig.pPunchHeight);
+            
+            // 3. Controlla se il pugno si sovrappone al corpo del difensore
+            if (punchHitbox.intersects(defender.getBoundingBox())) {
+                
+                // 4. Applica i danni se l'avversario non sta bloccando
+                if (defender.isDefending()) {
+                    System.out.println("Colpo parato!");
+                    // Magari il colpo parato fa indietreggiare il difensore? Potremo aggiungerlo dopo!
+                } else {
+                    System.out.println("COLPITO! Danno: " + GameConfig.pPunchDamage);
+                    defender.takeDamage(GameConfig.pPunchDamage);
+                }
+                
+                // 5. Segna che il pugno ha colpito, così non toglie 200 HP in un colpo solo
+                attacker.setHasDealtDamage(true);
+            }
+        }
     }
     
     // Metodo di supporto per i muri invisibili dell'arena

@@ -19,13 +19,57 @@ public class Player {
     private final double GRAVITY = 0.2;
     private final double JUMP_STRENGTH = -8.0;	// Negativo perché la y aumenta dal basso verso l'alto
     
+    // L'hurtbox del player
     private Hitbox boundingBox;
+    
+    // --- Nuove variabili per il combattimento ---
+    public static final int MAX_HEALTH = 100;
+    private int health = MAX_HEALTH;
+    private boolean isFacingRight = true; 
+    private boolean isPunching = false;
+    private int punchTimer = 0;
+    private boolean isDefending = false;
+    private boolean hasDealtDamage = false; // Memorizza se il pugno ha già fatto danno
 
     // Costruttore per impostare la posizione iniziale
     public Player(Point2D position) {
         this.position = position;
         
-        this.boundingBox = new Hitbox(position);
+        this.boundingBox = new Hitbox(position, GameConfig.pWidth, GameConfig.pHeight);
+    }
+    
+    // --- AGGIORNAMENTO TICK PER LE AZIONI ---
+    public void updateTicks() {
+        if (isPunching) {
+            punchTimer--;
+            if (punchTimer <= 0) {
+                isPunching = false;
+                hasDealtDamage = false;	// Reset alla fine del pugno
+            }
+        }
+    }
+
+    // --- LOGICA AZIONI ---
+    public void startPunch() {
+        if (!isPunching && !isDefending) {
+            isPunching = true;
+            hasDealtDamage = false;	// Appena il pugno inizia si azzera il danno
+            punchTimer = GameConfig.pPunchDurationTicks;
+            System.out.println("PLAYER: isPunching è ora TRUE! Timer impostato a: " + punchTimer);
+        }
+    }
+
+    public void setDefending(boolean defending) {
+        if (!isPunching) {
+            this.isDefending = defending;
+        } else {
+            this.isDefending = false; 
+        }
+    }
+    
+    public void takeDamage(int damage) {
+        health -= damage;
+        if (health < 0) health = 0;
     }
     
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
@@ -79,15 +123,15 @@ public class Player {
         boundingBox.updatePosition(position);
     }
     
-    public Hitbox getBoundingBox() {
-    	return boundingBox;
-    }
+    public Hitbox getBoundingBox() { return boundingBox; }
+    public void setPosition(Point2D newPosition) { position = newPosition; }
+    public Point2D getPosition() { return position; }
     
-    public void setPosition(Point2D newPosition) {
-    	position = newPosition;
-    }
-    
-    public Point2D getPosition() {
-    	return position;
-    }
+    public int getHealth() { return health; }
+    public boolean isFacingRight() { return isFacingRight; }
+    public void setFacingRight(boolean facingRight) { this.isFacingRight = facingRight; }
+    public boolean isPunching() { return isPunching; }
+    public boolean isDefending() { return isDefending; }
+    public boolean hasDealtDamage() { return hasDealtDamage; }
+    public void setHasDealtDamage(boolean dealt) { this.hasDealtDamage = dealt; }
 }

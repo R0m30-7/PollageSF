@@ -11,10 +11,13 @@ import javafx.geometry.Point2D;
 
 public class Hitbox {
     private double x, y;
+    private double width, height;	// Dimensioni per le hitbox dinamiche
 
-    public Hitbox(Point2D position) {
+    public Hitbox(Point2D position, double width, double height) {
         this.x = position.getX();
         this.y = position.getY();
+        this.width = width;
+        this.height = height;
     }
 
     // Aggiorna la posizione della hitbox per farla "seguire" il giocatore
@@ -30,4 +33,9 @@ public class Hitbox {
                 this.y < other.y + GameConfig.pHeight &&
                 this.y + GameConfig.pHeight > other.y);
     }
+    
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getWidth() { return width; }
+    public double getHeight() { return height; }
 }
