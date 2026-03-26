@@ -85,21 +85,32 @@ public class GameModel {
         // Calcoliamo dove si trova il fulcro RISPETTO all'inquadratura attuale
         double screenMidpointX = midpointX - cameraX;
         
+        // Calcolo della posizione target della telecamera (per la morbidezza del movimento)
+        double targetCameraX = cameraX;
+        
         // Muoviamo la telecamera SOLO se il fulcro esce dalla zona morta centrale
         if (screenMidpointX < leftThreshold) {
             // Il fulcro spinge troppo a sinistra, la telecamera arretra
-            cameraX = midpointX - leftThreshold;
+            targetCameraX = midpointX - leftThreshold;
         } else if (screenMidpointX > rightThreshold) {
             // Il fulcro spinge troppo a destra, la telecamera avanza
-            cameraX = midpointX - rightThreshold;
+            targetCameraX = midpointX - rightThreshold;
         }
         
         // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
-        if (cameraX < 0) {
-            cameraX = 0; // Blocco al muro sinistro del mondo
-        } else if (cameraX > (WORLD_WIDTH - currentWindowWidth)) {
-            cameraX = WORLD_WIDTH - currentWindowWidth; // Blocco al muro destro del mondo
+        if (targetCameraX < 0) {
+        	targetCameraX = 0; // Blocco al muro sinistro del mondo
+        } else if (targetCameraX > (WORLD_WIDTH - currentWindowWidth)) {
+        	targetCameraX = WORLD_WIDTH - currentWindowWidth; // Blocco al muro destro del mondo
         }
+        
+        // LERP (INTERPOLAZIONE LINEARE) - LA MAGIA DELLA MORBIDEZZA!
+        // Questo valore decide la morbidezza: 
+        // 0.01 è lentissima, 0.1 è fluida ma reattiva, 1.0 è istantanea come prima.
+        double cameraSpeed = 0.08;
+        
+        // La telecamera percorre solo una frazione della distanza verso il bersaglio
+        cameraX += (targetCameraX - cameraX) * cameraSpeed;
         
         // ==========================================
         //         3. LIMITI DELLO SCHERMO

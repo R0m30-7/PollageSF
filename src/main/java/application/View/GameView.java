@@ -28,7 +28,7 @@ public class GameView {
         
         // --- CARICAMENTO DELL'IMMAGINE DI SFONDO ---
         try {
-            Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/twinTowers.png"));
+            Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/broBase.jpeg"));
             this.backgroundView = new ImageView(bgImage);
             
             this.originalBgWidth = bgImage.getWidth();
