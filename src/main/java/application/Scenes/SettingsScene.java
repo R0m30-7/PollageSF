@@ -29,7 +29,7 @@ public class SettingsScene {
         resLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
         ComboBox<String> resolutionBox = new ComboBox<>();
         // Aggiungiamo le risoluzioni più famose (16:9)
-        resolutionBox.getItems().addAll("720x460", "800x600","1280x720", "1366x768", "1600x900", "1920x1080");
+        resolutionBox.getItems().addAll("670x670", "720x460", "800x600","1280x720", "1366x768", "1600x900", "1920x1080");
         
         // Selezioniamo di default quella attualmente in uso
         String currentRes = (int)settings.getWindowWidth() + "x" + (int)settings.getWindowHeight();

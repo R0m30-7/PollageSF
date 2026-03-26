@@ -33,9 +33,12 @@ public class GameModel {
     	// Imposto il pavimento della scena
     	this.GROUND_LEVEL = currentWindowHeight - 100.0;
     	
-        // Presumo tu li inizializzi con coordinate iniziali, aggiusta se necessario
-    	player1 = new Player(new Point2D(WORLD_WIDTH / 2 - 200, 200)); 
-        player2 = new Player(new Point2D(WORLD_WIDTH / 2 + 200, 200));
+    	// Calcoliamo la y per spawnare i giocatori con i piedi per terra
+    	double spawnY = this.GROUND_LEVEL - GameConfig.pHeight;
+    	
+        // Spawn dei giocatori al centro del mondo
+    	player1 = new Player(new Point2D(WORLD_WIDTH / 2 - 200, spawnY)); 
+        player2 = new Player(new Point2D(WORLD_WIDTH / 2 + 200, spawnY));
     }
 
     public Player getPlayer1() { return player1; }
@@ -152,12 +155,12 @@ public class GameModel {
 
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
         // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su!
-        if (player1.getPosition().getY() > this.GROUND_LEVEL) {
-            player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.GROUND_LEVEL));
+        if (player1.getPosition().getY() + GameConfig.pHeight > this.GROUND_LEVEL) {
+            player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.GROUND_LEVEL - GameConfig.pHeight));
             player1.getBoundingBox().updatePosition(player1.getPosition());
         }
-        if (player2.getPosition().getY() > this.GROUND_LEVEL) {
-            player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.GROUND_LEVEL));
+        if (player2.getPosition().getY() + GameConfig.pHeight > this.GROUND_LEVEL) {
+            player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.GROUND_LEVEL - GameConfig.pHeight));
             player2.getBoundingBox().updatePosition(player2.getPosition());
         }
     }

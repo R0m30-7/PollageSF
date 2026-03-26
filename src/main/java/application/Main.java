@@ -3,7 +3,6 @@ package application;
 import java.io.File;
 
 import application.Scenes.MainMenuScene;
-import application.Utils.GameConfig;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

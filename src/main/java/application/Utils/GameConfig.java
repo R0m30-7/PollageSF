@@ -12,6 +12,6 @@ public class GameConfig {
 	public static final int TARGET_TPS = 200;
 	public static final double TIME_PER_TICK = 1_000_000_000.0 / TARGET_TPS;
 	
-	public static final int pWidth = 50;
-	public static final int pHeight = 50;
+	public static final int pWidth = 100;
+	public static final int pHeight = 200;
 }

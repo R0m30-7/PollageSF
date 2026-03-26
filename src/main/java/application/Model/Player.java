@@ -4,6 +4,7 @@
  */
 package application.Model;
 
+import application.Utils.GameConfig;
 import javafx.geometry.Point2D;
 
 public class Player {
@@ -66,8 +67,8 @@ public class Player {
         double newY = position.getY() + velocityY;
         
         // Controlliamo se ha toccato il pavimento
-        if (newY >= groundLevelY) {
-            newY = groundLevelY; 
+        if (newY + GameConfig.pHeight >= groundLevelY) {
+            newY = groundLevelY - GameConfig.pHeight; 
             velocityY = 0.0;     
             isGrounded = true;   
         } else {
@@ -75,31 +76,6 @@ public class Player {
         }
         
         position = new Point2D(newX, newY);
-        boundingBox.updatePosition(position);
-    }
-    
-    //TODO In teoria questo metodo si dovrebbe poter eliminare
-    public void keepInBounds(double x, double y) {
-    	double currentX = position.getX();
-        double currentY = position.getY();
-        double playerSize = 50.0; // Sostituisci con la vera larghezza/altezza del tuo quadrato
-
-        // Controllo asse X (Sinistra e Destra)
-        if (currentX < 0) {
-            currentX = 0; // Muro sinistro
-        } else if (currentX > x - playerSize) {
-            currentX = x - playerSize; // Muro destro (tiene conto della larghezza!)
-        }
-
-        // Controllo asse Y (Alto e Basso)
-        if (currentY < 0) {
-            currentY = 0; // Tetto
-        } else if (currentY > y - (playerSize* 3 / 2)) {
-            currentY = y - (playerSize* 3 / 2); // Pavimento
-        }
-
-        // Aggiorniamo la posizione corretta e la hitbox
-        position = new Point2D(currentX, currentY);
         boundingBox.updatePosition(position);
     }
     
