@@ -75,21 +75,31 @@ public class GameModel {
         // ==========================================
         //         LOGICA DELLA TELECAMERA
         // ==========================================
-        // Calcoliamo il punto centrale tra i due giocatori
+        // Calcoliamo il fulcro (punto centrale) tra i due giocatori nel mondo assoluto
         double midpointX = (player1.getPosition().getX() + player2.getPosition().getX()) / 2.0;
         
-        // Vogliamo che questo punto medio sia esattamente al centro del nostro schermo
-        double targetCameraX = midpointX - (currentWindowWidth / 2.0);
+        // Definiamo i limiti della "Deadzone" (25% a sinistra, 25% a destra)
+        double leftThreshold = currentWindowWidth * 0.25;
+        double rightThreshold = currentWindowWidth * 0.75;
         
-        // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
-        if (targetCameraX < 0) {
-            targetCameraX = 0; // Blocco a sinistra
-        } else if (targetCameraX > (WORLD_WIDTH - currentWindowWidth)) {
-            targetCameraX = WORLD_WIDTH - currentWindowWidth; // Blocco a destra
+        // Calcoliamo dove si trova il fulcro RISPETTO all'inquadratura attuale
+        double screenMidpointX = midpointX - cameraX;
+        
+        // Muoviamo la telecamera SOLO se il fulcro esce dalla zona morta centrale
+        if (screenMidpointX < leftThreshold) {
+            // Il fulcro spinge troppo a sinistra, la telecamera arretra
+            cameraX = midpointX - leftThreshold;
+        } else if (screenMidpointX > rightThreshold) {
+            // Il fulcro spinge troppo a destra, la telecamera avanza
+            cameraX = midpointX - rightThreshold;
         }
         
-        // Aggiorniamo la telecamera
-        cameraX = targetCameraX;
+        // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
+        if (cameraX < 0) {
+            cameraX = 0; // Blocco al muro sinistro del mondo
+        } else if (cameraX > (WORLD_WIDTH - currentWindowWidth)) {
+            cameraX = WORLD_WIDTH - currentWindowWidth; // Blocco al muro destro del mondo
+        }
         
         // ==========================================
         //         3. LIMITI DELLO SCHERMO
