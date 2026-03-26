@@ -55,7 +55,7 @@ public class Player {
             isPunching = true;
             hasDealtDamage = false;	// Appena il pugno inizia si azzera il danno
             punchTimer = GameConfig.pPunchDurationTicks;
-            System.out.println("PLAYER: isPunching è ora TRUE! Timer impostato a: " + punchTimer);
+            //System.out.println("PLAYER: isPunching è ora TRUE! Timer impostato a: " + punchTimer);
         }
     }
 

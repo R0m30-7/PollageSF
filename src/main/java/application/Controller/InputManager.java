@@ -1,3 +1,9 @@
+/*
+ * MAPPATURA DEI TASTI DEI CONTROLLER
+ * WINDOWS
+ * DualShock (Ps5): quadrato=0, x=1, o=2, triangolo=3, L1=4, R1=5, L2=6, R2=7, Share=8, Options=9, L3=10, R3=11, PS=12, trackpad=13
+ */
+
 package application.Controller;
 
 import net.java.games.input.Component;
@@ -12,7 +18,7 @@ public class InputManager {
     private Controller[] allControllers;
     
     // Riferimenti ai due controller separati
-    private Controller player1Gamepad; 
+    private Controller player1Gamepad;
     private Controller player2Gamepad;
 
     // Costruttore privato per il Singleton
@@ -40,6 +46,9 @@ public class InputManager {
                     // Controlliamo che l'input sia effettivamente un bottone, e non un asse
                     if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     	if(comp.getPollData() > 0.5f) {
+                    		
+                    		//System.out.println("TASTO RILEVATO: " + comp.getIdentifier().getName());
+                    		
                     		isButtonPressed = true;
                     		break;
                     	}
@@ -89,31 +98,35 @@ public class InputManager {
 
     // --- IL METODO DEL SALTO ---
     public boolean isJumpButtonPressed(int playerNumber) {
-        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        
+    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         if (gamepad != null) {
-            Component buttonA = gamepad.getComponent(Component.Identifier.Button.A);
-            if (buttonA != null && buttonA.getPollData() != 0.0f) return true;
+            for (Component comp : gamepad.getComponents()) {
+                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
+                    String btnName = comp.getIdentifier().getName();
+                    // "A" o "Cross" per Linux/Xbox | "1" (Tasto X) per PS5 su Windows
+                    if ((btnName.equals("A") || btnName.equals("Cross") || btnName.equals("1")) && comp.getPollData() > 0.5f) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
     
     // --- METODO PER IL TASTO PAUSA ---
     public boolean isPauseButtonPressed(int playerNumber) {
-        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        
+    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         if (gamepad != null) {
-            Component startBtn = gamepad.getComponent(Component.Identifier.Button.START);
-            Component selectBtn = gamepad.getComponent(Component.Identifier.Button.SELECT);
-            Component btn7 = gamepad.getComponent(Component.Identifier.Button._7);
-            Component btn8 = gamepad.getComponent(Component.Identifier.Button._8);
-            Component btn9 = gamepad.getComponent(Component.Identifier.Button._9);
-            
-            if (startBtn != null && startBtn.getPollData() > 0.5f) return true;
-            if (selectBtn != null && selectBtn.getPollData() > 0.5f) return true;
-            if (btn7 != null && btn7.getPollData() > 0.5f) return true;
-            if (btn8 != null && btn8.getPollData() > 0.5f) return true;
-            if (btn9 != null && btn9.getPollData() > 0.5f) return true;
+            for (Component comp : gamepad.getComponents()) {
+                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
+                    String btnName = comp.getIdentifier().getName();
+                    // START/SELECT generici | "8" (Share) o "9" (Options) per PS5 su Windows
+                    if ((btnName.equals("START") || btnName.equals("SELECT") || btnName.equals("Options") || 
+                         btnName.equals("8") || btnName.equals("9")) && comp.getPollData() > 0.5f) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
@@ -121,14 +134,14 @@ public class InputManager {
     // --- METODI PER AZIONI DI COMBATTIMENTO ---
     
     public boolean isPunchButtonPressed(int playerNumber) {
-        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
+    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         if (gamepad != null) {
             for (Component comp : gamepad.getComponents()) {
-                // IL FILTRO CRUCIALE: Se non è un bottone, lo ignoriamo! 
-                // Questo impedisce alla levetta X di far partire i pugni
                 if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     String btnName = comp.getIdentifier().getName(); 
-                    if ((btnName.equals("X") || btnName.equals("Square") || btnName.equals("2")) && comp.getPollData() > 0.5f) {
+                    // "X", "Y", "Square", "Triangle" per Linux/Xbox | "0" (Quadrato) o "3" (Triangolo) per PS5 su Windows
+                    if ((btnName.equals("X") || btnName.equals("Square") || 
+                         btnName.equals("0")) && comp.getPollData() > 0.5f) {
                         return true;
                     }
                 }
@@ -138,13 +151,13 @@ public class InputManager {
     }
 
     public boolean isDefendButtonPressed(int playerNumber) {
-        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
+    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
         if (gamepad != null) {
             for (Component comp : gamepad.getComponents()) {
-                // IL FILTRO CRUCIALE: Solo bottoni!
                 if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     String btnName = comp.getIdentifier().getName();
-                    if ((btnName.equals("B") || btnName.equals("Circle") || btnName.equals("1")) && comp.getPollData() > 0.5f) {
+                    // "B", "Circle" per Linux/Xbox | "2" (Cerchio) per PS5 su Windows
+                    if ((btnName.equals("B") || btnName.equals("Circle") || btnName.equals("2")) && comp.getPollData() > 0.5f) {
                         return true;
                     }
                 }

@@ -91,7 +91,7 @@ public class PlayerRenderer {
 
         // 3. Gestione visiva Pugno
         if (player.isPunching()) {
-        	System.out.println("RENDERER: Sto disegnando il pugno");
+        	//System.out.println("RENDERER: Sto disegnando il pugno");
             punchVisual.setVisible(true);
             punchVisual.toFront();
             
