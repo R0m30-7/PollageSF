@@ -78,8 +78,10 @@ public class Player {
         
         if (DIR == PlayerState.LEFT) {
             newX -= SPEED;
+            isFacingRight = false;
         } else if (DIR == PlayerState.RIGHT) {
             newX += SPEED;
+            isFacingRight = true;
         }
         
         position = new Point2D(newX, position.getY());
