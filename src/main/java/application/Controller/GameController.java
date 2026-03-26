@@ -3,6 +3,9 @@
  */
 package application.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import application.Model.GameModel;
 import application.Scenes.PlayScene;
 import application.Utils.GameConfig;
@@ -14,7 +17,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
 
 public class GameController {
@@ -34,6 +39,12 @@ public class GameController {
     private VBox pauseMenu;
     private  boolean wasP1Pause = false;
     private boolean wasP2Pause = false;
+    
+    // Variabili per la navigazione dei menu tramite controller
+    private List<Button> pauseButtons = new ArrayList<>();
+    private int currentPauseIndex = 0;
+    private long lastMenuInputTime = 0; // Serve per non scorrere i bottoni a 200 all'ora!
+    private boolean wasConfirmPressed = false;
     
     private AnimationTimer gameLoop;
     
@@ -190,6 +201,36 @@ public class GameController {
                         // Questo evita che, togliendo la pausa, il gioco cerchi di "recuperare"
                         // tutti i secondi persi sparando i giocatori nello spazio!
                         physicsAccumulator = 0; 
+                        
+                        // ==========================================
+                        //  NAVIGAZIONE MENU DI PAUSA CON CONTROLLER
+                        // ==========================================
+                        long currentTimeMs = System.currentTimeMillis();
+                        double yInput = inputManager.getLeftStickY(1); // Usiamo il P1 per scorrere
+                        
+                        // Il delay (200ms) serve per permettere all'utente di scorrere un bottone alla volta
+                        if (currentTimeMs - lastMenuInputTime > 200) {
+                            if (yInput < -0.5) { // Levetta verso l'ALTO
+                                currentPauseIndex--;
+                                if (currentPauseIndex < 0) currentPauseIndex = pauseButtons.size() - 1; // Ritorna all'ultimo
+                                updatePauseMenuSelection();
+                                lastMenuInputTime = currentTimeMs;
+                            } else if (yInput > 0.5) { // Levetta verso il BASSO
+                                currentPauseIndex++;
+                                if (currentPauseIndex >= pauseButtons.size()) currentPauseIndex = 0; // Ritorna al primo
+                                updatePauseMenuSelection();
+                                lastMenuInputTime = currentTimeMs;
+                            }
+                        }
+                        
+                        // Selezione con il tasto del Salto (X / A)
+                        boolean isConfirm = inputManager.isJumpButtonPressed(1);
+                        if (isConfirm && !wasConfirmPressed) {
+                            // .fire() simula esattamente il click del mouse su quel bottone!
+                            pauseButtons.get(currentPauseIndex).fire();
+                        }
+                        wasConfirmPressed = isConfirm;
+                        
                     } else {
                         // GIOCO ATTIVO! Facciamo muovere i giocatori.
                         physicsAccumulator += frameTime;
@@ -297,8 +338,35 @@ public class GameController {
         Button quitBtn = new Button("Esci dal Gioco");
         quitBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
         quitBtn.setOnAction(e -> System.exit(0));
+        
+        // SVUOTIAMO E RIEMPIAMO LA LISTA (Per la logica del controller)
+        pauseButtons.clear();
+        pauseButtons.add(resumeBtn);
+        pauseButtons.add(backToMenuBtn);
+        pauseButtons.add(quitBtn);
+        
+        // Applichiamo la grafica di base prima di mostrare a schermo
+        updatePauseMenuSelection();
 
         pauseMenu.getChildren().addAll(title, resumeBtn, backToMenuBtn, quitBtn);
+    }
+    
+    // --- AGGIORNAMENTO GRAFICO DEL MENU DI PAUSA ---
+    private void updatePauseMenuSelection() {
+        for (int i = 0; i < pauseButtons.size(); i++) {
+            Button btn = pauseButtons.get(i);
+            if (i == currentPauseIndex) {
+                // Bottone Selezionato: Lo ingrandiamo un po' e gli diamo un'ombra luminosa gialla!
+                btn.setScaleX(1.1);
+                btn.setScaleY(1.1);
+                btn.setEffect(new DropShadow(20, Color.YELLOW));
+            } else {
+                // Bottone NON Selezionato: Torna normale
+                btn.setScaleX(1.0);
+                btn.setScaleY(1.0);
+                btn.setEffect(null);
+            }
+        }
     }
 
     // --- ATTIVA / DISATTIVA LA PAUSA E LA SFOCATURA ---
@@ -306,11 +374,18 @@ public class GameController {
         isPaused = !isPaused;
         
         if (isPaused) {
+            // Quando apri la pausa, l'indice torna sempre al primo bottone ("Riprendi")
+            currentPauseIndex = 0;
+            updatePauseMenuSelection();
+            
+            // Serve per evitare che se metti in pausa saltando, il menu clicchi subito il primo bottone!
+            wasConfirmPressed = inputManager.isJumpButtonPressed(1);
+            
             pauseMenu.setVisible(true);
-            view.getRoot().setEffect(new GaussianBlur(25)); // Sfoca l'arena
+            view.getRoot().setEffect(new GaussianBlur(25)); 
         } else {
             pauseMenu.setVisible(false);
-            view.getRoot().setEffect(null); // Rimuove la sfocatura
+            view.getRoot().setEffect(null); 
         }
     }
 }
