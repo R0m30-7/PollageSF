@@ -54,12 +54,12 @@ public class GameController {
     public static class MapData {
         public String displayName;
         public String imagePath;
-        public double groundLevel;
+        public double groundLevelRatio;
         
-        public MapData(String displayName, String imagePath, double groundLevel) {
+        public MapData(String displayName, String imagePath, double groundLevelRatio) {
             this.displayName = displayName;
             this.imagePath = imagePath;
-            this.groundLevel = groundLevel;
+            this.groundLevelRatio = groundLevelRatio;
         }
     }
     
@@ -85,16 +85,16 @@ public class GameController {
         this.inputManager = InputManager.getInstance();
         
         // Caricamento delle mappe in memoria
-        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 100));
-        availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 100));
-        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 150));
-        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 200));
-        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 310));
-        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 100));
-        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 125));
-        availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 100));
-        availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 100));
-        availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 100));
+        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 0.9));
+        availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 0.9));
+        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 0.9));
+        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 0.9));
+        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 0.9));
+        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 0.9));
+        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 0.9));
+        availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 0.9));
+        availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 0.9));
+        availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 0.9));
     }
 
     public void startGame() {
@@ -541,8 +541,8 @@ public class GameController {
         // del mondo (muri invisibili) in base all'immagine appena caricata!
         model.updateWindowSize(scene.getWidth(), scene.getHeight(), view.getBgWidth());
         
-     // --- DICIAMO AL MOTORE FISICO DOV'È IL PAVIMENTO! ---
-        model.setGroundLevel(selectedMap.groundLevel);
+        // --- Informiamo il motore fisico della presenza del pavimento ---
+        model.setGroundLevelRatio(selectedMap.groundLevelRatio);
     }
     
     // --- MENU DI PAUSA IN GIOCO ---

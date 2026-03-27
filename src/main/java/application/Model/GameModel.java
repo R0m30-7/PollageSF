@@ -29,7 +29,8 @@ public class GameModel {
     
     // Definizione della posizione del pavimento
     private double GROUND_LEVEL;
-    private double currentGroundLevel = currentWindowHeight - 100;
+    private double currentGroundRatio = 0.9;
+    private double currentGroundLevel;
     
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
@@ -232,11 +233,11 @@ public class GameModel {
         this.currentWindowWidth = newWidth;
         this.currentWindowHeight = newHeight;
         
+        // Ricalcola del pavimento in tempo reale
+        this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
+        
         // Il mondo di gioco si allarga e restringe in base allo zoom dello sfondo
         this.WORLD_WIDTH = newWorldWidth;
-
-        // Il pavimento è sempre relativo all'altezza della finestra
-        this.GROUND_LEVEL = newHeight - 100.0;
 
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
         // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su!
@@ -250,7 +251,9 @@ public class GameModel {
         }
     }
     
-    public void setGroundLevel(double newGroundLevel) {
-    	this.currentGroundLevel = this.currentWindowHeight - newGroundLevel;
+    public void setGroundLevelRatio(double ratio) {
+    	this.currentGroundRatio = ratio;
+        // Calcola subito il pavimento in pixel moltiplicando l'altezza per la percentuale
+        this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
     }
 }
