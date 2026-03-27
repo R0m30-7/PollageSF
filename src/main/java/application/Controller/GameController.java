@@ -83,15 +83,15 @@ public class GameController {
         this.view = new GameView();
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
         this.inputManager = InputManager.getInstance();
-        
+
         // Caricamento delle mappe in memoria
-        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 0.9));
+        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 0.83));
         availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 0.9));
-        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 0.9));
-        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 0.9));
-        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 0.9));
-        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 0.9));
-        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 0.9));
+        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 0.85));
+        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 0.815));
+        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 0.72));
+        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 0.77));
+        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 0.88));
         availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 0.9));
         availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 0.9));
         availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 0.9));
