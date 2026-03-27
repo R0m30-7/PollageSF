@@ -1,7 +1,12 @@
 /*
  * MAPPATURA DEI TASTI DEI CONTROLLER
  * WINDOWS
- * DualShock (Ps5): quadrato=0, x=1, o=2, triangolo=3, L1=4, R1=5, L2=6, R2=7, Share=8, Options=9, L3=10, R3=11, PS=12, trackpad=13
+ * DualShock (Ps5): quadrato=0, x=1, o=2, triangolo=3, L1=4, R1=5,
+ * L2=6, R2=7, Share=8, Options=9, L3=10, R3=11, PS=12, trackpad=13
+ * 
+ * LINUX
+ * DualShock: quad=Y, x=A, o=B, trian=X, L1=Left Thumb, R1=Right Thumb, L2=Left Thumb 2,
+ * R2=Right Thumb 2, Share=Select, Options=Start, L3=Left Thumb 3, R3=Right Thumb 3, PS=Mode
  */
 
 package application.Controller;
@@ -47,7 +52,7 @@ public class InputManager {
                     if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     	if(comp.getPollData() > 0.5f) {
                     		
-                    		//System.out.println("TASTO RILEVATO: " + comp.getIdentifier().getName());
+                    		System.out.println("TASTO RILEVATO: " + comp.getIdentifier().getName());
                     		
                     		isButtonPressed = true;
                     		break;
@@ -104,7 +109,7 @@ public class InputManager {
                 if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     String btnName = comp.getIdentifier().getName();
                     // "A" o "Cross" per Linux/Xbox | "1" (Tasto X) per PS5 su Windows
-                    if ((btnName.equals("A") || btnName.equals("Cross") || btnName.equals("1")) && comp.getPollData() > 0.5f) {
+                    if ((btnName.equals("A") || btnName.equals("1")) && comp.getPollData() > 0.5f) {
                         return true;
                     }
                 }
@@ -121,8 +126,7 @@ public class InputManager {
                 if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     String btnName = comp.getIdentifier().getName();
                     // START/SELECT generici | "8" (Share) o "9" (Options) per PS5 su Windows
-                    if ((btnName.equals("START") || btnName.equals("SELECT") || btnName.equals("Options") || 
-                         btnName.equals("8") || btnName.equals("9")) && comp.getPollData() > 0.5f) {
+                    if ((btnName.equals("Start") || btnName.equals("9")) && comp.getPollData() > 0.5f) {
                         return true;
                     }
                 }
@@ -140,8 +144,7 @@ public class InputManager {
                 if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     String btnName = comp.getIdentifier().getName(); 
                     // "X", "Y", "Square", "Triangle" per Linux/Xbox | "0" (Quadrato) o "3" (Triangolo) per PS5 su Windows
-                    if ((btnName.equals("X") || btnName.equals("Square") || 
-                         btnName.equals("0")) && comp.getPollData() > 0.5f) {
+                    if ((btnName.equals("Y") || btnName.equals("0")) && comp.getPollData() > 0.5f) {
                         return true;
                     }
                 }
@@ -157,7 +160,7 @@ public class InputManager {
                 if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     String btnName = comp.getIdentifier().getName();
                     // "B", "Circle" per Linux/Xbox | "2" (Cerchio) per PS5 su Windows
-                    if ((btnName.equals("B") || btnName.equals("Circle") || btnName.equals("2")) && comp.getPollData() > 0.5f) {
+                    if ((btnName.equals("B") || btnName.equals("2")) && comp.getPollData() > 0.5f) {
                         return true;
                     }
                 }
