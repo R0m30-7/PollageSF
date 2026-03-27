@@ -21,20 +21,49 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.TilePane;
+import javafx.scene.control.ScrollPane;
 
 public class GameController {
     private GameModel model;
     private GameView view;
     private InputManager inputManager;
     private Stage stage;
+    private Scene scene;
     
-    // Variabili per la gestione del menu in gioco (quello che dice di connettere i controller)
+    // --- Stati di avvio del gioco ---
     private boolean waitingForControllers = true;	// Finchè è true il gioco rimane in pausa
+    private boolean waitingForMapSelection = false;
+    
+    // --- Menu connessione ---
     private VBox connectionMenu;
     private Label p1Label;
     private Label p2Label;
     
-    // Variabili per la pausa
+    // --- Scelta della mappa ---
+    private VBox mapSelectionMenu;
+    private TilePane mapsContainer; // Contenitore orizzontale per le mappe
+    private ScrollPane mapScrollPane;	// Telecamera scorrevole per mostrare tutte le mappe
+    private List<VBox> mapNodes = new ArrayList<>(); // Lista dei quadretti visivi
+    private int currentMapIndex = 0;
+    private List<MapData> availableMaps = new ArrayList<>();
+    
+    // Struttura dati per le mappe
+    public static class MapData {
+        public String displayName;
+        public String imagePath;
+        public double groundLevel;
+        
+        public MapData(String displayName, String imagePath, double groundLevel) {
+            this.displayName = displayName;
+            this.imagePath = imagePath;
+            this.groundLevel = groundLevel;
+        }
+    }
+    
+    // --- Menu pausa ---
     private boolean isPaused = false;
     private VBox pauseMenu;
     private  boolean wasP1Pause = false;
@@ -47,7 +76,6 @@ public class GameController {
     private boolean wasConfirmPressed = false;
     
     private AnimationTimer gameLoop;
-    
     private Label fpsLabel;
 
     public GameController(Stage stage) {
@@ -55,6 +83,18 @@ public class GameController {
         this.view = new GameView();
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
         this.inputManager = InputManager.getInstance();
+        
+        // Caricamento delle mappe in memoria
+        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 100));
+        availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 100));
+        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 100));
+        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 200));
+        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 310));
+        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 100));
+        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 100));
+        availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 100));
+        availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 100));
+        availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 100));
     }
 
     public void startGame() {
@@ -68,6 +108,10 @@ public class GameController {
     	// Creazione del menu da aggiungere sopra al gioco
     	createConnectionMenu();
     	mainRoot.getChildren().add(connectionMenu);
+    	
+    	// Creiamo e aggiungiamo il menu delle mappe (nascosto)
+    	createMapSelectionMenu();
+    	mainRoot.getChildren().add(mapSelectionMenu);
     	
     	// AGGIUNGIAMO ANCHE IL MENU DI PAUSA AL PANINO (Nascosto)
         createPauseMenu();
@@ -86,7 +130,10 @@ public class GameController {
     	// Passiamo a PlayScene la root con i livelli
         PlayScene playScene = new PlayScene();
         // Chiediamo a PlayScene di creare la scena passandole il root della nostra View
-        Scene scene = playScene.getScene(mainRoot);
+        scene = playScene.getScene(mainRoot);
+        
+        // Diciamo allo ScrollPane di essere sempre alto esattamente il 65% (0.65) dell'altezza della finestra!
+        mapScrollPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.65));
         
         // --- ASCOLTATORI DI RIDIMENSIONAMENTO ---
         // Se l'utente allarga o stringe la finestra...
@@ -178,6 +225,56 @@ public class GameController {
                     
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
+                } else if (waitingForMapSelection) {
+                    inputManager.update();
+                    
+                    long currentTimeMs = System.currentTimeMillis();
+                    double xInput = inputManager.getLeftStickX(1); 
+                    double yInput = inputManager.getLeftStickY(1); // Leggiamo anche l'asse Y
+                    
+                    if (currentTimeMs - lastMenuInputTime > 250) { 
+                        
+                        // Calcoliamo quante colonne ci sono fisicamente a schermo in questo momento
+                        // (300 di larghezza immagine + 40 di gap = 340)
+                        int cols = Math.max(1, (int) (mapsContainer.getWidth() / 340));
+
+                        if (xInput < -0.5) { // SINISTRA
+                            currentMapIndex--;
+                            if (currentMapIndex < 0) currentMapIndex = availableMaps.size() - 1;
+                            updateMapSelectionUI(); 
+                            lastMenuInputTime = currentTimeMs;
+                            
+                        } else if (xInput > 0.5) { // DESTRA
+                            currentMapIndex++;
+                            if (currentMapIndex >= availableMaps.size()) currentMapIndex = 0;
+                            updateMapSelectionUI(); 
+                            lastMenuInputTime = currentTimeMs;
+                            
+                        } else if (yInput < -0.5) { // SU (Salta alla riga sopra)
+                            if (currentMapIndex - cols >= 0) {
+                                currentMapIndex -= cols;
+                                updateMapSelectionUI();
+                                lastMenuInputTime = currentTimeMs;
+                            }
+                            
+                        } else if (yInput > 0.5) { // GIÙ (Salta alla riga sotto)
+                            if (currentMapIndex + cols < availableMaps.size()) {
+                                currentMapIndex += cols;
+                                updateMapSelectionUI();
+                                lastMenuInputTime = currentTimeMs;
+                            }
+                        }
+                    }
+                    
+                    boolean isConfirm = inputManager.isJumpButtonPressed(1);
+                    if (isConfirm && !wasConfirmPressed) {
+                        confirmMapSelection(); 
+                    }
+                    wasConfirmPressed = isConfirm;
+                    
+                    physicsAccumulator = 0;
+                    renderAccumulator = 0;
+                    
                 } else {
                 	// --- Modalità gioco attivo ---
                 	// --- LETTURA TASTO PAUSA ---
@@ -241,7 +338,7 @@ public class GameController {
                         }
                     }
 
-                    // --- 3. RENDER GRAFICO (Gira sempre, sia in gioco che in pausa) ---
+                    // --- RENDER GRAFICO (Gira sempre, sia in gioco che in pausa) ---
                     renderAccumulator += frameTime;
                     double targetFrameTime = 1_000_000_000.0 / application.Utils.Settings.getInstance().getTargetFps();
 
@@ -306,9 +403,134 @@ public class GameController {
     
     // --- CHIUSURA DEL MENU CHE CHIEDE DI CONNETTERE I CONTROLLER ---
     private void closeConnectionMenu() {
-        waitingForControllers = false;		// Sblocca il Game Loop
-        connectionMenu.setVisible(false);	// Nasconde il menu
-        view.getRoot().setEffect(null);		// Rimuove la sfocatura (blur) e mostra il gioco limpido!
+        waitingForControllers = false;		
+        connectionMenu.setVisible(false);	
+        
+        // --- IL FIX ANTI-SKIP ---
+        // Diciamo al gioco di memorizzare che stiamo già premendo il tasto, 
+        // così aspetterà che lo rilasciamo prima di cliccare la mappa!
+        wasConfirmPressed = inputManager.isJumpButtonPressed(1);
+        
+        // Passiamo allo stato Scelta Mappa
+        waitingForMapSelection = true;
+        mapSelectionMenu.setVisible(true);
+        currentMapIndex = 0;
+        updateMapSelectionUI();
+    }
+    
+    // --- Costruzione del menu per la scelta della mappa ---
+    private void createMapSelectionMenu() {
+        mapSelectionMenu = new VBox(40);
+        mapSelectionMenu.setAlignment(Pos.CENTER);
+        mapSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); 
+        mapSelectionMenu.setVisible(false);
+
+        Label title = new Label("SELEZIONA L'ARENA");
+        title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        // --- LA GRIGLIA ---
+        mapsContainer = new TilePane();
+        mapsContainer.setAlignment(Pos.CENTER);
+        mapsContainer.setHgap(40); 
+        mapsContainer.setVgap(40); 
+        mapsContainer.setPrefColumns(3); 
+        mapsContainer.setMaxWidth(1200); 
+        
+        mapNodes.clear(); 
+
+        for (MapData map : availableMaps) {
+            VBox singleMapBox = new VBox(15); 
+            singleMapBox.setAlignment(Pos.CENTER);
+
+            ImageView thumb = new ImageView();
+            thumb.setFitWidth(300); 
+            thumb.setFitHeight(170);
+            thumb.setPreserveRatio(false); 
+            
+            try {
+                Image img = new Image(getClass().getResourceAsStream(map.imagePath));
+                if (!img.isError()) thumb.setImage(img);
+            } catch (Exception e) {
+                System.out.println("Nessuna foto trovata: " + map.imagePath);
+            }
+
+            Label nameLabel = new Label(map.displayName);
+            nameLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+            singleMapBox.getChildren().addAll(thumb, nameLabel);
+            
+            mapNodes.add(singleMapBox); 
+            mapsContainer.getChildren().add(singleMapBox); 
+        }
+        
+        // Creiamo un contenitore elastico che centra automaticamente la griglia al suo interno
+        StackPane gridCenterer = new StackPane(mapsContainer);
+        gridCenterer.setAlignment(Pos.CENTER);
+
+        // --- IL PANNELLO SCORREVOLE (SCROLLPANE) ---
+        mapScrollPane = new ScrollPane(gridCenterer);
+        mapScrollPane.setFitToWidth(true); // Fondamentale per far funzionare il TilePane
+        mapScrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;"); // Sfondo invisibile
+        mapScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Nascondiamo la barra orizzontale
+        mapScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Nascondiamo la barra verticale
+
+        Label instructions = new Label("⬅ ➡ Scorri | ⬆ ⬇ Salta Riga | X Conferma");
+        instructions.setStyle("-fx-font-size: 20px; -fx-text-fill: lightgray; -fx-text-alignment: center;");
+
+        // AGGIUNGIAMO LO SCROLLPANE AL POSTO DEL MAPSCONTAINER
+        mapSelectionMenu.getChildren().addAll(title, mapScrollPane, instructions);
+    }
+    
+    private void updateMapSelectionUI() {
+        for (int i = 0; i < mapNodes.size(); i++) {
+            VBox node = mapNodes.get(i);
+            Label nameLabel = (Label) node.getChildren().get(1); 
+            
+            if (i == currentMapIndex) {
+                node.setScaleX(1.15);
+                node.setScaleY(1.15);
+                node.setEffect(new DropShadow(30, Color.YELLOW));
+                nameLabel.setStyle("-fx-font-size: 26px; -fx-text-fill: yellow; -fx-font-weight: bold;");
+                
+                // --- INSEGUIMENTO AUTOMATICO DELLA TELECAMERA ---
+                if (mapScrollPane != null) {
+                    double contentHeight = mapsContainer.getBoundsInLocal().getHeight();
+                    double viewportHeight = mapScrollPane.getViewportBounds().getHeight();
+                    
+                    if (contentHeight > viewportHeight) {
+                        // Calcoliamo dove si trova il centro della mappa selezionata rispetto all'altezza totale
+                        double nodeY = node.getBoundsInParent().getCenterY();
+                        double targetScroll = (nodeY - (viewportHeight / 2)) / (contentHeight - viewportHeight);
+                        
+                        // Assicuriamoci che lo scroll non vada fuori dai limiti (tra 0.0 e 1.0)
+                        mapScrollPane.setVvalue(Math.max(0.0, Math.min(1.0, targetScroll)));
+                    }
+                }
+                
+            } else {
+                node.setScaleX(1.0);
+                node.setScaleY(1.0);
+                node.setEffect(null);
+                nameLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+            }
+        }
+    }
+    
+    private void confirmMapSelection() {
+        waitingForMapSelection = false;
+        mapSelectionMenu.setVisible(false);
+        view.getRoot().setEffect(null); // Rimuoviamo la sfocatura
+
+        // 1. Diciamo alla View di caricare e disegnare lo sfondo scelto
+        MapData selectedMap = availableMaps.get(currentMapIndex);
+        view.changeBackground(selectedMap.imagePath, scene.getWidth(), scene.getHeight());
+        
+        // 2. FONDAMENTALE: Diciamo al Motore Fisico di aggiornare la larghezza
+        // del mondo (muri invisibili) in base all'immagine appena caricata!
+        model.updateWindowSize(scene.getWidth(), scene.getHeight(), view.getBgWidth());
+        
+     // --- DICIAMO AL MOTORE FISICO DOV'È IL PAVIMENTO! ---
+        model.setGroundLevel(selectedMap.groundLevel);
     }
     
     // --- MENU DI PAUSA IN GIOCO ---

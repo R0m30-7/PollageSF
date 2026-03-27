@@ -26,45 +26,28 @@ public class GameView {
     public GameView() {
         this.root = new Pane();
         
-        // --- CARICAMENTO DELL'IMMAGINE DI SFONDO ---
-        try {
-            Image bgImage = new Image(getClass().getResourceAsStream("/Backgrounds/culoLand.jpeg"));
-            this.backgroundView = new ImageView(bgImage);
-            
-            this.originalBgWidth = bgImage.getWidth();
-            this.originalBgHeight = bgImage.getHeight();
-        } catch (Exception e) {
-            System.out.println("Sfondo non trovato, uso valori di emergenza.");
-            this.backgroundView = new ImageView(); 
-            this.bgWidth = 1600; 
-            this.bgHeight = 720;
-        }
-        
-        // Dice all'ImageView di non deformare le proporzioni dell'immagine
+        // Creiamo l'ImageView vuoto, l'immagine verrà caricata dal menu in seguito
+        this.backgroundView = new ImageView();
         this.backgroundView.setPreserveRatio(true);
-        
-        // --- CONTENITORE E TAGLIO ---
-        // Mettiamo l'immagine dentro un contenitore separato
         this.backgroundContainer = new Pane(this.backgroundView);
         
-        // Creiamo la maschera iniziale (es. 720 di altezza di default)
+        // Valori di emergenza/default finché non scegliamo la mappa
+        this.originalBgWidth = 1920;
+        this.originalBgHeight = 1080;
+        this.bgWidth = 1920;
+        this.bgHeight = 1080;
+        
         this.clip = new Rectangle(this.originalBgWidth, 720);
-        this.backgroundContainer.setClip(this.clip); // Applichiamo il taglio!
+        this.backgroundContainer.setClip(this.clip);
         
-        // Allineamento iniziale in basso a sinistra
-        double offsetY = 720 - this.originalBgHeight;
-        this.backgroundView.setY(offsetY);
+        // Offset temporaneo
+        this.backgroundView.setY(0);
         
-        // --- 3. GIOCATORI ---
+        // --- GIOCATORI ---
         this.rendererP1 = new PlayerRenderer("1");
         this.rendererP2 = new PlayerRenderer("2");
         
-        // Aggiungiamo il contenitore (non l'immagine diretta!) e i lottatori
         this.root.getChildren().addAll(this.backgroundContainer, rendererP1.getNode(), rendererP2.getNode());
-        
-        // Inizializzazione dei valori fittizi per l'avvio
-        this.bgWidth = this.originalBgWidth;
-        this.bgHeight = this.originalBgHeight;
     }
 
     public Pane getRoot() { return root; }
@@ -130,6 +113,25 @@ public class GameView {
         // Aggiorniamo il contenitore
         if (this.backgroundContainer != null) {
             this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
+        }
+    }
+    
+    // --- METODO PER CAMBIARE SFONDO DINAMICAMENTE ---
+    public void changeBackground(String imagePath, double windowWidth, double windowHeight) {
+        try {
+            Image bgImage = new Image(getClass().getResourceAsStream(imagePath));
+            if (bgImage.isError()) {
+                System.out.println("Immagine non trovata: " + imagePath);
+                return;
+            }
+            this.backgroundView.setImage(bgImage);
+            this.originalBgWidth = bgImage.getWidth();
+            this.originalBgHeight = bgImage.getHeight();
+            
+            // Ricalcoliamo lo zoom e la maschera con le nuove dimensioni!
+            updateWindowSize(windowWidth, windowHeight);
+        } catch (Exception e) {
+            System.out.println("Errore nel cambio sfondo: " + e.getMessage());
         }
     }
 }

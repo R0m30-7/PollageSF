@@ -9,9 +9,6 @@ public class GameModel {
     private Player player1;
     private Player player2;
     
-    // Definizione della posizione del pavimento
-    private double GROUND_LEVEL;
-    
     // L'arena è larga il doppio dello schermo
     private double WORLD_WIDTH = application.Utils.Settings.getInstance().getWindowWidth() * 2;
     
@@ -29,6 +26,10 @@ public class GameModel {
     // Serve per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
     private double currentWindowHeight = 1080;
+    
+    // Definizione della posizione del pavimento
+    private double GROUND_LEVEL;
+    private double currentGroundLevel = currentWindowHeight - 100;
     
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
@@ -67,8 +68,8 @@ public class GameModel {
         boolean isP2PunchHeld = input.isPunchButtonPressed(2);
 
         // 2. Applichiamo la fisica passando lo stato del tasto!
-        player1.applyPhysics(GROUND_LEVEL, isP1JumpHeld);
-        player2.applyPhysics(GROUND_LEVEL, isP2JumpHeld);
+        player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
+        player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
         
         // 3. Movimento (con LIMITI DELL'ARENA)
         double p1X = input.getLeftStickX(1);
@@ -247,5 +248,9 @@ public class GameModel {
             player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.GROUND_LEVEL - GameConfig.pHeight));
             player2.getBoundingBox().updatePosition(player2.getPosition());
         }
+    }
+    
+    public void setGroundLevel(double newGroundLevel) {
+    	this.currentGroundLevel = this.currentWindowHeight - newGroundLevel;
     }
 }
