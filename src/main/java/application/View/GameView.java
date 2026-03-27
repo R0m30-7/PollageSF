@@ -31,7 +31,7 @@ public class GameView {
         
         // Creiamo l'ImageView vuoto, l'immagine verrà caricata dal menu in seguito
         this.backgroundView = new ImageView();
-        this.backgroundView.setPreserveRatio(true);
+        this.backgroundView.setPreserveRatio(false);
         this.backgroundContainer = new Pane(this.backgroundView);
         
         // Valori di emergenza/default finché non scegliamo la mappa
@@ -98,7 +98,7 @@ public class GameView {
         double scale = Math.max(scaleX, scaleY);
         
         // Non rimpicciolire mai l'immagine sotto la sua misura originale
-        scale = Math.max(1.0, scale);
+        //scale = Math.max(1.0, scale);
 
         // Calcoliamo le nuove dimensioni "Zoommate" dell'arena
         this.bgWidth = this.originalBgWidth * scale;
@@ -148,5 +148,12 @@ public class GameView {
         } catch (Exception e) {
             System.out.println("Errore nel cambio sfondo: " + e.getMessage());
         }
+    }
+    
+    // --- Mostra o nascondi gli elementi di gioco ---
+    public void setGameElementsVisible(boolean visible) {
+    	if (rendererP1 != null) rendererP1.getNode().setVisible(visible);
+        if (rendererP2 != null) rendererP2.getNode().setVisible(visible);
+        if (hud != null) hud.getNode().setVisible(visible);
     }
 }

@@ -103,7 +103,6 @@ public class GameController {
     	
     	// Aggiunta del gioco in sfondo e lo sfuochiamo
     	mainRoot.getChildren().add(view.getRoot());
-    	view.getRoot().setEffect(new GaussianBlur(25));
     	
     	// Creazione del menu da aggiungere sopra al gioco
     	createConnectionMenu();
@@ -164,6 +163,15 @@ public class GameController {
         stage.setTitle(GameConfig.GAME_TITLE_STRING);
         stage.setScene(scene);
         stage.show();
+        
+        // --- Schermata iniziale pulita ---
+        // Nascondiamo HUD e Giocatori:
+        view.setGameElementsVisible(false);
+        
+        double startW = application.Utils.Settings.getInstance().getWindowWidth();
+        double startH = application.Utils.Settings.getInstance().getWindowHeight();
+        // Imposto uno sfondo per la schermata di connessione dei controller
+        view.changeBackground("/Backgrounds/ConnectionMenu.png", startW, startH);
 
         startGameLoop();
     }
@@ -411,7 +419,8 @@ public class GameController {
         waitingForControllers = false;		
         connectionMenu.setVisible(false);	
         
-        // --- IL FIX ANTI-SKIP ---
+        view.getRoot().setEffect(new GaussianBlur(25));
+        
         // Diciamo al gioco di memorizzare che stiamo già premendo il tasto, 
         // così aspetterà che lo rilasciamo prima di cliccare la mappa!
         wasConfirmPressed = inputManager.isJumpButtonPressed(1);
@@ -532,7 +541,10 @@ public class GameController {
     private void confirmMapSelection() {
         waitingForMapSelection = false;
         mapSelectionMenu.setVisible(false);
-        view.getRoot().setEffect(null); // Rimuoviamo la sfocatura
+        view.getRoot().setEffect(null); 
+        
+        // --- Mostriamo HUD e giocatori ---
+        view.setGameElementsVisible(true);
 
         // 1. Diciamo alla View di caricare e disegnare lo sfondo scelto
         MapData selectedMap = availableMaps.get(currentMapIndex);
