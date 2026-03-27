@@ -87,11 +87,11 @@ public class GameController {
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 100));
         availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 100));
-        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 100));
+        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 150));
         availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 200));
         availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 310));
         availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 100));
-        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 100));
+        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 125));
         availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 100));
         availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 100));
         availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 100));
@@ -226,6 +226,7 @@ public class GameController {
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
                 } else if (waitingForMapSelection) {
+                	
                     inputManager.update();
                     
                     long currentTimeMs = System.currentTimeMillis();
@@ -241,19 +242,22 @@ public class GameController {
                         if (xInput < -0.5) { // SINISTRA
                             currentMapIndex--;
                             if (currentMapIndex < 0) currentMapIndex = availableMaps.size() - 1;
-                            updateMapSelectionUI(); 
+                            updateMapSelectionUI();
+                            updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                             lastMenuInputTime = currentTimeMs;
                             
                         } else if (xInput > 0.5) { // DESTRA
                             currentMapIndex++;
                             if (currentMapIndex >= availableMaps.size()) currentMapIndex = 0;
-                            updateMapSelectionUI(); 
+                            updateMapSelectionUI();
+                            updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                             lastMenuInputTime = currentTimeMs;
                             
                         } else if (yInput < -0.5) { // SU (Salta alla riga sopra)
                             if (currentMapIndex - cols >= 0) {
                                 currentMapIndex -= cols;
                                 updateMapSelectionUI();
+                                updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                                 lastMenuInputTime = currentTimeMs;
                             }
                             
@@ -261,6 +265,7 @@ public class GameController {
                             if (currentMapIndex + cols < availableMaps.size()) {
                                 currentMapIndex += cols;
                                 updateMapSelectionUI();
+                                updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                                 lastMenuInputTime = currentTimeMs;
                             }
                         }
@@ -416,6 +421,9 @@ public class GameController {
         mapSelectionMenu.setVisible(true);
         currentMapIndex = 0;
         updateMapSelectionUI();
+        
+        // Mostriamo subito lo sfondo della mappa
+        updateBackgroundPreview();
     }
     
     // --- Costruzione del menu per la scelta della mappa ---
@@ -516,6 +524,11 @@ public class GameController {
         }
     }
     
+    private void updateBackgroundPreview() {
+    	MapData currentMap = availableMaps.get(currentMapIndex);
+    	view.changeBackground(currentMap.imagePath, scene.getWidth(), scene.getHeight());
+    }
+    
     private void confirmMapSelection() {
         waitingForMapSelection = false;
         mapSelectionMenu.setVisible(false);
@@ -523,7 +536,6 @@ public class GameController {
 
         // 1. Diciamo alla View di caricare e disegnare lo sfondo scelto
         MapData selectedMap = availableMaps.get(currentMapIndex);
-        view.changeBackground(selectedMap.imagePath, scene.getWidth(), scene.getHeight());
         
         // 2. FONDAMENTALE: Diciamo al Motore Fisico di aggiornare la larghezza
         // del mondo (muri invisibili) in base all'immagine appena caricata!
