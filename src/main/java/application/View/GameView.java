@@ -23,6 +23,9 @@ public class GameView {
     private double originalBgWidth;
     private double originalBgHeight;
     
+    // HUD
+    private HUDView hud;
+    
     public GameView() {
         this.root = new Pane();
         
@@ -47,7 +50,11 @@ public class GameView {
         this.rendererP1 = new PlayerRenderer("1");
         this.rendererP2 = new PlayerRenderer("2");
         
+        // --- HUD ---
+        this.hud = new HUDView();
+        
         this.root.getChildren().addAll(this.backgroundContainer, rendererP1.getNode(), rendererP2.getNode());
+        this.root.getChildren().add(this.hud.getNode());	// Aggiunta dell'HUD per ultimo
     }
 
     public Pane getRoot() { return root; }
@@ -74,6 +81,9 @@ public class GameView {
     	
     	rendererP2.getNode().setLayoutX(-camX);
     	rendererP2.getNode().setLayoutY(0);
+    	
+    	// Aggiorniamo le barre della vita dei giocatori
+    	this.hud.update(model.getPlayer1(), model.getPlayer2());
     }
 
     // ==========================================
@@ -113,6 +123,11 @@ public class GameView {
         // Aggiorniamo il contenitore
         if (this.backgroundContainer != null) {
             this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
+        }
+        
+        // Aggiorniamo anche l'HUD
+        if(this.hud != null) {
+        	this.hud.updateLayout(newWidth);
         }
     }
     

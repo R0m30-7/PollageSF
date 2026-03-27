@@ -17,7 +17,7 @@ public class Player {
     
     // Variabili per il salto
     private final double GRAVITY = 0.2;
-    private final double JUMP_STRENGTH = -8.0;	// Negativo perché la y aumenta dal basso verso l'alto
+    private final double JUMP_STRENGTH = -11.0;	// Negativo perché la y aumenta dal basso verso l'alto
     
     // L'hurtbox del player
     private Hitbox boundingBox;
