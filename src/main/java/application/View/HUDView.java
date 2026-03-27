@@ -11,6 +11,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.text.TextAlignment;
 
 public class HUDView {
 	private Pane hudRoot;
@@ -70,7 +71,7 @@ public class HUDView {
         
         // ============== GIOCATORE 2 ==============
         // Le coordinate X del P2 verranno impostate dinamicamente in base alla larghezza dello schermo!
-        p2Label = new Text("GIOCATORE 2");
+        p2Label = new Text("Giocatore 2");
         p2Label.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         p2Label.setFill(Color.WHITE);
         p2Label.setEffect(shadow);
@@ -115,6 +116,11 @@ public class HUDView {
         // Calcoliamo dove posizionare le barre del P2 allineandole a destra
         double p2X = screenWidth - SIDE_MARGIN - BAR_WIDTH;
         double p2PowerX = screenWidth - SIDE_MARGIN - (BAR_WIDTH * 0.7);
+        
+        // --- Allineamento Testo P2 tutto a destra ---
+        p2Label.setX(p2X);                           // 1. Lo posizioniamo esattamente sopra l'inizio della barra
+        p2Label.setWrappingWidth(BAR_WIDTH);         // 2. Gli diamo come spazio totale l'intera larghezza della barra (400)
+        p2Label.setTextAlignment(TextAlignment.RIGHT); // 3. Spingiamo il testo tutto a destra dentro questo spazio!
 
         // Allineamento P2
         p2Label.setX(p2X); 

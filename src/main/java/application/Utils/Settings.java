@@ -10,15 +10,15 @@ public class Settings {
     private static Settings instance;
     private static final String FILE_PATH = "config.properties";
 
-    private boolean isFullscreen;
-    private boolean isAudioOn;
-    private int numberOfPlayers;
+    private boolean isFullscreen = false;
+    private boolean isAudioOn = false;
+    private int numberOfPlayers = 1;
     private double windowWidth;
     private double windowHeight;
     
     // Variabili per la gestione degli FPS
-    private int targetFps;
-    private boolean showFps;
+    private int targetFps = 60;
+    private boolean showFps = false;
 
     // 2. Costruttore privato! Si può chiamare solo da dentro questa classe
     private Settings() {
