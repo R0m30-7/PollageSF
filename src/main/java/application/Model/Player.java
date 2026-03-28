@@ -6,6 +6,8 @@ package application.Model;
 
 import application.Utils.GameConfig;
 import javafx.geometry.Point2D;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Player {
 	private Point2D position;
@@ -40,6 +42,11 @@ public class Player {
     private int punchTimer = 0;
     private boolean isDefending = false;
     private boolean hasDealtDamage = false; // Memorizza se il pugno ha già fatto danno
+    
+    // --- Gestione delle animazioni ---
+    protected Map<AnimState, AnimData> animations = new HashMap<>();
+    private AnimState currentAnimState = AnimState.IDLE_RIGHT; // Stato di default
+    public boolean isMoving = false; // Ci servirà per capire se sta camminando
 
     // Costruttore per impostare la posizione iniziale
     public Player(Point2D position) {
@@ -86,6 +93,7 @@ public class Player {
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
     public void moveHorizontal(PlayerState DIR) {
         double newX = position.getX();
+        this.isMoving = true;
         
         if (DIR == PlayerState.LEFT) {
             newX -= speed;
@@ -135,6 +143,24 @@ public class Player {
         position = new Point2D(newX, newY);
         boundingBox.updatePosition(position);
     }
+    
+    // Cervello delle animazioni
+    public void updateAnimationState() {
+        if (isPunching) {
+            currentAnimState = isFacingRight ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+        } else if (isDefending) {
+            currentAnimState = isFacingRight ? AnimState.DEFEND_RIGHT : AnimState.DEFEND_LEFT;
+        } else if (!isGrounded) {
+            currentAnimState = isFacingRight ? AnimState.JUMP_RIGHT : AnimState.JUMP_LEFT;
+        } else if (isMoving) {
+            currentAnimState = isFacingRight ? AnimState.WALK_RIGHT : AnimState.WALK_LEFT;
+        } else {
+            currentAnimState = isFacingRight ? AnimState.IDLE_RIGHT : AnimState.IDLE_LEFT;
+        }
+    }
+    
+    public AnimState getCurrentAnimState() { return currentAnimState; }
+    public AnimData getCurrentAnimData() { return animations.get(currentAnimState); }
     
     public Hitbox getBoundingBox() { return boundingBox; }
     public void setPosition(Point2D newPosition) { position = newPosition; }

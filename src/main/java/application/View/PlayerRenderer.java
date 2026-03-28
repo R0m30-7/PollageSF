@@ -18,16 +18,15 @@ public class PlayerRenderer {
     // --- Variabili per lo Sprite Animato ---
     private ImageView spriteView;
     private Image atlas;
-    private final int COLUMNS = 3;
-    private final int ROWS = 4;
     private double frameWidth;
     private double frameHeight;
+    
+    // Variabile per la State Machine
+    private application.Model.AnimState lastAnimState = null;
     
     // Gestione dell'animazione
     private int currentFrame = 0;
     private long lastFrameTime = 0;
-    private final long FRAME_DELAY = 150_000_000; // 150 millisecondi per frame
-    private double lastPx = 0; // Usata per capire se il personaggio si sta muovendo!
     
     // Forme per le azioni (per ora rimangono i rettangoli)
     private Rectangle punchVisual;
@@ -100,49 +99,43 @@ public class PlayerRenderer {
         // ANIMAZIONE DELLO SPRITE
         // ==========================================
         if (spriteView != null) {
-            long now = System.nanoTime();
-            // Controlliamo se si è spostato fisicamente rispetto al frame precedente
-            boolean isMoving = Math.abs(px - lastPx) > 0.5; 
+            // 1. Chiediamo al giocatore quale "cartuccia" usare in questo momento
+            application.Model.AnimState currentState = player.getCurrentAnimState();
+            application.Model.AnimData currentData = player.getCurrentAnimData();
 
-            // Se è passato abbastanza tempo, facciamo scattare il frame successivo
-            if (now - lastFrameTime > FRAME_DELAY) {
-                if (isMoving) {
-                    currentFrame = (currentFrame + 1) % COLUMNS; // Passa da 0, a 1, a 2 e ricomincia
-                } else {
-                    currentFrame = 0; // Se è fermo, forza il frame 0
+            // Sicurezza: se per qualche motivo mancano i dati, non facciamo nulla
+            if (currentData != null) {
+                
+                // 2. Se ha cambiato animazione (es. da Camminata a Salto), azzeriamo il frame!
+                if (currentState != lastAnimState) {
+                    currentFrame = 0;
+                    lastFrameTime = System.nanoTime();
+                    lastAnimState = currentState;
                 }
-                lastFrameTime = now;
-            }
 
-            int rowIndex = 0;
-            int colIndex = 0;
-
-            if (isMoving) {
-                // È in movimento! Scegliamo la riga in base a dove sta guardando
-                if (player.isFacingRight()) {
-                    rowIndex = 1; // Riga 3 dell'atlas = Cammina a Destra
-                } else {
-                    rowIndex = 2; // Riga 2 dell'atlas = Cammina a Sinistra
+                // 3. Calcolo del tempo per scorrere i frame
+                long now = System.nanoTime();
+                if (now - lastFrameTime > currentData.speedNs) {
+                    if (currentData.loop) {
+                        // Ciclo continuo (es. camminata): 0, 1, 2, 0, 1, 2...
+                        currentFrame = (currentFrame + 1) % currentData.frameCount;
+                    } else {
+                        // Animazione singola (es. pugno): si ferma all'ultimo frame
+                        currentFrame = Math.min(currentFrame + 1, currentData.frameCount - 1);
+                    }
+                    lastFrameTime = now;
                 }
-                colIndex = currentFrame;
-            } else {
-                // È fermo! Mostra la faccia frontale.
-                rowIndex = 0; // Riga 1 dell'atlas
-                colIndex = 0; // Prima colonna
+
+                // 4. Spostiamo il mirino (Viewport) leggendo le coordinate esatte dalla cartuccia!
+                double cropX = currentFrame * frameWidth;
+                double cropY = currentData.row * frameHeight;
+                spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
+
+                // 5. Aggiorniamo la posizione sullo schermo
+                spriteView.setLayoutX(Math.round(px));
+                spriteView.setLayoutY(Math.round(py));
             }
-
-            // Spostiamo il Viewport (il mirino) sul frame che abbiamo appena calcolato
-            double cropX = colIndex * frameWidth;
-            double cropY = rowIndex * frameHeight;
-            spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
-
-            // Aggiorniamo la posizione dello sprite sullo schermo
-            spriteView.setLayoutX(Math.round(px));
-            spriteView.setLayoutY(Math.round(py));
         }
-        
-        // Aggiorniamo l'ultima posizione conosciuta per il calcolo del prossimo frame!
-        lastPx = px;
         
         // ==========================================
         // Mostra hitbox

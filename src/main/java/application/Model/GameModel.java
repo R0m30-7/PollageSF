@@ -132,13 +132,21 @@ public class GameModel {
         	targetCameraX = WORLD_WIDTH - currentWindowWidth; // Blocco al muro destro del mondo
         }
         
-        // LERP (INTERPOLAZIONE LINEARE) - LA MAGIA DELLA MORBIDEZZA!
+        // LERP (INTERPOLAZIONE LINEARE) - Movimento morbido della telecamera
         // Questo valore decide la morbidezza: 
         // 0.01 è lentissima, 0.1 è fluida ma reattiva, 1.0 è istantanea come prima.
         double cameraSpeed = 0.08;
         
         // La telecamera percorre solo una frazione della distanza verso il bersaglio
         cameraX += (targetCameraX - cameraX) * cameraSpeed;
+        
+        // Aggiorna lo stato delle animazioni in base a ciò che è successo in questo frame
+        player1.updateAnimationState();
+        player2.updateAnimationState();
+        
+        // Resetta il movimento: se nel prossimo frame non premono le levette, saranno fermi
+        player1.isMoving = false;
+        player2.isMoving = false;
         
         // ==========================================
         //         3. LIMITI DELLO SCHERMO

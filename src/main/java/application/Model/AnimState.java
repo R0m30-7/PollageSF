@@ -1,0 +1,9 @@
+package application.Model;
+
+public enum AnimState {
+	IDLE_RIGHT, IDLE_LEFT, IDLE_FRONT,
+    WALK_RIGHT, WALK_LEFT,
+    PUNCH_RIGHT, PUNCH_LEFT,
+    DEFEND_RIGHT, DEFEND_LEFT,
+    JUMP_RIGHT, JUMP_LEFT
+}

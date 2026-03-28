@@ -4,5 +4,5 @@
 package application.Model;
 
 public enum PlayerState {
-	UP, DOWN, LEFT, RIGHT
+	LEFT, RIGHT
 }
