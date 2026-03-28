@@ -6,7 +6,6 @@
  */
 package application.Model;
 
-import application.Utils.GameConfig;
 import javafx.geometry.Point2D;
 
 public class Hitbox {
