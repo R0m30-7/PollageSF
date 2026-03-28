@@ -41,18 +41,24 @@ public class PlayerRenderer {
         
         // --- Caricamento dello sprite ---
         try {
-            // Legge tutto dalla classe specifica del player (ad esempio Turnip.java)
-            atlas = new Image(getClass().getResourceAsStream(player.getAtlasPath()));
+            int scale = player.getRenderScale();
+            
+            // 1. Calcoliamo quanto sarà grande l'INTERO atlas una volta ingrandito
+            double targetWidth = player.getSpriteCols() * player.getFrameWidth() * scale;
+            double targetHeight = player.getSpriteRows() * player.getFrameHeight() * scale;
+            
+            // Carichiamo l'immagine dicendo a Java di ingrandirla subito!
+            // I parametri sono: (percorso, larghezza, altezza, mantieniProporzioni, SMOOTH)
+            // Mettendo l'ultimo parametro a FALSE, JavaFX usa il Nearest-Neighbor perfetto in memoria!
+            atlas = new Image(getClass().getResourceAsStream(player.getAtlasPath()), targetWidth, targetHeight, true, false);
             spriteView = new ImageView(atlas);
             
-            frameWidth = player.getFrameWidth();
-            frameHeight = player.getFrameHeight();
+            // Ora i "quadratini" di ritaglio sono direttamente quelli ingranditi
+            frameWidth = player.getFrameWidth() * scale;
+            frameHeight = player.getFrameHeight() * scale;
             
-            int scale = player.getRenderScale();
-
-            // Prendi l'immagine, moltiplicala per lo scale impostato senza alterare i pixel, poi disegnala
-            spriteView.getTransforms().add(new javafx.scene.transform.Scale(scale, scale, 0, 0));
-            spriteView.setSmooth(false);
+            // Impostiamo il viewport
+            spriteView.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
             
         } catch (Exception e) {
             System.out.println("Errore caricamento atlas: " + player.getAtlasPath());
