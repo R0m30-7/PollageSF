@@ -43,13 +43,13 @@ public class PlayerRenderer {
         try {
             int scale = player.getRenderScale();
             
-            // 1. Calcoliamo quanto sarà grande l'INTERO atlas una volta ingrandito
+            // Calcoliamo quanto sarà grande l'INTERO atlas una volta ingrandito
             double targetWidth = player.getSpriteCols() * player.getFrameWidth() * scale;
             double targetHeight = player.getSpriteRows() * player.getFrameHeight() * scale;
             
-            // Carichiamo l'immagine dicendo a Java di ingrandirla subito!
+            // Carichiamo l'immagine dicendo a Java di ingrandirla subito.
             // I parametri sono: (percorso, larghezza, altezza, mantieniProporzioni, SMOOTH)
-            // Mettendo l'ultimo parametro a FALSE, JavaFX usa il Nearest-Neighbor perfetto in memoria!
+            // Mettendo l'ultimo parametro a FALSE, JavaFX usa il Nearest-Neighbor perfetto in memoria
             atlas = new Image(getClass().getResourceAsStream(player.getAtlasPath()), targetWidth, targetHeight, true, false);
             spriteView = new ImageView(atlas);
             
@@ -64,7 +64,7 @@ public class PlayerRenderer {
             System.out.println("Errore caricamento atlas: " + player.getAtlasPath());
         }
 
-        // --- 2. IL PUGNO (Giallo) ---
+        // --- IL PUGNO (Giallo) ---
         punchVisual = new Rectangle(GameConfig.pPunchWidth, GameConfig.pPunchHeight, Color.YELLOW);
         punchVisual.setStroke(Color.ORANGE);
         punchVisual.setVisible(false);
@@ -76,7 +76,7 @@ public class PlayerRenderer {
         hitboxVisual.setStrokeWidth(2);    // Spessore del bordo
         // Per ora la lasciamo 0x0, la aggiorneremo nel render
 
-        // --- 3. LA DIFESA (Azzurro semitrasparente) ---
+        // --- LA DIFESA (Azzurro semitrasparente) ---
         defenseVisual = new Rectangle(GameConfig.pDefenseWidth, GameConfig.pDefenseHeight, Color.LIGHTBLUE);
         defenseVisual.setOpacity(0.6);
         defenseVisual.setStroke(Color.BLUE);

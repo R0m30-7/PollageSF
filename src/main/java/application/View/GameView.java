@@ -46,11 +46,7 @@ public class GameView {
         // Offset temporaneo
         this.backgroundView.setY(0);
         
-        // --- HUD ---
-        this.hud = new HUDView();
-        
         this.root.getChildren().addAll(this.backgroundContainer);
-        this.root.getChildren().add(this.hud.getNode());	// Aggiunta dell'HUD per ultimo
     }
 
     public Pane getRoot() { return root; }
@@ -158,8 +154,12 @@ public class GameView {
         this.rendererP1 = new PlayerRenderer(p1);
         this.rendererP2 = new PlayerRenderer(p2);
         
+        // --- HUD ---
+        this.hud = new HUDView(p1.getMaxHealth(), p2.getMaxHealth());
+        
         // Inseriamo i giocatori nel Pane (dietro l'HUD, quindi agli indici 1 e 2 dopo lo sfondo)
         this.root.getChildren().add(1, rendererP1.getNode());
         this.root.getChildren().add(2, rendererP2.getNode());
+        this.root.getChildren().add(hud.getNode()); // L'HUD va sopra i giocatori
     }
 }

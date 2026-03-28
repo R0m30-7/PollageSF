@@ -33,8 +33,8 @@ public class Player {
     private Hitbox boundingBox;
     
     // --- Nuove variabili per il combattimento ---
-    public static int maxHealth;
-    protected static int health;
+    public int maxHealth;
+    protected int health;
     private boolean isFacingRight = true; 
     private boolean isPunching = false;
     private int punchTimer = 0;
@@ -140,6 +140,7 @@ public class Player {
     public void setPosition(Point2D newPosition) { position = newPosition; }
     public Point2D getPosition() { return position; }
     
+    public int getMaxHealth() { return maxHealth; }
     public int getHealth() { return health; }
     public boolean isFacingRight() { return isFacingRight; }
     public void setFacingRight(boolean facingRight) { this.isFacingRight = facingRight; }

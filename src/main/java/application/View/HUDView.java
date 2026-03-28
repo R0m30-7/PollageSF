@@ -20,11 +20,13 @@ public class HUDView {
 	private Rectangle p1HealthBg, p1HealthFill;
 	private Rectangle p1PowerBg, p1PowerFill;
 	private Text p1Label;
+	private double p1MaxHealth;
 	
 	// HUD giocatore 2
 	private Rectangle p2HealthBg, p2HealthFill;
 	private Rectangle p2PowerBg, p2PowerFill;
 	private Text p2Label;
+	private double p2MaxHealth;
 	
 	// Timer
 	private Text timerLabel;
@@ -36,7 +38,10 @@ public class HUDView {
 	private static final double TOP_MARGIN = 30.0;
 	private static final double SIDE_MARGIN = 50.0;
 	
-	public HUDView() {
+	public HUDView(double p1MaxHealth, double p2MaxHealth) {
+		this.p1MaxHealth = p1MaxHealth;
+		this.p2MaxHealth = p2MaxHealth;
+		
 		hudRoot = new Pane();
 		DropShadow shadow = new DropShadow(5, Color.BLACK);	// Effetto ombra per rendere testi e barre leggibili
 		
@@ -136,14 +141,14 @@ public class HUDView {
     // --- AGGIORNA LE BARRE IN TEMPO REALE ---
     public void update(Player p1, Player p2) {
         // --- Aggiorna P1 (Si accorcia verso sinistra) ---
-        double p1HpRatio = Math.max(0, (double) p1.getHealth() / application.Model.Player.maxHealth);
+        double p1HpRatio = Math.max(0, (double) p1.getHealth() / p1MaxHealth);
         p1HealthFill.setWidth(BAR_WIDTH * p1HpRatio);
         
         // Esempio barra speciale P1 (attualmente fissa a 0)
         p1PowerFill.setWidth(0); 
 
         // --- Aggiorna P2 (Si accorcia verso destra, svuotandosi in modo speculare!) ---
-        double p2HpRatio = Math.max(0, (double) p2.getHealth() / application.Model.Player.maxHealth);
+        double p2HpRatio = Math.max(0, (double) p2.getHealth() / p2MaxHealth);
         double newWidthP2 = BAR_WIDTH * p2HpRatio;
         
         p2HealthFill.setWidth(newWidthP2);

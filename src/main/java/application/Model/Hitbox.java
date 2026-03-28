@@ -33,10 +33,16 @@ public class Hitbox {
 
     // IL CUORE DELLE COLLISIONI (La formula AABB)
     public boolean intersects(Hitbox other) {
-        return (this.x < other.x + GameConfig.pWidth &&
-                this.x + GameConfig.pWidth > other.x &&
-                this.y < other.y + GameConfig.pHeight &&
-                this.y + GameConfig.pHeight > other.y);
+    	// Controllo asse X: Il mio lato destro supera il suo sinistro E il mio sinistro non supera il suo destro?
+        boolean xOverlap = (this.x + this.width >= other.x) && 
+                           (this.x <= other.x + other.getWidth());
+        
+        // Controllo asse Y: Il mio lato basso supera il suo alto E il mio alto non supera il suo basso?
+        boolean yOverlap = (this.y + this.height >= other.y) && 
+                           (this.y <= other.y + other.getHeight());
+                           
+        // C'è collisione SOLO se si sovrappongono su entrambi gli assi contemporaneamente
+        return xOverlap && yOverlap;
     }
     
     public double getX() { return x; }

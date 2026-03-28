@@ -159,31 +159,35 @@ public class GameModel {
     //      IL MOTORE DEI DANNI E COLLISIONI
     // ==========================================
     private void handleCombat(Player attacker, Player defender) {
+    	// 1. Aggiungiamo il controllo: l'attaccante e il difensore NON devono essere la stessa persona!
+        if (attacker == defender) return;
+        
         // Controlla se sta attaccando e se non ha già fatto danno in questa animazione
         if (attacker.isPunching() && !attacker.hasDealtDamage()) {
             
-            // 1. Calcola dove si trova la Hitbox del pugno nello spazio
+            // 2. Calcoliamo la X del pugno usando la LARGHEZZA REALE del giocatore, non GameConfig!
             double punchX = attacker.isFacingRight() 
-                    ? attacker.getPosition().getX() + GameConfig.pWidth 
+                    ? attacker.getPosition().getX() + attacker.getWidth() 
                     : attacker.getPosition().getX() - GameConfig.pPunchWidth;
-            double punchY = attacker.getPosition().getY() + (GameConfig.pHeight * 0.2);
             
-            // 2. Crea una Hitbox invisibile per il calcolo matematico
+            // 3. Calcoliamo la Y del pugno usando l'ALTEZZA REALE del giocatore
+            double punchY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2);
+            
+            // Crea una Hitbox invisibile per il calcolo matematico
             Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), GameConfig.pPunchWidth, GameConfig.pPunchHeight);
             
-            // 3. Controlla se il pugno si sovrappone al corpo del difensore
+            // Controlla se il pugno si sovrappone al corpo del difensore
             if (punchHitbox.intersects(defender.getBoundingBox())) {
                 
-                // 4. Applica i danni se l'avversario non sta bloccando
+                // Applica i danni se l'avversario non sta bloccando
                 if (defender.isDefending()) {
                     System.out.println("Colpo parato!");
-                    // Magari il colpo parato fa indietreggiare il difensore? Potremo aggiungerlo dopo!
                 } else {
                     System.out.println("COLPITO! Danno: " + GameConfig.pPunchDamage);
                     defender.takeDamage(GameConfig.pPunchDamage);
                 }
                 
-                // 5. Segna che il pugno ha colpito, così non toglie 200 HP in un colpo solo
+                // Segna che il pugno ha colpito
                 attacker.setHasDealtDamage(true);
             }
         }
@@ -197,8 +201,8 @@ public class GameModel {
             p.setPosition(new Point2D(0, p.getPosition().getY()));
         } 
         // Controllo muro destro (tenendo conto dello spessore del giocatore dalla sua bounding box)
-        else if (currentX > WORLD_WIDTH - GameConfig.pWidth) {
-            p.setPosition(new Point2D(WORLD_WIDTH - GameConfig.pWidth, p.getPosition().getY()));
+        else if (currentX > WORLD_WIDTH - p.getWidth()) {
+            p.setPosition(new Point2D(WORLD_WIDTH - p.getWidth(), p.getPosition().getY()));
         }
         
         // Aggiorniamo la bounding box logica per riflettere la posizione bloccata
@@ -212,7 +216,7 @@ public class GameModel {
         
         // Il bordo destro dello schermo è la telecamera + la larghezza della finestra,
         // a cui sottraiamo la larghezza del giocatore per non far uscire metà del suo corpo
-        double rightScreenEdge = cameraX + currentWindowWidth- GameConfig.pWidth;
+        double rightScreenEdge = cameraX + currentWindowWidth - p.getWidth();
 
         double currentX = p.getPosition().getX(); // Oppure p.getX() a seconda di come l'hai chiamato
 
@@ -241,12 +245,12 @@ public class GameModel {
 
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
         // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su!
-        if (player1.getPosition().getY() + GameConfig.pHeight > this.GROUND_LEVEL) {
-            player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.GROUND_LEVEL - GameConfig.pHeight));
+        if (player1.getPosition().getY() + player1.getHeight() > this.currentGroundLevel) {
+            player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.currentGroundLevel - player1.getHeight()));
             player1.getBoundingBox().updatePosition(player1.getPosition());
         }
-        if (player2.getPosition().getY() + GameConfig.pHeight > this.GROUND_LEVEL) {
-            player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.GROUND_LEVEL - GameConfig.pHeight));
+        if (player2.getPosition().getY() + player2.getHeight() > this.currentGroundLevel) {
+            player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.currentGroundLevel - player2.getHeight()));
             player2.getBoundingBox().updatePosition(player2.getPosition());
         }
     }
