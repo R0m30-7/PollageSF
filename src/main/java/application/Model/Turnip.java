@@ -32,13 +32,13 @@ public class Turnip extends Player {
         // (riga, numeroFrame, millisecondiPerFrame, loop)
         
         // IDLE (Fermo): Uso il primo frame della camminata, riga 0 (faccia) e riga 1/2 in base alla direzione
-        animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 1, 150, true)); // Fermo a destra (Usa la riga 2)
-        animations.put(AnimState.IDLE_LEFT, new AnimData(0, 1, 150, true));  // Fermo a sinistra (Usa la riga 1)
-        animations.put(AnimState.IDLE_FRONT, new AnimData(0, 1, 150, true)); // Fermo frontale (Riga 0)
+        animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 1, 150, true));
+        animations.put(AnimState.IDLE_LEFT, new AnimData(0, 1, 150, true));
+        animations.put(AnimState.IDLE_FRONT, new AnimData(0, 1, 150, true));
         
         // WALK (Camminata): Usa tutti e 3 i frame
-        animations.put(AnimState.WALK_RIGHT, new AnimData(1, 3, 120, true)); // Cammina veloce a destra
-        animations.put(AnimState.WALK_LEFT, new AnimData(2, 3, 120, true));  // Cammina veloce a sinistra
+        animations.put(AnimState.WALK_RIGHT, new AnimData(1, 3, 120, true));
+        animations.put(AnimState.WALK_LEFT, new AnimData(2, 3, 120, true));
         
         // PUNCH & JUMP (Placeholder: per ora usano la riga frontale o si fermano su un frame specifico)
         // Nota che loop è FALSE: il pugno si ferma alla fine dell'animazione!
