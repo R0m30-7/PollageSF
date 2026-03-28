@@ -19,6 +19,11 @@ public class Hitbox {
         this.width = width;
         this.height = height;
     }
+    
+    public void updateSize(double width, double height) {
+    	this.width = width;
+        this.height = height;
+    }
 
     // Aggiorna la posizione della hitbox per farla "seguire" il giocatore
     public void updatePosition(Point2D position) {

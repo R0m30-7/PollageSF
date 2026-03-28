@@ -52,7 +52,7 @@ public class InputManager {
                     if (comp.getIdentifier() instanceof Component.Identifier.Button) {
                     	if(comp.getPollData() > 0.5f) {
                     		
-                    		System.out.println("TASTO RILEVATO: " + comp.getIdentifier().getName());
+                    		//System.out.println("TASTO RILEVATO: " + comp.getIdentifier().getName());
                     		
                     		isButtonPressed = true;
                     		break;

@@ -136,14 +136,14 @@ public class HUDView {
     // --- AGGIORNA LE BARRE IN TEMPO REALE ---
     public void update(Player p1, Player p2) {
         // --- Aggiorna P1 (Si accorcia verso sinistra) ---
-        double p1HpRatio = Math.max(0, (double) p1.getHealth() / application.Model.Player.MAX_HEALTH);
+        double p1HpRatio = Math.max(0, (double) p1.getHealth() / application.Model.Player.maxHealth);
         p1HealthFill.setWidth(BAR_WIDTH * p1HpRatio);
         
         // Esempio barra speciale P1 (attualmente fissa a 0)
         p1PowerFill.setWidth(0); 
 
         // --- Aggiorna P2 (Si accorcia verso destra, svuotandosi in modo speculare!) ---
-        double p2HpRatio = Math.max(0, (double) p2.getHealth() / application.Model.Player.MAX_HEALTH);
+        double p2HpRatio = Math.max(0, (double) p2.getHealth() / application.Model.Player.maxHealth);
         double newWidthP2 = BAR_WIDTH * p2HpRatio;
         
         p2HealthFill.setWidth(newWidthP2);

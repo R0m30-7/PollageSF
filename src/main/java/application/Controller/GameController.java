@@ -82,6 +82,7 @@ public class GameController {
         this.stage = stage;
         this.view = new GameView();
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
+        this.view.initPlayers(model.getPlayer1(), model.getPlayer2());	// Inizializziamo la grafica dei giocatori
         this.inputManager = InputManager.getInstance();
 
         // Caricamento delle mappe in memoria

@@ -42,9 +42,9 @@ public class GameModel {
     	// Calcoliamo la y per spawnare i giocatori con i piedi per terra
     	double spawnY = this.GROUND_LEVEL - GameConfig.pHeight;
     	
-        // Spawn dei giocatori al centro del mondo
-    	player1 = new Player(new Point2D(WORLD_WIDTH / 2 - 200, spawnY)); 
-        player2 = new Player(new Point2D(WORLD_WIDTH / 2 + 200, spawnY));
+        // Spawn dei giocatori al centro del mondo (scelgo di base la classe Turnip)
+    	player1 = new Turnip(new Point2D(WORLD_WIDTH / 2 - 200, spawnY)); 
+        player2 = new Turnip(new Point2D(WORLD_WIDTH / 2 + 200, spawnY));
         
         // Impostiamo le direzioni iniziali
         player1.setFacingRight(true); 

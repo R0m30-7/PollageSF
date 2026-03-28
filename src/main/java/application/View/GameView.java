@@ -46,14 +46,10 @@ public class GameView {
         // Offset temporaneo
         this.backgroundView.setY(0);
         
-        // --- GIOCATORI ---
-        this.rendererP1 = new PlayerRenderer("1");
-        this.rendererP2 = new PlayerRenderer("2");
-        
         // --- HUD ---
         this.hud = new HUDView();
         
-        this.root.getChildren().addAll(this.backgroundContainer, rendererP1.getNode(), rendererP2.getNode());
+        this.root.getChildren().addAll(this.backgroundContainer);
         this.root.getChildren().add(this.hud.getNode());	// Aggiunta dell'HUD per ultimo
     }
 
@@ -155,5 +151,15 @@ public class GameView {
     	if (rendererP1 != null) rendererP1.getNode().setVisible(visible);
         if (rendererP2 != null) rendererP2.getNode().setVisible(visible);
         if (hud != null) hud.getNode().setVisible(visible);
+    }
+    
+    // Serve a costruire la grafica del giocatore DOPO che i giocatori sono stati creati dal Model
+    public void initPlayers(application.Model.Player p1, application.Model.Player p2) {
+        this.rendererP1 = new PlayerRenderer(p1);
+        this.rendererP2 = new PlayerRenderer(p2);
+        
+        // Inseriamo i giocatori nel Pane (dietro l'HUD, quindi agli indici 1 e 2 dopo lo sfondo)
+        this.root.getChildren().add(1, rendererP1.getNode());
+        this.root.getChildren().add(2, rendererP2.getNode());
     }
 }
