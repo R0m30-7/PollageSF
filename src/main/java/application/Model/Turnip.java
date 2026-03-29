@@ -15,6 +15,9 @@ public class Turnip extends Player {
 		
 		this.speed = 2.0;
 		
+		// L'impatto del pugno dura esattamente 10 millisecondi
+        this.punchDurationNs = 10 * 1_000_000L;
+		
 		this.atlasPath = "/Sprites/turnipAtlas.png";
 		this.spriteRows = 8;
         this.spriteCols = 8;
@@ -51,8 +54,8 @@ public class Turnip extends Player {
         animations.put(AnimState.BLOCK_LEFT, new AnimData(5, 0, 3, 50, false));
 
         // Placeholder futuri (usiamo riga 0 originale per ora)
-        animations.put(AnimState.PUNCH_RIGHT, new AnimData(0, 0, 1, 100, false)); 
-        animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 0, 1, 100, false));
+        animations.put(AnimState.PUNCH_RIGHT, new AnimData(0, 4, 4, 25, false)); 
+        animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 4, 4, 25, false));
         animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 0, 1, 150, false));
         animations.put(AnimState.JUMP_LEFT, new AnimData(1, 0, 1, 150, false));
 	}

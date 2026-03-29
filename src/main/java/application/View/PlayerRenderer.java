@@ -155,7 +155,7 @@ public class PlayerRenderer {
         // ==========================================
         // GESTIONE PUGNO (Invariata)
         // ==========================================
-        if (player.isPunching()) {
+        if (player.isPunchActive()) {
             punchVisual.setVisible(true);
             punchVisual.toFront();
             

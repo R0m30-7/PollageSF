@@ -4,7 +4,6 @@
  */
 package application.Model;
 
-import application.Utils.GameConfig;
 import javafx.geometry.Point2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,8 @@ public class Player {
     protected int health;
     private boolean isFacingRight = true; 
     private boolean isPunching = false;
-    private int punchTimer = 0;
+    private long punchStartTime = 0; // Memorizza il nanosecondo esatto in cui parte il pugno
+    protected long punchDurationNs; // Quanto dura l'impatto del pugno
     private boolean isDefending = false;
     private boolean hasDealtDamage = false; // Memorizza se il pugno ha già fatto danno
     
@@ -62,13 +62,28 @@ public class Player {
         this.boundingBox = new Hitbox(position, 0, 0);
     }
     
-    // --- AGGIORNAMENTO TICK PER LE AZIONI ---
+ // --- AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
         if (isPunching) {
-            punchTimer--;
-            if (punchTimer <= 0) {
-                isPunching = false;
-                hasDealtDamage = false;	// Reset alla fine del pugno
+            AnimData anim = getCurrentAnimData();
+            if (anim != null) {
+            	long elapsedNs = System.nanoTime() - punchStartTime;
+                
+                // 1. Quando finisce l'animazione visiva?
+                long animDurationNs = anim.frameCount * anim.speedNs;
+                
+                // 2. Quando finisce l'hitbox del pugno? (Ritardo + Durata)
+                long ritardoNs = (anim.frameCount - 1) * anim.speedNs;
+                long hitboxEndNs = ritardoNs + this.punchDurationNs;
+                
+                // 3. Il pugno finisce VERAMENTE solo quando il tempo maggiore è trascorso!
+                long totalPunchTimeNs = Math.max(animDurationNs, hitboxEndNs);
+                
+                // Il pugno finisce ESATTAMENTE quando scade il tempo totale dell'animazione
+                if (elapsedNs >= totalPunchTimeNs) {
+                    isPunching = false;
+                    hasDealtDamage = false;
+                }
             }
         }
     }
@@ -77,10 +92,25 @@ public class Player {
     public void startPunch() {
         if (!isPunching && !isDefending) {
             isPunching = true;
-            hasDealtDamage = false;	// Appena il pugno inizia si azzera il danno
-            punchTimer = GameConfig.pPunchDurationTicks;
-            //System.out.println("PLAYER: isPunching è ora TRUE! Timer impostato a: " + punchTimer);
+            hasDealtDamage = false;	
+            this.punchStartTime = System.nanoTime(); // Registra il momento esatto!
         }
+    }
+    
+    // Ritorna TRUE solo se l'animazione si trova nella "finestra di impatto" (Active Frames)
+    public boolean isPunchActive() {
+        if (!isPunching) return false;
+        
+        AnimData anim = getCurrentAnimData();
+        if (anim == null) return false;
+        
+        long elapsedNs = System.nanoTime() - punchStartTime;
+        
+        // 1. IL TUO RITARDO: (numeroFrame - 1) * tempoPerFrame
+        long ritardoNs = (anim.frameCount - 1) * anim.speedNs; 
+        
+        // 2. L'hitbox è attiva solo DOPO il ritardo, per la durata che decidi tu!
+        return elapsedNs >= ritardoNs && elapsedNs <= (ritardoNs + this.punchDurationNs);
     }
 
     public void setDefending(boolean defending) {

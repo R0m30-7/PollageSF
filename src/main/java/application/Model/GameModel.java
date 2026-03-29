@@ -171,7 +171,7 @@ public class GameModel {
         if (attacker == defender) return;
         
         // Controlla se sta attaccando e se non ha già fatto danno in questa animazione
-        if (attacker.isPunching() && !attacker.hasDealtDamage()) {
+        if (attacker.isPunchActive() && !attacker.hasDealtDamage()) {
             
             // 2. Calcoliamo la X del pugno usando la LARGHEZZA REALE del giocatore, non GameConfig!
             double punchX = attacker.isFacingRight() 
