@@ -126,8 +126,8 @@ public class PlayerRenderer {
                     lastFrameTime = now;
                 }
 
-                // 4. Spostiamo il mirino (Viewport) leggendo le coordinate esatte dalla cartuccia!
-                double cropX = currentFrame * frameWidth;
+                // Spostiamo il viewport leggendo le coordinate esatte
+                double cropX = (currentData.startCol + currentFrame) * frameWidth;
                 double cropY = currentData.row * frameHeight;
                 spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
 

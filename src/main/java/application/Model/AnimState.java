@@ -1,9 +1,20 @@
 package application.Model;
 
 public enum AnimState {
-	IDLE_RIGHT, IDLE_LEFT, IDLE_FRONT,
-    WALK_RIGHT, WALK_LEFT,
-    PUNCH_RIGHT, PUNCH_LEFT,
-    DEFEND_RIGHT, DEFEND_LEFT,
-    JUMP_RIGHT, JUMP_LEFT
+    IDLE_LEFT,         // Il nuovo idle stazionario/respirazione
+    IDLE_RIGHT,
+    
+    // MOVIMENTO
+    WALK_LEFT,
+    WALK_RIGHT,
+    TURN,                         // L'animazione per girarsi (palindroma)
+    
+    // AZIONI
+    BLOCK_LEFT,                   // La parata specifica
+    BLOCK_RIGHT,
+    
+    PUNCH_LEFT,                   // (Manterremo questi come placeholder futuri)
+    PUNCH_RIGHT,
+    JUMP_LEFT,
+    JUMP_RIGHT
 }

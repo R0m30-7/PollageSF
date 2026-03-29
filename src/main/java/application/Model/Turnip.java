@@ -16,8 +16,8 @@ public class Turnip extends Player {
 		this.speed = 2.0;
 		
 		this.atlasPath = "/Sprites/turnipAtlas.png";
-        this.spriteCols = 3;
-        this.spriteRows = 4;
+		this.spriteRows = 8;
+        this.spriteCols = 8;
         this.frameWidth = 16;
         this.frameHeight = 16;
         this.renderScale = 6;  // Ingrandisce la pixel art esattamente x6 volte
@@ -29,24 +29,31 @@ public class Turnip extends Player {
         this.getBoundingBox().updateSize(this.width, this.height);
         
         // Mappa delle animazioni
-        // (riga, numeroFrame, millisecondiPerFrame, loop)
+        // (riga, colonnaPartenza, numeroFrame, millisecondiPerFrame, loop)
         
-        // IDLE (Fermo): Uso il primo frame della camminata, riga 0 (faccia) e riga 1/2 in base alla direzione
-        animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 1, 150, true));
-        animations.put(AnimState.IDLE_LEFT, new AnimData(0, 1, 150, true));
-        animations.put(AnimState.IDLE_FRONT, new AnimData(0, 1, 150, true));
+        // Nuovo Idle Stazionario (Ipotizziamo riga 4 per DX, riga 5 per SX, 3 frame slow)
+        // !!! MODIFICA IL PRIMO NUMERO (rigaAtlas) QUANDO HAI L'ATLAS CORRETTO !!!
+        animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 3, 200, true)); 
+        animations.put(AnimState.IDLE_LEFT, new AnimData(1, 0, 3, 200, true));
+
+        // *** MOVIMENTO ***
+        // Camminata (Invariata, usa righe originali 1 e 2)
+        animations.put(AnimState.WALK_RIGHT, new AnimData(2, 0, 3, 120, true));
+        animations.put(AnimState.WALK_LEFT, new AnimData(3, 0, 3, 120, true));
         
-        // WALK (Camminata): Usa tutti e 3 i frame
-        animations.put(AnimState.WALK_RIGHT, new AnimData(1, 3, 120, true));
-        animations.put(AnimState.WALK_LEFT, new AnimData(2, 3, 120, true));
-        
-        // PUNCH & JUMP (Placeholder: per ora usano la riga frontale o si fermano su un frame specifico)
-        // Nota che loop è FALSE: il pugno si ferma alla fine dell'animazione!
-        animations.put(AnimState.PUNCH_RIGHT, new AnimData(1, 1, 100, false)); 
-        animations.put(AnimState.PUNCH_LEFT, new AnimData(2, 1, 100, false));
-        animations.put(AnimState.DEFEND_RIGHT, new AnimData(0, 1, 200, false));
-        animations.put(AnimState.DEFEND_LEFT, new AnimData(0, 1, 200, false));
-        animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 1, 150, false));
-        animations.put(AnimState.JUMP_LEFT, new AnimData(0, 1, 150, false));
+        // Giararsi (TURN): Palindroma. Ipotizziamo riga 6, 3 frame veloci.
+        // !!! loop è FALSE !!! Gioca una volta sola.
+        animations.put(AnimState.TURN, new AnimData(6, 0, 3, 50, false));
+
+        // *** AZIONI ***
+        // Parata (BLOCK): Ipotizziamo riga 7 DX, riga 8 SX, 3 frame veloci.
+        animations.put(AnimState.BLOCK_RIGHT, new AnimData(4, 0, 3, 50, false));
+        animations.put(AnimState.BLOCK_LEFT, new AnimData(5, 0, 3, 50, false));
+
+        // Placeholder futuri (usiamo riga 0 originale per ora)
+        animations.put(AnimState.PUNCH_RIGHT, new AnimData(0, 0, 1, 100, false)); 
+        animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 0, 1, 100, false));
+        animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 0, 1, 150, false));
+        animations.put(AnimState.JUMP_LEFT, new AnimData(1, 0, 1, 150, false));
 	}
 }

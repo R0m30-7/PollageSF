@@ -47,6 +47,12 @@ public class Player {
     protected Map<AnimState, AnimData> animations = new HashMap<>();
     private AnimState currentAnimState = AnimState.IDLE_RIGHT; // Stato di default
     public boolean isMoving = false; // Ci servirà per capire se sta camminando
+    // --- GESTIONE ANIMAZIONI AVANZATA ---
+    // Placeholder per la durata stimata dell'animazione TURN (in nanosecondi)
+    // Es: 3 frame a 50ms = 150ms = 150,000,000ns
+    private final long TURN_DURATION_NS = 150_000_000L; 
+    private long turnAnimStartTime = 0;
+    private boolean isTurning = false;
 
     // Costruttore per impostare la posizione iniziale
     public Player(Point2D position) {
@@ -92,15 +98,19 @@ public class Player {
     
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
     public void moveHorizontal(PlayerState DIR) {
-        double newX = position.getX();
+    	// --- Blocco azione: movimento bloccato se si attacca o difende ---
+        if (isPunching || isDefending) return;
+        
         this.isMoving = true;
+        
+        double newX = position.getX();
         
         if (DIR == PlayerState.LEFT) {
             newX -= speed;
-            isFacingRight = false;
+            setFacingRight(false);
         } else if (DIR == PlayerState.RIGHT) {
             newX += speed;
-            isFacingRight = true;
+            setFacingRight(true);
         }
         
         position = new Point2D(newX, position.getY());
@@ -109,6 +119,9 @@ public class Player {
 
     // 3. IL SALTO (La vera spinta verso l'alto)
     public void jump() {
+    	// --- Blocco azione: movimento bloccato se si attacca o difende ---
+        if (isPunching || isDefending) return;
+        
         // Può saltare solo se non è già in aria
         if (isGrounded) {
             velocityY = jumpStrength;
@@ -146,15 +159,38 @@ public class Player {
     
     // Cervello delle animazioni
     public void updateAnimationState() {
+        long now = System.nanoTime();
+
+        // --- 1. PRIORITÀ MASSIMA: ANIMAZIONE TURN (UNA TANTUM) ---
+        if (isTurning) {
+            // Controlliamo se è passato abbastanza tempo dall'inizio della svolta
+            if (now - turnAnimStartTime < TURN_DURATION_NS) {
+                currentAnimState = AnimState.TURN;
+                return; // Blocchiamo qui la logica per questo frame
+            } else {
+                // Tempo scaduto, l'animazione TURN è finita
+                isTurning = false; 
+            }
+        }
+
+        // --- 2. LOGICA AZIONI ---
         if (isPunching) {
             currentAnimState = isFacingRight ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
-        } else if (isDefending) {
-            currentAnimState = isFacingRight ? AnimState.DEFEND_RIGHT : AnimState.DEFEND_LEFT;
-        } else if (!isGrounded) {
+        } 
+        else if (isDefending) {
+            // Usiamo i nuovi stati BLOCK specifici
+            currentAnimState = isFacingRight ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT;
+        } 
+        else if (!isGrounded) {
             currentAnimState = isFacingRight ? AnimState.JUMP_RIGHT : AnimState.JUMP_LEFT;
-        } else if (isMoving) {
+        } 
+        // --- 3. LOGICA MOVIMENTO Orizzontale ---
+        else if (isMoving) {
             currentAnimState = isFacingRight ? AnimState.WALK_RIGHT : AnimState.WALK_LEFT;
-        } else {
+        } 
+        // --- 4. LOGICA IDLE (Fermo) ---
+        else {
+        	// Appena si ferma, scatta subito l'idle completo!
             currentAnimState = isFacingRight ? AnimState.IDLE_RIGHT : AnimState.IDLE_LEFT;
         }
     }
@@ -169,7 +205,22 @@ public class Player {
     public int getMaxHealth() { return maxHealth; }
     public int getHealth() { return health; }
     public boolean isFacingRight() { return isFacingRight; }
-    public void setFacingRight(boolean facingRight) { this.isFacingRight = facingRight; }
+    // ==========================================
+    // GESTIONE DIREZIONE E ANIMAZIONE "TURN"
+    // ==========================================
+    public void setFacingRight(boolean facingRight) {
+    	// --- Blocco azione: movimento bloccato se si attacca o difende ---
+        if (isPunching || isDefending) return;
+        
+        // 2. Se la direzione sta CAMBIANDO e siamo a terra, attiviamo l'animazione TURN
+        if (this.isFacingRight != facingRight && isGrounded) {
+            this.isTurning = true;
+            this.turnAnimStartTime = System.nanoTime();
+        }
+        
+        // 3. Aggiorniamo la variabile effettiva
+        this.isFacingRight = facingRight; 
+    }
     public boolean isPunching() { return isPunching; }
     public boolean isDefending() { return isDefending; }
     public boolean hasDealtDamage() { return hasDealtDamage; }
