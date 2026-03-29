@@ -15,7 +15,7 @@ public class Turnip extends Player {
 		
 		this.speed = 2.0;
 		
-		this.atlasPath = "/Sprites/playerAtlas.png";
+		this.atlasPath = "/Sprites/turnipAtlas.png";
         this.spriteCols = 3;
         this.spriteRows = 4;
         this.frameWidth = 16;
