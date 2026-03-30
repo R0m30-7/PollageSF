@@ -54,7 +54,7 @@ public class Turnip extends Player {
         animations.put(AnimState.BLOCK_LEFT, new AnimData(5, 0, 3, 50, false));
 
         // Placeholder futuri (usiamo riga 0 originale per ora)
-        animations.put(AnimState.PUNCH_RIGHT, new AnimData(0, 4, 4, 25, false)); 
+        animations.put(AnimState.PUNCH_RIGHT, new AnimData(0, 4, 4, 40, false)); 
         animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 4, 4, 25, false));
         animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 0, 1, 150, false));
         animations.put(AnimState.JUMP_LEFT, new AnimData(1, 0, 1, 150, false));
