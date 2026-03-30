@@ -1,35 +1,21 @@
-/*
- * MAPPATURA DEI TASTI DEI CONTROLLER
- * WINDOWS
- * DualShock (Ps5): quadrato=0, x=1, o=2, triangolo=3, L1=4, R1=5,
- * L2=6, R2=7, Share=8, Options=9, L3=10, R3=11, PS=12, trackpad=13
- * 
- * LINUX
- * DualShock: quad=Y, x=A, o=B, trian=X, L1=Left Thumb, R1=Right Thumb, L2=Left Thumb 2,
- * R2=Right Thumb 2, Share=Select, Options=Start, L3=Left Thumb 3, R3=Right Thumb 3, PS=Mode
- */
-
 package application.Controller;
 
-import net.java.games.input.Component;
-import net.java.games.input.Controller;
-import net.java.games.input.ControllerEnvironment;
+import com.studiohartman.jamepad.ControllerManager;
+import com.studiohartman.jamepad.ControllerState;
 
 public class InputManager {
-    // Rendiamo l'InputManager un Singleton in modo che il Menu Principale
-    // e il Gioco leggano gli stessi controller!
     private static InputManager instance;
+    private ControllerManager controllerManager;
     
-    private Controller[] allControllers;
-    
-    // Riferimenti ai due controller separati
-    private Controller player1Gamepad;
-    private Controller player2Gamepad;
+    // Memorizziamo gli indici interni dei controller assegnati ai giocatori (-1 = non assegnato)
+    private int p1Index = -1;
+    private int p2Index = -1;
 
     // Costruttore privato per il Singleton
     private InputManager() {
-        allControllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
-        System.out.println("🎮 Sistema di input inizializzato. Muovi una levetta o premi un tasto per unirti!");
+        controllerManager = new ControllerManager();
+        controllerManager.initSDLGamepad();
+        System.out.println("🎮 Motore Jamepad (SDL2) inizializzato. Muovi una levetta o premi un tasto per unirti!");
     }
 
     // Metodo per ottenere l'istanza globale
@@ -42,138 +28,116 @@ public class InputManager {
 
     // --- AGGIORNAMENTO E ASSEGNAZIONE CONTROLLER ---
     public void update() {
-        for (Controller c : allControllers) {
-            if (c.getType() == Controller.Type.GAMEPAD || c.getType() == Controller.Type.STICK) {
-                c.poll(); 
-                
-                boolean isButtonPressed = false;
-                for (Component comp : c.getComponents()) {
-                    // Controlliamo che l'input sia effettivamente un bottone, e non un asse
-                    if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                    	if(comp.getPollData() > 0.5f) {
-                    		
-                    		//System.out.println("TASTO RILEVATO: " + comp.getIdentifier().getName());
-                    		
-                    		isButtonPressed = true;
-                    		break;
-                    	}
-                    }
-                }
+        // Fondamentale: Jamepad gestisce le periferiche USB in automatico qui!
+        controllerManager.update(); 
+        
+        // 1. Controllo disconnessioni fisiche
+        if (p1Index != -1 && !controllerManager.getState(p1Index).isConnected) {
+            System.out.println("❌ Giocatore 1 Disconnesso!");
+            p1Index = -1;
+        }
+        if (p2Index != -1 && !controllerManager.getState(p2Index).isConnected) {
+            System.out.println("❌ Giocatore 2 Disconnesso!");
+            p2Index = -1;
+        }
 
-                // Assegnazione Automatica (Drop-in) SOLO se è stato premuto un tasto vero
-                if (isButtonPressed) {
-                    if (player1Gamepad == null && c != player2Gamepad) {
-                        player1Gamepad = c;
-                        System.out.println("✅ Giocatore 1 unito! Controller: " + c.getName());
-                    } else if (player2Gamepad == null && c != player1Gamepad) {
-                        player2Gamepad = c;
-                        System.out.println("✅ Giocatore 2 unito! Controller: " + c.getName());
+        // 2. Assegnazione Automatica (Drop-in)
+        for (int i = 0; i < controllerManager.getNumControllers(); i++) {
+            ControllerState state = controllerManager.getState(i);
+            
+            if (state.isConnected) {
+                // Se preme un tasto d'azione qualsiasi per confermare la presenza
+                if (state.a || state.b || state.x || state.y || state.start) {
+                    
+                    if (p1Index == -1 && i != p2Index) {
+                        p1Index = i;
+                        System.out.println("✅ Giocatore 1 unito! (Pad index: " + i + ")");
+                    } else if (p2Index == -1 && i != p1Index) {
+                        p2Index = i;
+                        System.out.println("✅ Giocatore 2 unito! (Pad index: " + i + ")");
                     }
                 }
             }
         }
     }
 
+    // --- METODO SUPPORTO PER OTTENERE LO STATO ---
+    private ControllerState getState(int playerNumber) {
+        int index = (playerNumber == 1) ? p1Index : p2Index;
+        if (index != -1) {
+            return controllerManager.getState(index);
+        }
+        return null; // Ritorna null se il giocatore non ha un pad assegnato
+    }
+
     // --- METODI PER IL MOVIMENTO ---
     public double getLeftStickX(int playerNumber) {
-        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        if (gamepad != null) {
-            Component xAxis = gamepad.getComponent(Component.Identifier.Axis.X);
-            if (xAxis != null) {
-                double value = xAxis.getPollData();
-                if (Math.abs(value) < 0.15) return 0.0; 
-                return value;
-            }
+        ControllerState state = getState(playerNumber);
+        if (state != null && Math.abs(state.leftStickX) > 0.15) {
+            return state.leftStickX;
         }
         return 0.0; 
     }
 
     public double getLeftStickY(int playerNumber) {
-        Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        if (gamepad != null) {
-            Component yAxis = gamepad.getComponent(Component.Identifier.Axis.Y);
-            if (yAxis != null) {
-                double value = yAxis.getPollData();
-                if (Math.abs(value) < 0.15) return 0.0; 
-                return value;
-            }
+        ControllerState state = getState(playerNumber);
+        if (state != null && Math.abs(state.leftStickY) > 0.15) {
+            // Nota: Jamepad restituisce Y positivo verso l'alto.
+            // Se nel menu le mappe scorrono al contrario, basta togliere il meno (-) qui!
+            return state.leftStickY; 
         }
         return 0.0;
     }
 
     // --- IL METODO DEL SALTO ---
     public boolean isJumpButtonPressed(int playerNumber) {
-    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        if (gamepad != null) {
-            for (Component comp : gamepad.getComponents()) {
-                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                    String btnName = comp.getIdentifier().getName();
-                    // "A" o "Cross" per Linux/Xbox | "1" (Tasto X) per PS5 su Windows
-                    if ((btnName.equals("A") || btnName.equals("1")) && comp.getPollData() > 0.5f) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        ControllerState state = getState(playerNumber);
+        // Tasto A universale (Croce su PlayStation, A su Xbox/Nintendo)
+        return state != null && state.a; 
     }
     
     // --- METODO PER IL TASTO PAUSA ---
     public boolean isPauseButtonPressed(int playerNumber) {
-    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        if (gamepad != null) {
-            for (Component comp : gamepad.getComponents()) {
-                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                    String btnName = comp.getIdentifier().getName();
-                    // START/SELECT generici | "8" (Share) o "9" (Options) per PS5 su Windows
-                    if ((btnName.equals("Start") || btnName.equals("9")) && comp.getPollData() > 0.5f) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        ControllerState state = getState(playerNumber);
+        // Tasto Start/Options universale
+        return state != null && state.start; 
     }
     
     // --- METODI PER AZIONI DI COMBATTIMENTO ---
-    
     public boolean isPunchButtonPressed(int playerNumber) {
-    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        if (gamepad != null) {
-            for (Component comp : gamepad.getComponents()) {
-                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                    String btnName = comp.getIdentifier().getName(); 
-                    // "X", "Y", "Square", "Triangle" per Linux/Xbox | "0" (Quadrato) o "3" (Triangolo) per PS5 su Windows
-                    if ((btnName.equals("Y") || btnName.equals("0")) && comp.getPollData() > 0.5f) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        ControllerState state = getState(playerNumber);
+        // Tasto X o Y (Quadrato o Triangolo su PS)
+        return state != null && (state.x || state.y); 
     }
 
     public boolean isDefendButtonPressed(int playerNumber) {
-    	Controller gamepad = (playerNumber == 1) ? player1Gamepad : player2Gamepad;
-        if (gamepad != null) {
-            for (Component comp : gamepad.getComponents()) {
-                if (comp.getIdentifier() instanceof Component.Identifier.Button) {
-                    String btnName = comp.getIdentifier().getName();
-                    // "B", "Circle" per Linux/Xbox | "2" (Cerchio) per PS5 su Windows
-                    if ((btnName.equals("B") || btnName.equals("2")) && comp.getPollData() > 0.5f) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        ControllerState state = getState(playerNumber);
+        // Tasto B universale (Cerchio su PS)
+        return state != null && state.b; 
     }
     
-    // Getter necessari per capire se i controller sono connessi
-    public boolean isPlayer1Connected() {
-    	return player1Gamepad != null;
+    // --- GESTIONE EMERGENZA E STATO ---
+    public boolean isPlayer1Connected() { return p1Index != -1; }
+    public boolean isPlayer2Connected() { return p2Index != -1; }
+
+    public boolean hasLostControllers(int requiredPlayers) {
+        if (requiredPlayers == 1) return !isPlayer1Connected();
+        if (requiredPlayers == 2) return !isPlayer1Connected() || !isPlayer2Connected();
+        return false;
     }
-    public boolean isPlayer2Connected() {
-    	return player2Gamepad != null;
+
+    // Questo metodo ora spegne e riaccende brutalmente (ma in sicurezza) la libreria SDL
+    public void rescanControllers() {
+        System.out.println("🔄 Riavvio forzato del driver USB (Jamepad)...");
+        controllerManager.quitSDLGamepad();
+        controllerManager.initSDLGamepad();
+        // Resettiamo gli indici per forzare i giocatori a ri-premere un tasto
+        p1Index = -1;
+        p2Index = -1; 
+    }
+    
+    // Buona pratica: chiamarlo quando si chiude il gioco intero (System.exit)
+    public void chiudiTutto() {
+        controllerManager.quitSDLGamepad();
     }
 }

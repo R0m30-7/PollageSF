@@ -1,0 +1,1 @@
+# Configurazione vuota per silenziare Jamepad

@@ -41,6 +41,9 @@ public class GameController {
     private VBox connectionMenu;
     private Label p1Label;
     private Label p2Label;
+    // --- Menu disconnessione ---
+    private boolean isDisconnected = false;
+    private VBox disconnectMenu;
     
     // --- Scelta della mappa ---
     private VBox mapSelectionMenu;
@@ -116,6 +119,10 @@ public class GameController {
     	// AGGIUNGIAMO ANCHE IL MENU DI PAUSA AL PANINO (Nascosto)
         createPauseMenu();
         mainRoot.getChildren().add(pauseMenu);
+        
+        // Menu di disconnessione
+        createDisconnectMenu();
+        mainRoot.getChildren().add(disconnectMenu);
     	
     	// Creazione dell'etichetta degli FPS in alto a destra
         fpsLabel = new Label("FPS: 0");
@@ -193,6 +200,52 @@ public class GameController {
                 long frameTime = now - lastTime;
                 lastTime = now;
                 
+                // --- 1. CONTROLLO EMERGENZA DISCONNESSIONE ---
+                int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+                
+                // Attiviamo l'allarme solo se stiamo giocando (non se siamo già nel menu di connessione iniziale)
+                if (!waitingForControllers && !waitingForMapSelection) {
+                    if (inputManager.hasLostControllers(numPlayers)) {
+                        if (!isDisconnected) { 
+                            isDisconnected = true;
+                            disconnectMenu.setVisible(true);
+                            view.getRoot().setEffect(new GaussianBlur(25));
+                        }
+                    }
+                }
+
+                // Se siamo in emergenza, fermiamo tutto
+                if (isDisconnected) {
+                    // Dobbiamo continuare ad aggiornare Jamepad qui, così quando 
+                    // l'utente preme un tasto sul pad appena ricollegato, viene registrato!
+                    inputManager.update();
+                    
+                    int numP = application.Utils.Settings.getInstance().getNumberOfPlayers();
+                    
+                    // 2. Se l'InputManager ci dice che i controller sono tornati operativi...
+                    if (!inputManager.hasLostControllers(numP)) {
+                        
+                        // 3. ... aspettiamo che il giocatore prema il tasto Salto (X / A) per confermare!
+                        if (inputManager.isJumpButtonPressed(1) || (numP == 2 && inputManager.isJumpButtonPressed(2))) {
+                            isDisconnected = false;
+                            disconnectMenu.setVisible(false);
+                            
+                            // Togliamo la sfocatura solo se il gioco NON era in pausa prima del crash
+                            if (!isPaused) {
+                                view.getRoot().setEffect(null);
+                            }
+                            
+                            // Evitiamo che il personaggio salti accidentalmente appena riparte il gioco!
+                            wasConfirmPressed = true; 
+                        }
+                    }
+                    
+                    // Resettiamo gli accumulatori di fisica e render per "congelare" l'arena
+                    physicsAccumulator = 0;
+                    renderAccumulator = 0;
+                    return; // Interrompe l'esecuzione del frame qui. Il gioco è in pausa assoluta!
+                }
+                
                 // --- Contatore FPS a schermo ---
                 if (now - lastFpsTime >= 1_000_000_000) { // È passato 1 secondo
                     fpsLabel.setText("FPS: " + framesRendered);
@@ -205,7 +258,7 @@ public class GameController {
                     inputManager.update(); 
                     
                     // Leggiamo quanti giocatori devono giocare
-                    int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+                    numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
                     
                     if (inputManager.isPlayer1Connected()) {
                         p1Label.setText("Giocatore 1: CONNESSO! 🎮");
@@ -434,6 +487,35 @@ public class GameController {
         
         // Mostriamo subito lo sfondo della mappa
         updateBackgroundPreview();
+    }
+    
+    // --- Menu disconnessione ---
+    private void createDisconnectMenu() {
+        disconnectMenu = new VBox(20);
+        disconnectMenu.setAlignment(Pos.CENTER);
+        disconnectMenu.setStyle("-fx-background-color: rgba(150, 0, 0, 0.85);"); // Sfondo rosso scuro emergenza
+        disconnectMenu.setVisible(false);
+
+        Label title = new Label("CONTROLLER SCOLLEGATO!");
+        title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        // Aggiorniamo le istruzioni!
+        Label subTitle = new Label("Ricollega il controller e premi [X / A] per riprendere la partita.");
+        subTitle.setStyle("-fx-font-size: 24px; -fx-text-fill: yellow;");
+
+        // Teniamo solo il bottone per tornare al menu (se proprio non trovano il cavo!)
+        Button backToMenuBtn = new Button("Torna al Menu Principale");
+        backToMenuBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
+        backToMenuBtn.setOnAction(e -> {
+            if (gameLoop != null) gameLoop.stop();
+            application.Scenes.MainMenuScene mainMenu = new application.Scenes.MainMenuScene();
+            stage.setTitle("Main Menu");
+            stage.setScene(mainMenu.getScenaMenu(stage));
+            stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
+        });
+
+        // Niente più resumeBtn qui!
+        disconnectMenu.getChildren().addAll(title, subTitle, backToMenuBtn);
     }
     
     // --- Costruzione del menu per la scelta della mappa ---
