@@ -122,16 +122,16 @@ public class GameController {
         availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
 
         // Caricamento delle mappe in memoria
-        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 0.85));
-        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 0.88));
-        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 0.77));
-        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 0.72));
-        availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 0.9));
-        availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 0.9));
-        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 0.815));
-        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 0.83));
-        availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 0.9));
-        availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 0.9));
+        availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));
+        availableMaps.add(new MapData("9/11", "/Arenas/twinTowers.jpeg", 0.88));
+        availableMaps.add(new MapData("Smordor", "/Arenas/smordor.jpeg", 0.77));
+        availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
+        availableMaps.add(new MapData("UniPG", "/Arenas/uni.jpeg", 0.9));
+        availableMaps.add(new MapData("Koloxtol", "/Arenas/villaggioRurale.jpeg", 0.9));
+        availableMaps.add(new MapData("Paradise & Hell", "/Arenas/doubleSide.jpeg", 0.815));
+        availableMaps.add(new MapData("Rifugio dell'amicizia", "/Arenas/broBase.jpeg", 0.83));
+        availableMaps.add(new MapData("Villaggio incantato", "/Arenas/cherryVillage.jpeg", 0.9));
+        availableMaps.add(new MapData("Mini Rifugio", "/Arenas/villaggioPiccolo.jpeg", 0.9));
     }
 
     public void startGame() {
