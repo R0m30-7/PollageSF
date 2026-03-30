@@ -30,7 +30,6 @@ public class PlayerRenderer {
     
     // Forme per le azioni (per ora rimangono i rettangoli)
     private Rectangle punchVisual;
-    private Rectangle defenseVisual;
     
     // Per visualizzare l'hitbox del giocatore
     private Rectangle hitboxVisual;
@@ -75,16 +74,9 @@ public class PlayerRenderer {
         hitboxVisual.setStrokeWidth(2);    // Spessore del bordo
         // Per ora la lasciamo 0x0, la aggiorneremo nel render
 
-        // --- LA DIFESA (Azzurro semitrasparente) ---
-        defenseVisual = new Rectangle(GameConfig.pDefenseWidth, GameConfig.pDefenseHeight, Color.LIGHTBLUE);
-        defenseVisual.setOpacity(0.6);
-        defenseVisual.setStroke(Color.BLUE);
-        defenseVisual.setVisible(false);
-
         // Aggiungiamo tutto al rootNode (lo sprite prende il posto del bodyContainer)
         if (spriteView != null) rootNode.getChildren().add(spriteView);
         rootNode.getChildren().add(hitboxVisual);	// Visualizzazione hitbox
-        rootNode.getChildren().addAll(punchVisual, defenseVisual);
     }
 
     public Pane getNode() {
@@ -115,15 +107,23 @@ public class PlayerRenderer {
 
                 // 3. Calcolo del tempo per scorrere i frame
                 long now = System.nanoTime();
-                if (now - lastFrameTime > currentData.speedNs) {
-                    if (currentData.loop) {
-                        // Ciclo continuo (es. camminata): 0, 1, 2, 0, 1, 2...
-                        currentFrame = (currentFrame + 1) % currentData.frameCount;
-                    } else {
-                        // Animazione singola (es. pugno): si ferma all'ultimo frame
-                        currentFrame = Math.min(currentFrame + 1, currentData.frameCount - 1);
+                
+                // --- Congelamento stun ---
+                if (!player.isStunned()) {
+                    if (now - lastFrameTime > currentData.speedNs) {
+                        if (currentData.loop) {
+                            // Ciclo continuo (es. camminata): 0, 1, 2, 0, 1, 2...
+                            currentFrame = (currentFrame + 1) % currentData.frameCount;
+                        } else {
+                            // Animazione singola (es. pugno): si ferma all'ultimo frame
+                            currentFrame = Math.min(currentFrame + 1, currentData.frameCount - 1);
+                        }
+                        lastFrameTime = now;
                     }
-                    lastFrameTime = now;
+                } else {
+                    // Aggiorniamo comunque il timer nascosto. Così quando finisce lo stun, 
+                    // l'animazione non "salta" in avanti recuperando il tempo perso!
+                    lastFrameTime = now; 
                 }
 
                 // Spostiamo il viewport leggendo le coordinate esatte
@@ -172,23 +172,6 @@ public class PlayerRenderer {
             punchVisual.setY(punchY);
         } else {
             punchVisual.setVisible(false);
-        }
-    
-        // ==========================================
-        // GESTIONE DIFESA (Invariata)
-        // ==========================================
-        if (player.isDefending()) {
-            defenseVisual.setVisible(true);
-            double defenseY = py + (player.getHeight() - GameConfig.pDefenseHeight) / 2.0; 
-            
-            if (player.isFacingRight()) {
-                defenseVisual.setX(px + (player.getWidth() * 0.8)); 
-            } else {
-                defenseVisual.setX(px - GameConfig.pDefenseWidth + (player.getWidth() * 0.2)); 
-            }
-            defenseVisual.setY(defenseY);
-        } else {
-            defenseVisual.setVisible(false);
         }
     }
 }

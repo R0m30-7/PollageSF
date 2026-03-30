@@ -73,23 +73,32 @@ public class GameModel {
         player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
         
         // 3. Movimento (con LIMITI DELL'ARENA)
-        double p1X = input.getLeftStickX(1);
-        if (Math.abs(p1X) > 0.0) {
-            player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+        // --- GIOCATORE 1 ---
+        if (!player1.isStunned()) {
+            double p1X = input.getLeftStickX(1);
+            if (Math.abs(p1X) > 0.0) {
+                player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+            }
+            if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
+            if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
+            player1.setDefending(input.isDefendButtonPressed(1));
+        } else {
+            // Se è stordito, abbassa le difese e si ferma!
+            player1.setDefending(false);
         }
-        if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
-        
-        if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
-        
-        player1.setDefending(input.isDefendButtonPressed(1));
 
-        double p2X = input.getLeftStickX(2);
-        if (Math.abs(p2X) > 0.0) {
-            player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+        // --- GIOCATORE 2 ---
+        if (!player2.isStunned()) {
+            double p2X = input.getLeftStickX(2);
+            if (Math.abs(p2X) > 0.0) {
+                player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+            }
+            if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
+            if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
+            player2.setDefending(input.isDefendButtonPressed(2));
+        } else {
+            player2.setDefending(false);
         }
-        if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
-        if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
-        player2.setDefending(input.isDefendButtonPressed(2));
         
         // --- 3. LOGICA DI COMBATTIMENTO ---
         handleCombat(player1, player2);
@@ -167,35 +176,60 @@ public class GameModel {
     //      IL MOTORE DEI DANNI E COLLISIONI
     // ==========================================
     private void handleCombat(Player attacker, Player defender) {
-    	// 1. Aggiungiamo il controllo: l'attaccante e il difensore NON devono essere la stessa persona!
         if (attacker == defender) return;
         
-        // Controlla se sta attaccando e se non ha già fatto danno in questa animazione
         if (attacker.isPunchActive() && !attacker.hasDealtDamage()) {
             
-            // 2. Calcoliamo la X del pugno usando la LARGHEZZA REALE del giocatore, non GameConfig!
+            // Usiamo ancora GameConfig solo per la forma del pugno finché non viene
+            // incapsulata anche quella, ma il calcolo usa le posizioni dinamiche.
             double punchX = attacker.isFacingRight() 
                     ? attacker.getPosition().getX() + attacker.getWidth() 
                     : attacker.getPosition().getX() - GameConfig.pPunchWidth;
-            
-            // 3. Calcoliamo la Y del pugno usando l'ALTEZZA REALE del giocatore
             double punchY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2);
             
-            // Crea una Hitbox invisibile per il calcolo matematico
             Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), GameConfig.pPunchWidth, GameConfig.pPunchHeight);
             
-            // Controlla se il pugno si sovrappone al corpo del difensore
             if (punchHitbox.intersects(defender.getBoundingBox())) {
                 
-                // Applica i danni se l'avversario non sta bloccando
-                if (defender.isDefending()) {
-                    System.out.println("Colpo parato!");
+                // IL DANNO ORA È DINAMICO!
+                double baseDamage = attacker.getPunchDamage();
+
+                boolean isAttackerOnRight = attacker.getPosition().getX() > defender.getPosition().getX();
+                boolean isFacingAttacker = (isAttackerOnRight && defender.isFacingRight()) || (!isAttackerOnRight && !defender.isFacingRight());
+
+                if (defender.isDefending() && isFacingAttacker) {
+                    long blockDuration = System.currentTimeMillis() - defender.getBlockStartTime();
+                    
+                    // Otteniamo dinamicamente i dati dell'animazione di parata del difensore!
+                    AnimData blockData = defender.getBlockAnimData(); 
+                    long timePerFrameMs = blockData.speedNs / 1_000_000L; // Convertiamo nanosecondi in millisecondi
+                    int totalFrames = blockData.frameCount;
+                    
+                    // Calcoliamo in quale "frame teorico" della parata si trova il difensore
+                    int currentBlockFrame = (int) (blockDuration / timePerFrameMs);
+
+                    // Se l'animazione è arrivata all'ultimo frame (o lo ha superato tenendo premuto) -> PARRY PERFETTO!
+                    if (currentBlockFrame >= totalFrames - 1) {
+                        System.out.println("⭐ PARRY PERFETTO di " + defender.getDisplayName() + "!");
+                        attacker.stun(defender.getParryStunDuration());
+                        
+                    } else {
+                        // Formula Dinamica: (FrameAttuale + 1) / FrameTotali.
+                        // Es: 3 frame totali. Frame 0 -> 33% bloccato. Frame 1 -> 66% bloccato.
+                        double blockPercentage = (double) (currentBlockFrame + 1) / totalFrames;
+                        double damageMultiplier = 1.0 - blockPercentage;
+                        
+                        double finalDamage = baseDamage * damageMultiplier;
+                        
+                        System.out.println("🛡️ Parata Parziale (Frame " + (currentBlockFrame + 1) + "/" + totalFrames + ")! Danno subito: " + finalDamage);
+                        defender.takeDamage((int) finalDamage);
+                    }
                 } else {
-                    System.out.println("COLPITO! Danno: " + GameConfig.pPunchDamage);
-                    defender.takeDamage(GameConfig.pPunchDamage);
+                    // Preso in pieno o di spalle!
+                    System.out.println("💥 COLPITO IN PIENO! Danno: " + baseDamage);
+                    defender.takeDamage((int) baseDamage);
                 }
                 
-                // Segna che il pugno ha colpito
                 attacker.setHasDealtDamage(true);
             }
         }

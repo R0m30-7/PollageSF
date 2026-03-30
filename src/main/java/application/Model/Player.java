@@ -34,6 +34,12 @@ public class Player {
     protected double gravity;
     protected double jumpStrength;	// Deve essere negativo perché la y aumenta dal basso verso l'alto
     
+    // --- Meccanica di parata e stordimento ---
+    protected long blockStartTime = 0;
+    protected boolean wasDefending = false;
+    protected long stunEndTime = 0;
+    protected long parryStunDuration; 	// Quanto tempo rimane stordito il nemico se esegui un parry
+    
     // L'hurtbox del player
     private Hitbox boundingBox;
     
@@ -42,6 +48,7 @@ public class Player {
     protected int health;
     private boolean isFacingRight = true; 
     private boolean isPunching = false;
+    protected double punchDamage;
     private long punchStartTime = 0; // Memorizza il nanosecondo esatto in cui parte il pugno
     protected long punchDurationNs; // Quanto dura l'impatto del pugno
     private boolean isDefending = false;
@@ -118,11 +125,24 @@ public class Player {
     }
 
     public void setDefending(boolean defending) {
-        if (!isPunching) {
-            this.isDefending = defending;
-        } else {
-            this.isDefending = false; 
+        // Se ha appena iniziato a parare in questo frame
+        if (defending && !this.wasDefending) {
+            this.blockStartTime = System.currentTimeMillis();
         }
+        this.isDefending = defending;
+        this.wasDefending = defending;
+    }
+    
+    public long getBlockStartTime() { 
+        return blockStartTime; 
+    }
+    
+    public void stun(long durationMs) { 
+        this.stunEndTime = System.currentTimeMillis() + durationMs; 
+    }
+
+    public boolean isStunned() { 
+        return System.currentTimeMillis() < stunEndTime; 
     }
     
     public void takeDamage(int damage) {
@@ -193,6 +213,12 @@ public class Player {
     
     // Cervello delle animazioni
     public void updateAnimationState() {
+        // Se il giocatore è stordito, NON cambiamo l'animazione.
+        // Rimarrà bloccato nell'ultimo stato (es. se stava tirando un pugno, rimarrà col braccio teso)
+        if (isStunned()) {
+            return; 
+        }
+        
         long now = System.nanoTime();
 
         // --- 1. PRIORITÀ MASSIMA: ANIMAZIONE TURN (UNA TANTUM) ---
@@ -229,6 +255,12 @@ public class Player {
         }
     }
     
+    // Restituisce i dati dell'animazione di parata 
+    // per permettere al Model di calcolarne la durata e i frame senza hardcodare nulla
+    public application.Model.AnimData getBlockAnimData() {
+        return animations.get(isFacingRight() ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT);
+    }
+    
     public AnimState getCurrentAnimState() { return currentAnimState; }
     public AnimData getCurrentAnimData() { return animations.get(currentAnimState); }
     
@@ -255,6 +287,7 @@ public class Player {
         // 3. Aggiorniamo la variabile effettiva
         this.isFacingRight = facingRight; 
     }
+    public double getPunchDamage() { return punchDamage; }
     public boolean isPunching() { return isPunching; }
     public boolean isDefending() { return isDefending; }
     public boolean hasDealtDamage() { return hasDealtDamage; }
@@ -270,4 +303,5 @@ public class Player {
     public double getHeight() { return height; }
     public String getDisplayName() { return displayName; }
     public String getPfpPath() { return pfpPath; }
+    public long getParryStunDuration() { return parryStunDuration; }
 }

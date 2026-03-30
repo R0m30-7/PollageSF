@@ -9,6 +9,7 @@ public class RedTurnip extends Player {
 		// Dati HARDCODED
 		this.maxHealth = 100;
 		this.health = this.maxHealth;
+		this.parryStunDuration = 1200;
 		
 		// --- Per il menu della selezione dei personaggi ---
         this.displayName = "Ascanio";
@@ -21,6 +22,7 @@ public class RedTurnip extends Player {
 		
 		// L'impatto del pugno dura esattamente 10 millisecondi
         this.punchDurationNs = 10 * 1_000_000L;
+        this.punchDamage = 10.0;
 		
 		this.atlasPath = "/Sprites/redTurnipAtlas.png";
 		this.spriteRows = 8;
