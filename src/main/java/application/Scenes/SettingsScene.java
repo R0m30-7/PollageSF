@@ -16,7 +16,11 @@ public class SettingsScene {
     public Scene getSettingsScene(Stage stage, Scene previousScene) {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: cadetblue;"); // Stesso sfondo del MainMenu
+        root.setStyle(
+                "-fx-background-image: url('/MenuBackgrounds/settingsMenu.png'); " +
+                "-fx-background-size: cover; " +
+                "-fx-background-position: center center;"
+            );
 
         Label title = new Label("IMPOSTAZIONI");
         title.setStyle("-fx-font-size: 36px; -fx-text-fill: white; -fx-font-weight: bold;");

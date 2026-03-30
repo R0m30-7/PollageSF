@@ -216,7 +216,7 @@ public class GameController {
         double startW = application.Utils.Settings.getInstance().getWindowWidth();
         double startH = application.Utils.Settings.getInstance().getWindowHeight();
         // Imposto uno sfondo per la schermata di connessione dei controller
-        view.changeBackground("/Backgrounds/ConnectionMenu.png", startW, startH);
+        view.changeBackground("/MenuBackgrounds/ConnectionMenu.png", startW, startH);
 
         startGameLoop();
     }
@@ -579,7 +579,9 @@ public class GameController {
         waitingForControllers = false;		
         connectionMenu.setVisible(false);	
         
-        view.getRoot().setEffect(new GaussianBlur(25));
+        view.getRoot().setEffect(null);
+        
+        view.changeBackground("/MenuBackgrounds/characterSelectionMenu.png", scene.getWidth(), scene.getHeight());
         
         // Diciamo al gioco di memorizzare che stiamo già premendo il tasto, 
         // così aspetterà che lo rilasciamo prima di cliccare la mappa!
@@ -600,7 +602,7 @@ public class GameController {
     private void createCharacterSelectionMenu() {
         charSelectionMenu = new VBox(30);
         charSelectionMenu.setAlignment(Pos.CENTER);
-        charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9);"); 
+        charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
         charSelectionMenu.setVisible(false);
 
         Label title = new Label("SCEGLI IL TUO LOTTATORE");

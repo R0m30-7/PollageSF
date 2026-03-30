@@ -13,7 +13,11 @@ public class MainMenuScene {
 	public Scene getScenaMenu(Stage stage) {
 		// Rappresenta il contenitore principale della scena
 		StackPane root = new StackPane();
-		root.setStyle("-fx-background-color: cadetblue;");
+		root.setStyle(
+			    "-fx-background-image: url('/MenuBackgrounds/titleScreenMenu.png'); " +
+			    "-fx-background-size: cover; " +
+			    "-fx-background-position: center center;"
+			);
 
 		VBox MenuButContainer = new VBox(20); 	// Il 20 indica 20 pixel di spazio tra un bottone e l'altro
 		MenuButContainer.setAlignment(Pos.CENTER);
