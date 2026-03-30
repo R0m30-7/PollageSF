@@ -21,6 +21,7 @@ public class MainMenuScene {
 
 		VBox MenuButContainer = new VBox(20); 	// Il 20 indica 20 pixel di spazio tra un bottone e l'altro
 		MenuButContainer.setAlignment(Pos.CENTER);
+		MenuButContainer.setTranslateY(150);	// Per evitare che i pulsanti si sovrappongano con lo sfondo
 		
 		Button[] MenuButList = new Button[3];	// Voglio 3 pulsanti nel menu
 
