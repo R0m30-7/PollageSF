@@ -107,7 +107,7 @@ public class InputManager {
     public boolean isPunchButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
         // Tasto X o Y (Quadrato o Triangolo su PS)
-        return state != null && (state.x || state.y); 
+        return state != null && state.x; 
     }
 
     public boolean isDefendButtonPressed(int playerNumber) {
