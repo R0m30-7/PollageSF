@@ -67,17 +67,8 @@ public class GameController {
     private boolean wasCancelP1Pressed = false;
     private boolean wasConfirmP2Pressed = false;
     private boolean wasCancelP2Pressed = false;
-
-    // Struttura dati per i personaggi
-    public static class CharacterData {
-        public String displayName;
-        public String pfpPath;
-        
-        public CharacterData(String displayName, String pfpPath) {
-            this.displayName = displayName;
-            this.pfpPath = pfpPath;
-        }
-    }
+    
+    // Lista dei personaggi
     private List<CharacterData> availableCharacters = new ArrayList<>();
     
     // --- Scelta della mappa ---
@@ -120,31 +111,27 @@ public class GameController {
         this.stage = stage;
         this.view = new GameView();
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
-        this.view.initPlayers(model.getPlayer1(), model.getPlayer2());	// Inizializziamo la grafica dei giocatori
+        //this.view.initPlayers(model.getPlayer1(), model.getPlayer2());	// Inizializziamo la grafica dei giocatori
         this.inputManager = InputManager.getInstance();
         
-        // Caricamento dei Personaggi in memoria
-        // Creiamo un "manichino" di Turnip solo per leggerne la carta d'identità!
-        application.Model.Turnip dummyTurnip = new application.Model.Turnip(new javafx.geometry.Point2D(0, 0));
-        
         // Aggiungiamo Turnip leggendo i dati dalla SUA classe
-        availableCharacters.add(new CharacterData(dummyTurnip.getDisplayName(), dummyTurnip.getPfpPath()));
+        availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
+        availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
         // Aggiungiamo un paio di placeholder temporanei per testare la griglia
-        availableCharacters.add(new CharacterData("Potato (LOCKED)", "/Sprites/potatoPFP.png"));
         availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
         availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
 
         // Caricamento delle mappe in memoria
+        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 0.85));
+        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 0.88));
+        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 0.77));
+        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 0.72));
+        availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 0.9));
+        availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 0.9));
+        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 0.815));
         availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 0.83));
         availableMaps.add(new MapData("Villaggio incantato", "/Backgrounds/cherryVillage.jpeg", 0.9));
-        availableMaps.add(new MapData("CuloLand", "/Backgrounds/culoLand.jpeg", 0.85));
-        availableMaps.add(new MapData("Paradise & Hell", "/Backgrounds/doubleSide.jpeg", 0.815));
-        availableMaps.add(new MapData("Fight Club", "/Backgrounds/fightClub.jpeg", 0.72));
-        availableMaps.add(new MapData("Smordor", "/Backgrounds/smordor.jpeg", 0.77));
-        availableMaps.add(new MapData("9/11", "/Backgrounds/twinTowers.jpeg", 0.88));
-        availableMaps.add(new MapData("UniPG", "/Backgrounds/uni.jpeg", 0.9));
         availableMaps.add(new MapData("Mini Rifugio", "/Backgrounds/villaggioPiccolo.jpeg", 0.9));
-        availableMaps.add(new MapData("Koloxtol", "/Backgrounds/villaggioRurale.jpeg", 0.9));
     }
 
     public void startGame() {
@@ -175,7 +162,7 @@ public class GameController {
         mainRoot.getChildren().add(disconnectMenu);
     	
     	// Creazione dell'etichetta degli FPS in alto a destra
-        fpsLabel = new Label("FPS: 0");
+        fpsLabel = new Label("FPS: 60");
         fpsLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: limegreen; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 2, 1.0, 0, 0);");
         StackPane.setAlignment(fpsLabel, Pos.TOP_RIGHT);
         StackPane.setMargin(fpsLabel, new javafx.geometry.Insets(10, 20, 10, 10)); 
@@ -875,11 +862,28 @@ public class GameController {
     	MapData currentMap = availableMaps.get(currentMapIndex);
     	view.changeBackground(currentMap.imagePath, scene.getWidth(), scene.getHeight());
     }
-    
+
     private void confirmMapSelection() {
         waitingForMapSelection = false;
         mapSelectionMenu.setVisible(false);
-        view.getRoot().setEffect(null); 
+        view.getRoot().setEffect(null);
+        
+        // ========================================================
+        // --- SPAWN DEI PERSONAGGI SCELTI DAL MENU ---
+        // ========================================================
+        CharacterFactory factoryP1 = availableCharacters.get(p1CharIndex).factory;
+        CharacterFactory factoryP2 = availableCharacters.get(p2CharIndex).factory;
+        
+        // 2. Chiediamo al Model di spawnarli (lui sa dove metterli!)
+        model.spawnPlayers(factoryP1, factoryP2);
+
+        // 3. Inizializziamo la grafica per i nuovi oggetti Player creati
+        view.initPlayers(model.getPlayer1(), model.getPlayer2());
+        
+        // ========================================================
+
+        // Svegliamo la View e le diciamo quanto è grande lo schermo, così posiziona l'HUD!
+        view.updateWindowSize(scene.getWidth(), scene.getHeight());
         
         // --- Mostriamo HUD e giocatori ---
         view.setGameElementsVisible(true);

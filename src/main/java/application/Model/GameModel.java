@@ -1,7 +1,7 @@
 package application.Model;
 
 import javafx.geometry.Point2D;
-
+import application.Controller.CharacterFactory;
 import application.Controller.InputManager;
 import application.Utils.GameConfig;
 
@@ -10,7 +10,7 @@ public class GameModel {
     private Player player2;
     
     // L'arena è larga il doppio dello schermo
-    private double WORLD_WIDTH = application.Utils.Settings.getInstance().getWindowWidth() * 2;
+    private double worldWidth = application.Utils.Settings.getInstance().getWindowWidth() * 2;
     
     // Posizione X della telecamera
     private double cameraX = 0;
@@ -35,7 +35,7 @@ public class GameModel {
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
     	// Imposto la larghezza del mondo come quella dell'immagine
-    	this.WORLD_WIDTH = bgWidth;
+    	this.worldWidth = bgWidth;
     	// Imposto il pavimento della scena
     	this.GROUND_LEVEL = currentWindowHeight - 100.0;
     	
@@ -43,8 +43,8 @@ public class GameModel {
     	double spawnY = this.GROUND_LEVEL - GameConfig.pHeight;
     	
         // Spawn dei giocatori al centro del mondo (scelgo di base la classe Turnip)
-    	player1 = new Turnip(new Point2D(WORLD_WIDTH / 2 - 200, spawnY)); 
-        player2 = new Turnip(new Point2D(WORLD_WIDTH / 2 + 200, spawnY));
+    	player1 = new Turnip(new Point2D(worldWidth / 2 - 200, spawnY)); 
+        player2 = new Turnip(new Point2D(worldWidth / 2 + 200, spawnY));
         
         // Impostiamo le direzioni iniziali
         player1.setFacingRight(true); 
@@ -128,8 +128,8 @@ public class GameModel {
         // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
         if (targetCameraX < 0) {
         	targetCameraX = 0; // Blocco al muro sinistro del mondo
-        } else if (targetCameraX > (WORLD_WIDTH - currentWindowWidth)) {
-        	targetCameraX = WORLD_WIDTH - currentWindowWidth; // Blocco al muro destro del mondo
+        } else if (targetCameraX > (worldWidth - currentWindowWidth)) {
+        	targetCameraX = worldWidth - currentWindowWidth; // Blocco al muro destro del mondo
         }
         
         // LERP (INTERPOLAZIONE LINEARE) - Movimento morbido della telecamera
@@ -209,8 +209,8 @@ public class GameModel {
             p.setPosition(new Point2D(0, p.getPosition().getY()));
         } 
         // Controllo muro destro (tenendo conto dello spessore del giocatore dalla sua bounding box)
-        else if (currentX > WORLD_WIDTH - p.getWidth()) {
-            p.setPosition(new Point2D(WORLD_WIDTH - p.getWidth(), p.getPosition().getY()));
+        else if (currentX > worldWidth - p.getWidth()) {
+            p.setPosition(new Point2D(worldWidth - p.getWidth(), p.getPosition().getY()));
         }
         
         // Aggiorniamo la bounding box logica per riflettere la posizione bloccata
@@ -249,7 +249,7 @@ public class GameModel {
         this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
         
         // Il mondo di gioco si allarga e restringe in base allo zoom dello sfondo
-        this.WORLD_WIDTH = newWorldWidth;
+        this.worldWidth = newWorldWidth;
 
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
         // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su!
@@ -267,5 +267,30 @@ public class GameModel {
     	this.currentGroundRatio = ratio;
         // Calcola subito il pavimento in pixel moltiplicando l'altezza per la percentuale
         this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
+    }
+    
+    // Metodo universale per lo spawn
+    public void spawnPlayers(CharacterFactory f1, CharacterFactory f2) {
+        // Le coordinate sono decise solo qui! 
+        // Possiamo usare delle proporzioni rispetto alla larghezza del mondo (worldWidth)
+        double spawnX1 = worldWidth * 0.2; 
+        double spawnX2 = worldWidth * 0.8;
+        double spawnY = 0; // Verranno poi appoggiati al suolo da applyPhysics o setGroundLevel
+
+        this.player1 = f1.create(new Point2D(spawnX1, spawnY));
+        this.player2 = f2.create(new Point2D(spawnX2, spawnY));
+        
+        this.player2.setFacingRight(false); // Il P2 guarda sempre a sinistra all'inizio
+    }
+    
+    // --- INIEZIONE DEI GIOCATORI SELEZIONATI ---
+    // Questo serve perché altrimenti, anche se il giocatore scegliesse il personaggio dalla mappa dei
+    // personaggi, vedrebbe comunque che il suo giocatore risulta Turnip (ovvero quello inizializato
+    // nel costruttore del GameModel()
+    public void setPlayers(Player p1, Player p2) {
+        this.player1 = p1;
+        this.player2 = p2;
+        // Se nel tuo GameModel gestisci anche le posizioni di spawn, 
+        // puoi riposizionarli qui! (es: p1.setPosition(...))
     }
 }
