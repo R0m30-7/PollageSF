@@ -10,6 +10,10 @@ public class Turnip extends Player {
 		this.maxHealth = 100;
 		this.health = this.maxHealth;
 		
+		// --- Per il menu della selezione dei personaggi ---
+        this.displayName = "Turnip";
+        this.pfpPath = "/Sprites/turnipPFP.png";
+		
 		this.jumpStrength = -11.0;
 		this.gravity = 0.2;
 		

@@ -45,6 +45,41 @@ public class GameController {
     private boolean isDisconnected = false;
     private VBox disconnectMenu;
     
+    // Scelta dei personaggi
+    private boolean waitingForCharacterSelection = false;
+    private VBox charSelectionMenu;
+    private TilePane charsContainer; 
+    private ScrollPane charScrollPane;
+    private List<VBox> charNodes = new ArrayList<>();
+    
+    // Posizioni e conferme dei cursori
+    private int p1CharIndex = 0;
+    private int p2CharIndex = 0;
+    private boolean p1Confirmed = false;
+    private boolean p2Confirmed = false;
+    
+    // Timer per lo scorrimento indipendente (evita che la levetta scorra a 200 all'ora)
+    private long lastCharInputTimeP1 = 0;
+    private long lastCharInputTimeP2 = 0;
+    
+    // Memoria dei tasti premuti
+    private boolean wasConfirmP1Pressed = false;
+    private boolean wasCancelP1Pressed = false;
+    private boolean wasConfirmP2Pressed = false;
+    private boolean wasCancelP2Pressed = false;
+
+    // Struttura dati per i personaggi
+    public static class CharacterData {
+        public String displayName;
+        public String pfpPath;
+        
+        public CharacterData(String displayName, String pfpPath) {
+            this.displayName = displayName;
+            this.pfpPath = pfpPath;
+        }
+    }
+    private List<CharacterData> availableCharacters = new ArrayList<>();
+    
     // --- Scelta della mappa ---
     private VBox mapSelectionMenu;
     private TilePane mapsContainer; // Contenitore orizzontale per le mappe
@@ -87,6 +122,17 @@ public class GameController {
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
         this.view.initPlayers(model.getPlayer1(), model.getPlayer2());	// Inizializziamo la grafica dei giocatori
         this.inputManager = InputManager.getInstance();
+        
+        // Caricamento dei Personaggi in memoria
+        // Creiamo un "manichino" di Turnip solo per leggerne la carta d'identità!
+        application.Model.Turnip dummyTurnip = new application.Model.Turnip(new javafx.geometry.Point2D(0, 0));
+        
+        // Aggiungiamo Turnip leggendo i dati dalla SUA classe
+        availableCharacters.add(new CharacterData(dummyTurnip.getDisplayName(), dummyTurnip.getPfpPath()));
+        // Aggiungiamo un paio di placeholder temporanei per testare la griglia
+        availableCharacters.add(new CharacterData("Potato (LOCKED)", "/Sprites/potatoPFP.png"));
+        availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
+        availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
 
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("Rifugio dell'amicizia", "/Backgrounds/broBase.jpeg", 0.83));
@@ -111,6 +157,10 @@ public class GameController {
     	// Creazione del menu da aggiungere sopra al gioco
     	createConnectionMenu();
     	mainRoot.getChildren().add(connectionMenu);
+    		
+    	// Creazione del menu per la scelta del personaggio
+    	createCharacterSelectionMenu();
+    	mainRoot.getChildren().add(charSelectionMenu);
     	
     	// Creiamo e aggiungiamo il menu delle mappe (nascosto)
     	createMapSelectionMenu();
@@ -285,6 +335,75 @@ public class GameController {
                         closeConnectionMenu();
                     }
                     
+                    physicsAccumulator = 0;
+                    renderAccumulator = 0;
+                } else if (waitingForCharacterSelection) {
+                    inputManager.update();
+                    long currentTimeMs = System.currentTimeMillis();
+                    numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+                    int cols = 4; // Colonne fisse della griglia
+
+                    // --- GIOCATORE 1 ---
+                    if (!p1Confirmed) {
+                        double x1 = inputManager.getLeftStickX(1);
+                        double y1 = inputManager.getLeftStickY(1);
+                        
+                        if (currentTimeMs - lastCharInputTimeP1 > 200) { 
+                            if (x1 < -0.5) { p1CharIndex--; lastCharInputTimeP1 = currentTimeMs; }
+                            else if (x1 > 0.5) { p1CharIndex++; lastCharInputTimeP1 = currentTimeMs; }
+                            else if (y1 < -0.5) { p1CharIndex -= cols; lastCharInputTimeP1 = currentTimeMs; }
+                            else if (y1 > 0.5) { p1CharIndex += cols; lastCharInputTimeP1 = currentTimeMs; }
+
+                            // Ciclo infinito (se esci dai bordi torni all'inizio)
+                            if (p1CharIndex < 0) p1CharIndex = availableCharacters.size() - 1;
+                            if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
+                        }
+                    }
+
+                    boolean p1ConfirmBtn = inputManager.isJumpButtonPressed(1);
+                    if (p1ConfirmBtn && !wasConfirmP1Pressed) p1Confirmed = true;
+                    wasConfirmP1Pressed = p1ConfirmBtn;
+
+                    boolean p1CancelBtn = inputManager.isDefendButtonPressed(1); // Tasto "Cerchio"
+                    if (p1CancelBtn && !wasCancelP1Pressed) p1Confirmed = false;
+                    wasCancelP1Pressed = p1CancelBtn;
+
+                    // --- GIOCATORE 2 ---
+                    if (numPlayers == 2) {
+                        if (!p2Confirmed) {
+                            double x2 = inputManager.getLeftStickX(2);
+                            double y2 = inputManager.getLeftStickY(2);
+                            
+                            if (currentTimeMs - lastCharInputTimeP2 > 200) { 
+                                if (x2 < -0.5) { p2CharIndex--; lastCharInputTimeP2 = currentTimeMs; }
+                                else if (x2 > 0.5) { p2CharIndex++; lastCharInputTimeP2 = currentTimeMs; }
+                                else if (y2 < -0.5) { p2CharIndex -= cols; lastCharInputTimeP2 = currentTimeMs; }
+                                else if (y2 > 0.5) { p2CharIndex += cols; lastCharInputTimeP2 = currentTimeMs; }
+
+                                if (p2CharIndex < 0) p2CharIndex = availableCharacters.size() - 1;
+                                if (p2CharIndex >= availableCharacters.size()) p2CharIndex = 0;
+                            }
+                        }
+
+                        boolean p2ConfirmBtn = inputManager.isJumpButtonPressed(2);
+                        if (p2ConfirmBtn && !wasConfirmP2Pressed) p2Confirmed = true;
+                        wasConfirmP2Pressed = p2ConfirmBtn;
+
+                        boolean p2CancelBtn = inputManager.isDefendButtonPressed(2);
+                        if (p2CancelBtn && !wasCancelP2Pressed) p2Confirmed = false;
+                        wasCancelP2Pressed = p2CancelBtn;
+                    } else {
+                        // Se c'è solo un giocatore, il P2 è auto-confermato (CPU)
+                        p2Confirmed = true; 
+                    }
+
+                    updateCharacterSelectionUI(); // Disegna i movimenti
+
+                    // Se ENTRAMBI hanno confermato (lock-in), passiamo alle mappe!
+                    if (p1Confirmed && p2Confirmed) {
+                        closeCharacterSelectionMenu();
+                    }
+
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
                 } else if (waitingForMapSelection) {
@@ -477,15 +596,151 @@ public class GameController {
         
         // Diciamo al gioco di memorizzare che stiamo già premendo il tasto, 
         // così aspetterà che lo rilasciamo prima di cliccare la mappa!
-        wasConfirmPressed = inputManager.isJumpButtonPressed(1);
+        wasConfirmP1Pressed = inputManager.isJumpButtonPressed(1);
+        wasConfirmP2Pressed = inputManager.isJumpButtonPressed(2);
         
-        // Passiamo allo stato Scelta Mappa
+        // Passiamo allo stato Scelta Personaggi
+        waitingForCharacterSelection = true;
+        charSelectionMenu.setVisible(true);
+        p1CharIndex = 0;
+        p2CharIndex = 0;
+        p1Confirmed = false;
+        p2Confirmed = false;
+        updateCharacterSelectionUI();
+    }
+    
+    // --- COSTRUZIONE MENU PERSONAGGI ---
+    private void createCharacterSelectionMenu() {
+        charSelectionMenu = new VBox(30);
+        charSelectionMenu.setAlignment(Pos.CENTER);
+        charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9);"); 
+        charSelectionMenu.setVisible(false);
+
+        Label title = new Label("SCEGLI IL TUO LOTTATORE");
+        title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        charsContainer = new TilePane();
+        charsContainer.setAlignment(Pos.CENTER);
+        charsContainer.setHgap(30); 
+        charsContainer.setVgap(30); 
+        charsContainer.setPrefColumns(4); 
+        charsContainer.setMaxWidth(800); 
+
+        charNodes.clear(); 
+
+        for (CharacterData c : availableCharacters) {
+            VBox singleCharBox = new VBox(10); 
+            singleCharBox.setAlignment(Pos.CENTER);
+
+            // Usiamo uno StackPane per poter sovrapporre i cursori P1 e P2 all'immagine
+            StackPane imageContainer = new StackPane();
+            imageContainer.setPrefSize(120, 120);
+
+            ImageView pfp = new ImageView();
+            pfp.setFitWidth(120); 
+            pfp.setFitHeight(120);
+            try {
+                // Il metodo toExternalForm() è il modo più sicuro di JavaFX per caricare immagini dalle resources!
+                String imageURL = getClass().getResource(c.pfpPath).toExternalForm();
+                Image img = new Image(imageURL);
+                if (!img.isError()) pfp.setImage(img);
+            } catch (Exception e) {
+                System.out.println("⚠️ Nessuna foto trovata al percorso: " + c.pfpPath);
+            }
+
+            // Etichette P1 e P2 (Inizialmente invisibili)
+            Label p1Cursor = new Label("P1");
+            p1Cursor.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
+            StackPane.setAlignment(p1Cursor, Pos.TOP_LEFT);
+            p1Cursor.setVisible(false);
+
+            Label p2Cursor = new Label("P2");
+            p2Cursor.setStyle("-fx-background-color: blue; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
+            StackPane.setAlignment(p2Cursor, Pos.BOTTOM_RIGHT);
+            p2Cursor.setVisible(false);
+
+            // Rettangolo di selezione
+            javafx.scene.shape.Rectangle border = new javafx.scene.shape.Rectangle(128, 128);
+            border.setFill(Color.TRANSPARENT);
+            border.setStrokeWidth(4);
+            border.setStroke(Color.TRANSPARENT);
+
+            imageContainer.getChildren().addAll(border, pfp, p1Cursor, p2Cursor);
+
+            Label nameLabel = new Label(c.displayName);
+            nameLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+            singleCharBox.getChildren().addAll(imageContainer, nameLabel);
+            charNodes.add(singleCharBox); 
+            charsContainer.getChildren().add(singleCharBox); 
+        }
+
+        StackPane gridCenterer = new StackPane(charsContainer);
+        gridCenterer.setAlignment(Pos.CENTER);
+
+        charScrollPane = new ScrollPane(gridCenterer);
+        charScrollPane.setFitToWidth(true); 
+        charScrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;"); 
+        charScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); 
+        charScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); 
+
+        Label instructions = new Label("Levetta: Scegli | [X] Conferma | [O] Annulla");
+        instructions.setStyle("-fx-font-size: 20px; -fx-text-fill: lightgray;");
+
+        charSelectionMenu.getChildren().addAll(title, charScrollPane, instructions);
+    }
+
+    // --- AGGIORNAMENTO GRAFICO DEI CURSORI ---
+    private void updateCharacterSelectionUI() {
+        for (int i = 0; i < charNodes.size(); i++) {
+            VBox node = charNodes.get(i);
+            StackPane imageContainer = (StackPane) node.getChildren().get(0);
+            
+            javafx.scene.shape.Rectangle border = (javafx.scene.shape.Rectangle) imageContainer.getChildren().get(0);
+            Label p1Lbl = (Label) imageContainer.getChildren().get(2);
+            Label p2Lbl = (Label) imageContainer.getChildren().get(3);
+            
+            // Resettiamo tutto
+            p1Lbl.setVisible(false);
+            p2Lbl.setVisible(false);
+            border.setStroke(Color.TRANSPARENT);
+            border.setEffect(null);
+
+            boolean isP1Here = (i == p1CharIndex);
+            boolean isP2Here = (i == p2CharIndex && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2);
+
+            if (isP1Here) {
+                p1Lbl.setVisible(true);
+                // Se è confermato diventa luminosissimo, altrimenti colore standard
+                p1Lbl.setStyle(p1Confirmed ? "-fx-background-color: #ff5555; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;" 
+                                           : "-fx-background-color: darkred; -fx-text-fill: gray; -fx-font-weight: bold; -fx-padding: 2 5;");
+                border.setStroke(Color.RED);
+                if(p1Confirmed) border.setEffect(new DropShadow(20, Color.RED));
+            }
+
+            if (isP2Here) {
+                p2Lbl.setVisible(true);
+                p2Lbl.setStyle(p2Confirmed ? "-fx-background-color: #5555ff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;" 
+                                           : "-fx-background-color: darkblue; -fx-text-fill: gray; -fx-font-weight: bold; -fx-padding: 2 5;");
+                
+                // Se sono sullo stesso quadrato sovrascriviamo il bordo con un colore misto (Viola)
+                border.setStroke(isP1Here ? Color.PURPLE : Color.BLUE);
+                if(p2Confirmed) border.setEffect(new DropShadow(20, isP1Here ? Color.PURPLE : Color.BLUE));
+            }
+        }
+    }
+    
+    // --- CHIUSURA MENU PERSONAGGI -> PASSA ALLE MAPPE ---
+    private void closeCharacterSelectionMenu() {
+        waitingForCharacterSelection = false;
+        charSelectionMenu.setVisible(false);
+        
+        wasConfirmPressed = inputManager.isJumpButtonPressed(1); // Per evitare di cliccare subito la mappa
+
         waitingForMapSelection = true;
         mapSelectionMenu.setVisible(true);
         currentMapIndex = 0;
         updateMapSelectionUI();
-        
-        // Mostriamo subito lo sfondo della mappa
         updateBackgroundPreview();
     }
     

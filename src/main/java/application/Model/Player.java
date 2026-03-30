@@ -22,6 +22,10 @@ public class Player {
     protected double width;
     protected double height;
     
+    // --- Variabili per il Menu di Selezione ---
+    protected String displayName;
+    protected String pfpPath; // Profilo Picture Path
+    
     // Variabili per la fisica
     private double velocityY = 0.0;
     private boolean isGrounded = false;
@@ -264,4 +268,6 @@ public class Player {
     public int getRenderScale() {return renderScale;}
     public double getWidth() { return width; }
     public double getHeight() { return height; }
+    public String getDisplayName() { return displayName; }
+    public String getPfpPath() { return pfpPath; }
 }
