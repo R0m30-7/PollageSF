@@ -46,6 +46,7 @@ public class Turnip extends Player {
         // !!! MODIFICA IL PRIMO NUMERO (rigaAtlas) QUANDO HAI L'ATLAS CORRETTO !!!
         animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 3, 200, true)); 
         animations.put(AnimState.IDLE_LEFT, new AnimData(1, 0, 3, 200, true));
+        animations.put(AnimState.MENU_IDLE, new AnimData(4, 0, 5, 400, true));
 
         // *** MOVIMENTO ***
         // Camminata (Invariata, usa righe originali 1 e 2)

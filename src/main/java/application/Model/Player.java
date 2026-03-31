@@ -33,6 +33,7 @@ public class Player {
     // --- Variabili per il Menu di Selezione ---
     protected String displayName;
     protected String pfpPath; // Profilo Picture Path
+    protected boolean inMenuMode = false;
     
     // Variabili per la fisica
     private double velocityY = 0.0;
@@ -251,8 +252,13 @@ public class Player {
         } 
         // --- 4. LOGICA IDLE (Fermo) ---
         else {
-        	// Appena si ferma, scatta subito l'idle completo!
-            currentAnimState = isFacingRight ? AnimState.IDLE_RIGHT : AnimState.IDLE_LEFT;
+        	if (inMenuMode) {
+                // Se siamo nel menu, usa la posa da "sbruffone" dedicata!
+                currentAnimState = AnimState.MENU_IDLE;
+            } else {
+                // Se siamo in gioco, usa l'idle standard
+                currentAnimState = isFacingRight ? AnimState.IDLE_RIGHT : AnimState.IDLE_LEFT;
+            }
         }
     }
     
@@ -340,4 +346,7 @@ public class Player {
     public String getDisplayName() { return displayName; }
     public String getPfpPath() { return pfpPath; }
     public long getParryStunDuration() { return parryStunDuration; }
+    // Forza lo stato di "Tocca Terra" per l'animazione IDLE nel menu
+    public void setGrounded(boolean grounded) { this.isGrounded = grounded; }
+    public void setInMenuMode(boolean inMenu) { this.inMenuMode = inMenu; }
 }

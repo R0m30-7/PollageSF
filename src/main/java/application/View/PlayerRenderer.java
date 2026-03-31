@@ -147,4 +147,9 @@ public class PlayerRenderer {
         // Lo portiamo in primo piano per vederlo sopra lo sprite
         hitboxVisual.toFront();
     }
+    
+    // Metodo speciale da chiamare quando renderizziamo il personaggio nel Menu
+    public void setMenuMode() {
+        this.hitboxVisual.setVisible(false);
+    }
 }

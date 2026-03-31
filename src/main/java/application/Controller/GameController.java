@@ -47,10 +47,20 @@ public class GameController {
     
     // Scelta dei personaggi
     private boolean waitingForCharacterSelection = false;
-    private VBox charSelectionMenu;
+    private StackPane charSelectionMenu;
     private TilePane charsContainer; 
     private ScrollPane charScrollPane;
     private List<VBox> charNodes = new ArrayList<>();
+    
+    // --- NUOVE VARIABILI PER LE ANIMAZIONI DI PREVIEW ---
+    private javafx.scene.layout.Pane previewLayer;
+    private application.Model.Player p1Preview;
+    private application.Model.Player p2Preview;
+    private application.View.PlayerRenderer p1PreviewRenderer;
+    private application.View.PlayerRenderer p2PreviewRenderer;
+    private int lastP1Index = -1;
+    private int lastP2Index = -1;
+    private double lastPreviewScale = -1.0;
     
     // Posizioni e conferme dei cursori
     private int p1CharIndex = 0;
@@ -384,13 +394,16 @@ public class GameController {
                         p2Confirmed = true; 
                     }
 
-                    updateCharacterSelectionUI(); // Disegna i movimenti
-
                     // Se ENTRAMBI hanno confermato (lock-in), passiamo alle mappe!
                     if (p1Confirmed && p2Confirmed) {
                         closeCharacterSelectionMenu();
                     }
 
+                    updateCharacterSelectionUI(); // Disegna i movimenti
+                    
+                    // Renderizza i personaggi animati scelti
+                    updatePreviews();
+                    
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
                 } else if (waitingForMapSelection) {
@@ -600,20 +613,19 @@ public class GameController {
     
     // --- COSTRUZIONE MENU PERSONAGGI ---
     private void createCharacterSelectionMenu() {
-        charSelectionMenu = new VBox(30);
-        charSelectionMenu.setAlignment(Pos.CENTER);
-        charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
-        charSelectionMenu.setVisible(false);
-
-        Label title = new Label("SCEGLI IL TUO LOTTATORE");
-        title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        charsContainer = new TilePane();
+    	// Il contenitore centrale sarà charContent
+    	VBox charContent = new VBox(30);
+    	charContent.setAlignment(Pos.CENTER);
+    	
+    	Label title = new Label("SCEGLI IL TUO LOTTATORE");
+    	title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
+    	
+    	charsContainer = new TilePane();
         charsContainer.setAlignment(Pos.CENTER);
         charsContainer.setHgap(30); 
         charsContainer.setVgap(30); 
         charsContainer.setPrefColumns(4); 
-        charsContainer.setMaxWidth(800); 
+        charsContainer.setMaxWidth(800);
 
         charNodes.clear(); 
 
@@ -683,7 +695,21 @@ public class GameController {
         Label instructions = new Label("Levetta: Scegli | [X] Conferma | [O] Annulla");
         instructions.setStyle("-fx-font-size: 20px; -fx-text-fill: lightgray;");
 
-        charSelectionMenu.getChildren().addAll(title, charScrollPane, instructions);
+        // --- FINE DELLA COSTRUZIONE DELLA GRIGLIA ---
+        // Aggiungiamo i vari pezzi (titolo, griglia, istruzioni) al contenitore in colonna
+        charContent.getChildren().addAll(title, charScrollPane, instructions);
+
+        // 2. Creiamo un livello trasparente (Pane vuoto) per appoggiare i personaggi liberi animati
+        previewLayer = new javafx.scene.layout.Pane();
+        previewLayer.setMouseTransparent(true); // Fondamentale per evitare che i click vengano bloccati dall'invisibilità
+
+        // 3. Ricreiamo il VERO menu principale come "Panino" (StackPane)
+        charSelectionMenu = new StackPane();
+        charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
+        charSelectionMenu.setVisible(false);
+        
+        // Mettiamo il contenuto al centro e il livello dei lottatori SOPRA a tutto!
+        charSelectionMenu.getChildren().addAll(charContent, previewLayer);
     }
 
     // --- AGGIORNAMENTO GRAFICO DEI CURSORI ---
@@ -983,6 +1009,74 @@ public class GameController {
         } else {
             pauseMenu.setVisible(false);
             view.getRoot().setEffect(null); 
+        }
+    }
+    
+    // --- GESTIONE DELLE ANIMAZIONI NEL MENU PERSONAGGI ---
+    private void updatePreviews() {
+        if (scene == null) return;
+        
+        double currentScale = scene.getHeight() / 1080.0;
+        double screenW = scene.getWidth();
+        double screenH = scene.getHeight();
+        
+        // Capiamo se dobbiamo aggiornare qualcosa
+        boolean p1Changed = (p1CharIndex != lastP1Index);
+        boolean p2Changed = (p2CharIndex != lastP2Index);
+        boolean scaleChanged = (currentScale != lastPreviewScale);
+
+        // --- AGGIORNAMENTO LOGICO (Creazione nuovi Player) ---
+        if (p1Changed || scaleChanged) {
+            CharacterData data = availableCharacters.get(p1CharIndex);
+            if (data.factory != null) {
+                p1Preview = data.factory.create(new javafx.geometry.Point2D(0, 0));
+                p1Preview.updateDynamicScale(currentScale);
+                p1Preview.setFacingRight(true); 
+                p1Preview.setGrounded(true); 
+                p1Preview.setInMenuMode(true); // Indica che deve usare MENU_IDLE
+            }
+            p1PreviewRenderer = new application.View.PlayerRenderer(p1Preview);
+            p1PreviewRenderer.setMenuMode();
+        }
+
+        if (p2Changed || scaleChanged) {
+            CharacterData data = availableCharacters.get(p2CharIndex);
+            if (data.factory != null) {
+                p2Preview = data.factory.create(new javafx.geometry.Point2D(0, 0));
+                p2Preview.updateDynamicScale(currentScale);
+                p2Preview.setFacingRight(false); 
+                p2Preview.setGrounded(true);
+                p2Preview.setInMenuMode(true);
+            }
+            p2PreviewRenderer = new application.View.PlayerRenderer(p2Preview);
+            p2PreviewRenderer.setMenuMode();
+        }
+
+        // --- AGGIORNAMENTO GRAFICO (Svuotiamo e riempiamo il livello) ---
+        if (p1Changed || p2Changed || scaleChanged) {
+            previewLayer.getChildren().clear();
+            if (p1PreviewRenderer != null) previewLayer.getChildren().add(p1PreviewRenderer.getNode());
+            if (p2PreviewRenderer != null && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2) {
+                previewLayer.getChildren().add(p2PreviewRenderer.getNode());
+            }
+            
+            // AGGIORNIAMO GLI INDICI SOLO QUI ALLA FINE!
+            lastP1Index = p1CharIndex;
+            lastP2Index = p2CharIndex;
+            lastPreviewScale = currentScale;
+        }
+
+        // --- RENDERING ANIMATO (Sempre attivo per far muovere i personaggi) ---
+        double margin = 150 * currentScale; 
+        if (p1Preview != null) {
+            p1Preview.setPosition(new javafx.geometry.Point2D(margin, screenH - p1Preview.getHeight() - margin));
+            p1Preview.updateAnimationState();
+            p1PreviewRenderer.render(p1Preview);
+        }
+        if (p2Preview != null && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2) {
+            p2Preview.setPosition(new javafx.geometry.Point2D(screenW - p2Preview.getWidth() - margin, screenH - p2Preview.getHeight() - margin));
+            p2Preview.updateAnimationState();
+            p2PreviewRenderer.render(p2Preview);
         }
     }
 }

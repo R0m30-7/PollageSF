@@ -3,6 +3,7 @@ package application.Model;
 public enum AnimState {
     IDLE_LEFT,         // Il nuovo idle stazionario/respirazione
     IDLE_RIGHT,
+    MENU_IDLE,
     
     // MOVIMENTO
     WALK_LEFT,
