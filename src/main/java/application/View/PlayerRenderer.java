@@ -28,9 +28,6 @@ public class PlayerRenderer {
     private int currentFrame = 0;
     private long lastFrameTime = 0;
     
-    // Forme per le azioni (per ora rimangono i rettangoli)
-    private Rectangle punchVisual;
-    
     // Per visualizzare l'hitbox del giocatore
     private Rectangle hitboxVisual;
 
@@ -60,12 +57,6 @@ public class PlayerRenderer {
         } catch (Exception e) {
             System.out.println("Errore caricamento atlas: " + player.getAtlasPath());
         }
-
-        // --- IL PUGNO (Giallo) ---
-        // Viene creato piccolo poi ingrandito nel render
-        punchVisual = new Rectangle(0, 0, Color.YELLOW);
-        punchVisual.setStroke(Color.ORANGE);
-        punchVisual.setVisible(false);
         
         // Visualizzazione hitbox
         hitboxVisual = new Rectangle();
@@ -155,25 +146,5 @@ public class PlayerRenderer {
         
         // Lo portiamo in primo piano per vederlo sopra lo sprite
         hitboxVisual.toFront();
-
-        // ==========================================
-        // GESTIONE PUGNO (Invariata)
-        // ==========================================
-        if (player.isPunchActive()) {
-            punchVisual.setVisible(true);
-            punchVisual.toFront();
-            
-            // Aggiorniamo le dimensioni del rettangolo!
-            punchVisual.setWidth(player.getPunchWidth());
-            punchVisual.setHeight(player.getPunchHeight());
-            
-            double punchY = py + (player.getHeight() * 0.2); 
-            double punchX = player.isFacingRight() ? px + player.getWidth() : px - player.getPunchWidth();
-            
-            punchVisual.setX(punchX);
-            punchVisual.setY(punchY);
-        } else {
-            punchVisual.setVisible(false);
-        }
     }
 }

@@ -60,7 +60,7 @@ public class Player {
     private long punchStartTime = 0; // Memorizza il nanosecondo esatto in cui parte il pugno
     protected long punchDurationNs; // Quanto dura l'impatto del pugno
     private boolean isDefending = false;
-    private boolean hasDealtDamage = false; // Memorizza se il pugno ha già fatto danno
+    private boolean hasCheckedHit = false; // Memorizza se il gioco ha già calcolato il pugno o no
     
     // --- Gestione delle animazioni ---
     protected Map<AnimState, AnimData> animations = new HashMap<>();
@@ -91,17 +91,10 @@ public class Player {
                 // 1. Quando finisce l'animazione visiva?
                 long animDurationNs = anim.frameCount * anim.speedNs;
                 
-                // 2. Quando finisce l'hitbox del pugno? (Ritardo + Durata)
-                long ritardoNs = (anim.frameCount - 1) * anim.speedNs;
-                long hitboxEndNs = ritardoNs + this.punchDurationNs;
-                
-                // 3. Il pugno finisce VERAMENTE solo quando il tempo maggiore è trascorso!
-                long totalPunchTimeNs = Math.max(animDurationNs, hitboxEndNs);
-                
                 // Il pugno finisce ESATTAMENTE quando scade il tempo totale dell'animazione
-                if (elapsedNs >= totalPunchTimeNs) {
+                if (elapsedNs >= animDurationNs) {
                     isPunching = false;
-                    hasDealtDamage = false;
+                    hasCheckedHit = false;
                 }
             }
         }
@@ -111,7 +104,7 @@ public class Player {
     public void startPunch() {
         if (!isPunching && !isDefending) {
             isPunching = true;
-            hasDealtDamage = false;	
+            hasCheckedHit = false;	
             this.punchStartTime = System.nanoTime(); // Registra il momento esatto!
         }
     }
@@ -129,7 +122,7 @@ public class Player {
         long ritardoNs = (anim.frameCount - 1) * anim.speedNs; 
         
         // 2. L'hitbox è attiva solo DOPO il ritardo, per la durata che decidi tu!
-        return elapsedNs >= ritardoNs && elapsedNs <= (ritardoNs + this.punchDurationNs);
+        return elapsedNs >= ritardoNs;
     }
 
     public void setDefending(boolean defending) {
@@ -333,8 +326,8 @@ public class Player {
     public double getPunchHeight() { return punchHeight; }
     public boolean isPunching() { return isPunching; }
     public boolean isDefending() { return isDefending; }
-    public boolean hasDealtDamage() { return hasDealtDamage; }
-    public void setHasDealtDamage(boolean dealt) { this.hasDealtDamage = dealt; }
+    public boolean hasCheckedHit() { return hasCheckedHit; }
+    public void setHasCheckedHit(boolean dealt) { this.hasCheckedHit = dealt; }
     
     public String getAtlasPath() {return atlasPath;}
     public int getSpriteCols() {return spriteCols;}

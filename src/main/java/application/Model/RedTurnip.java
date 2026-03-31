@@ -21,7 +21,7 @@ public class RedTurnip extends Player {
 		this.speed = 3.5;
 		
 		// L'impatto del pugno dura esattamente 10 millisecondi
-        this.punchDurationNs = 10 * 1_000_000L;
+        this.punchDurationNs = 60 * 1_000_000L;
         this.punchDamage = 10.0;
 		
 		this.atlasPath = "/Sprites/redTurnipAtlas.png";

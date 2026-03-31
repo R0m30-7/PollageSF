@@ -178,9 +178,11 @@ public class GameModel {
     private void handleCombat(Player attacker, Player defender) {
         if (attacker == defender) return;
         
-        if (attacker.isPunchActive() && !attacker.hasDealtDamage()) {
+        if (attacker.isPunchActive() && !attacker.hasCheckedHit()) {
             
-        	// ORA USIAMO LE DIMENSIONI DEL GIOCATORE, NON PIÙ GAMECONFIG!
+        	// Mettiamo SUBITO la sicura: questo pugno è stato "sparato", preso o mancato non si controlla più!
+            attacker.setHasCheckedHit(true); 
+            
             double punchX = attacker.isFacingRight() 
                     ? attacker.getPosition().getX() + attacker.getWidth() 
                     : attacker.getPosition().getX() - attacker.getPunchWidth();
@@ -229,7 +231,7 @@ public class GameModel {
                     defender.takeDamage((int) baseDamage);
                 }
                 
-                attacker.setHasDealtDamage(true);
+                attacker.setHasCheckedHit(true);
             }
         }
     }
