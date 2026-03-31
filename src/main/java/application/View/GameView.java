@@ -23,6 +23,11 @@ public class GameView {
     private double originalBgWidth;
     private double originalBgHeight;
     
+    // Variabili per la schermata di vittoria
+    private javafx.scene.layout.StackPane victoryLayer;
+    private ImageView victoryImageView;
+    private javafx.scene.text.Text continueText;
+    
     // HUD
     private HUDView hud;
     
@@ -47,6 +52,27 @@ public class GameView {
         this.backgroundView.setY(0);
         
         this.root.getChildren().addAll(this.backgroundContainer);
+        
+        // --- PREPARAZIONE LIVELLO VITTORIA ---
+        this.victoryLayer = new javafx.scene.layout.StackPane();
+        this.victoryLayer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);"); // Scurisce il gioco dietro
+        this.victoryLayer.setVisible(false); // Nascosto di default
+        
+        this.victoryImageView = new ImageView();
+        this.victoryImageView.setPreserveRatio(true);
+        this.victoryImageView.setFitHeight(400); // Grandezza base
+        
+        this.continueText = new javafx.scene.text.Text("Premere un tasto per tornare al menu");
+        this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30));
+        this.continueText.setFill(javafx.scene.paint.Color.WHITE);
+        this.continueText.setVisible(false); 
+        
+        // Posizioniamo il testo in basso a destra
+        javafx.scene.layout.StackPane.setAlignment(continueText, javafx.geometry.Pos.BOTTOM_RIGHT);
+        javafx.scene.layout.StackPane.setMargin(continueText, new javafx.geometry.Insets(0, 50, 50, 0));
+        
+        this.victoryLayer.getChildren().addAll(victoryImageView, continueText);
+        this.root.getChildren().add(victoryLayer); // Aggiunto al gioco
     }
 
     public Pane getRoot() { return root; }
@@ -121,6 +147,15 @@ public class GameView {
         if(this.hud != null) {
         	this.hud.updateLayout(newWidth, scale);
         }
+        
+        // --- Codice della schermata di vittoria ---
+        if (this.victoryLayer != null) {
+            this.victoryLayer.setPrefSize(newWidth, newHeight);
+            
+            // Scaliamo il testo e l'immagine in base allo schermo
+            this.victoryImageView.setFitHeight(400 * scale);
+            this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * scale));
+        }
     }
     
     // --- METODO PER CAMBIARE SFONDO DINAMICAMENTE ---
@@ -161,5 +196,22 @@ public class GameView {
         this.root.getChildren().add(1, rendererP1.getNode());
         this.root.getChildren().add(2, rendererP2.getNode());
         this.root.getChildren().add(hud.getNode()); // L'HUD va sopra i giocatori
+    }
+    
+    public void showVictoryScreen(int winner) {
+        this.victoryLayer.setVisible(true);
+        this.victoryLayer.toFront(); // Si porta in primo piano sopra l'HUD e i giocatori!
+        
+        String imagePath = winner == 1 ? "/SFX/p1Victory.png" : "/SFX/p2Victory.png";
+        try {
+            Image img = new Image(getClass().getResource(imagePath).toExternalForm());
+            this.victoryImageView.setImage(img);
+        } catch (Exception e) {
+            System.out.println("Immagine vittoria non trovata al percorso: " + imagePath);
+        }
+    }
+    
+    public void showContinueText() {
+        this.continueText.setVisible(true);
     }
 }

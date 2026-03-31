@@ -114,6 +114,11 @@ public class GameController {
     private long lastMenuInputTime = 0; // Serve per non scorrere i bottoni a 200 all'ora!
     private boolean wasConfirmPressed = false;
     
+    // Variabili per il Game Over
+    private boolean isVictoryScreenActive = false;
+    private long victoryStartTime = 0;
+    private boolean canSkipVictory = false;
+    
     private AnimationTimer gameLoop;
     private Label fpsLabel;
 
@@ -462,7 +467,9 @@ public class GameController {
                     renderAccumulator = 0;
                     
                 } else {
-                	// --- Modalità gioco attivo ---
+                	// ==========================================
+                    //         FASE DI GIOCO E COMBATTIMENTO
+                    // ==========================================
                 	// --- LETTURA TASTO PAUSA ---
                     // Aggiorniamo i controller per leggere il tasto Pause
                     inputManager.update(); 
@@ -516,11 +523,38 @@ public class GameController {
                         
                     } else {
                         // GIOCO ATTIVO! Facciamo muovere i giocatori.
-                        physicsAccumulator += frameTime;
-                        while (physicsAccumulator >= application.Utils.GameConfig.TIME_PER_TICK) {
-                            inputManager.update(); // Mantiene fluido il movimento     
-                            model.update(inputManager); 
-                            physicsAccumulator -= application.Utils.GameConfig.TIME_PER_TICK;
+                        
+                    	physicsAccumulator += frameTime;
+                        
+                        // ---> NUOVO CONTROLLO: IL GIOCO È FINITO? <---
+                        if (model.getIsGameOver()) {
+                            // IL GIOCO E' FINITO! (La fisica viene saltata)
+                            physicsAccumulator = 0; // Svuotiamo l'accumulatore per congelare il tempo
+                            
+                            if (!isVictoryScreenActive) {
+                                isVictoryScreenActive = true;
+                                victoryStartTime = System.currentTimeMillis();
+                                view.showVictoryScreen(model.getWinner()); // Mostra l'immagine!
+                            } else {
+                                // Controlliamo se sono passati 2 secondi (2000 millisecondi)
+                                if (!canSkipVictory && (System.currentTimeMillis() - victoryStartTime > 2000)) {
+                                    canSkipVictory = true;
+                                    view.showContinueText(); // Appare la scritta in basso a destra
+                                }
+                                
+                                // Se si può saltare e viene premuto un tasto (salto o pugno di uno dei due)
+                                if (canSkipVictory && (inputManager.isJumpButtonPressed(1) || inputManager.isPunchButtonPressed(1) || 
+                                                       inputManager.isJumpButtonPressed(2) || inputManager.isPunchButtonPressed(2))) {
+                                    returnToMainMenu();
+                                }
+                            }
+                        } else {
+                            // IL GIOCO NON È FINITO! (Calcolo normale della fisica)
+                            while (physicsAccumulator >= application.Utils.GameConfig.TIME_PER_TICK) {
+                                inputManager.update(); // Mantiene fluido il movimento     
+                                model.update(inputManager); 
+                                physicsAccumulator -= application.Utils.GameConfig.TIME_PER_TICK;
+                            }
                         }
                     }
 
@@ -1078,5 +1112,13 @@ public class GameController {
             p2Preview.updateAnimationState();
             p2PreviewRenderer.render(p2Preview);
         }
+    }
+    
+    private void returnToMainMenu() {
+        gameLoop.stop(); // Fermiamo definitivamente questo loop di gioco
+        
+        // Ricreiamo la scena del menu principale usando la tua classe!
+        application.Scenes.MainMenuScene menu = new application.Scenes.MainMenuScene();
+        stage.setScene(menu.getScenaMenu(stage));
     }
 }

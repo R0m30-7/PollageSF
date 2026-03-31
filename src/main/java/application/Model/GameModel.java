@@ -1,9 +1,9 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
 import application.Controller.CharacterFactory;
 import application.Controller.InputManager;
 import application.Utils.GameConfig;
+import javafx.geometry.Point2D;
 
 public class GameModel {
     private Player player1;
@@ -31,6 +31,10 @@ public class GameModel {
     private double GROUND_LEVEL;
     private double currentGroundRatio = 0.9;
     private double currentGroundLevel;
+    
+    // Variabili per la gestione della fine del gioco
+    private boolean isGameOver = false;
+    private int winner = 0;
     
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
@@ -170,6 +174,19 @@ public class GameModel {
         
         wasP1PunchHeld = isP1PunchHeld;
         wasP2PunchHeld = isP2PunchHeld;
+        
+        // ==========================================
+        //         CONTROLLO FINE PARTITA
+        // ==========================================
+        if (!isGameOver) {
+            if (player1.getHealth() <= 0) {
+                isGameOver = true;
+                winner = 2; // Vince P2
+            } else if (player2.getHealth() <= 0) {
+                isGameOver = true;
+                winner = 1; // Vince P1
+            }
+        }
     }
     
     // ==========================================
@@ -335,4 +352,7 @@ public class GameModel {
         // Se nel tuo GameModel gestisci anche le posizioni di spawn, 
         // puoi riposizionarli qui! (es: p1.setPosition(...))
     }
+    
+    public boolean getIsGameOver() { return isGameOver; }
+    public int getWinner() { return winner; }
 }
