@@ -18,9 +18,17 @@ public class Player {
     protected int spriteRows;
     protected double frameWidth;	// Larghezza del singolo frame sull'atlas
     protected double frameHeight;	// Altezza del singolo frame sull'atlas
-    protected int renderScale;		// Moltiplicatore per la pixelart
+    protected double renderScale;	// Moltiplicatore per la pixelart
     protected double width;
     protected double height;
+    
+    // --- Variabili per lo Scaling Dinamico ---
+    protected double baseSpeed, baseGravity, baseJumpStrength, baseRenderScale;
+    protected double basePunchWidth = 70.0;		// Sostituisce GameConfig
+    protected double basePunchHeight = 30.0; 
+    
+    protected double punchWidth;
+    protected double punchHeight;
     
     // --- Variabili per il Menu di Selezione ---
     protected String displayName;
@@ -261,6 +269,39 @@ public class Player {
         return animations.get(isFacingRight() ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT);
     }
     
+    // ==========================================
+    // SISTEMA DI SCALING DINAMICO UNIVERSALE
+    // ==========================================
+    
+    // 1. Salva i valori "originali" scritti nella classe (es. RedTurnip)
+    public void saveBaseStats() {
+        this.baseSpeed = this.speed;
+        this.baseGravity = this.gravity;
+        this.baseJumpStrength = this.jumpStrength;
+        this.baseRenderScale = this.renderScale;
+        
+        // Inizializza i valori correnti
+        this.punchWidth = this.basePunchWidth;
+        this.punchHeight = this.basePunchHeight;
+    }
+    
+    // 2. Moltiplica tutti i valori per la grandezza dello schermo!
+    public void updateDynamicScale(double windowScale) {
+        this.speed = this.baseSpeed * windowScale;
+        this.gravity = this.baseGravity * windowScale;
+        this.jumpStrength = this.baseJumpStrength * windowScale;
+        this.renderScale = this.baseRenderScale * windowScale;
+
+        // Ricalcolo Hitbox del corpo
+        this.width = this.frameWidth * this.renderScale;
+        this.height = this.frameHeight * this.renderScale;
+        this.boundingBox.updateSize(this.width, this.height);
+        
+        // Ricalcolo Hitbox degli attacchi
+        this.punchWidth = this.basePunchWidth * windowScale;
+        this.punchHeight = this.basePunchHeight * windowScale;
+    }
+    
     public AnimState getCurrentAnimState() { return currentAnimState; }
     public AnimData getCurrentAnimData() { return animations.get(currentAnimState); }
     
@@ -288,6 +329,8 @@ public class Player {
         this.isFacingRight = facingRight; 
     }
     public double getPunchDamage() { return punchDamage; }
+    public double getPunchWidth() { return punchWidth; }
+    public double getPunchHeight() { return punchHeight; }
     public boolean isPunching() { return isPunching; }
     public boolean isDefending() { return isDefending; }
     public boolean hasDealtDamage() { return hasDealtDamage; }
@@ -298,7 +341,7 @@ public class Player {
     public int getSpriteRows() {return spriteRows;}
     public double getFrameWidth() {return frameWidth;}
     public double getFrameHeight() {return frameHeight;}
-    public int getRenderScale() {return renderScale;}
+    public double getRenderScale() {return renderScale;}
     public double getWidth() { return width; }
     public double getHeight() { return height; }
     public String getDisplayName() { return displayName; }

@@ -15,10 +15,10 @@ public class Turnip extends Player {
         this.displayName = "Turnip";
         this.pfpPath = "/Sprites/turnipPFP.png";
 		
-		this.jumpStrength = -11.0;
+		this.jumpStrength = -13.0;
 		this.gravity = 0.2;
 		
-		this.speed = 2.0;
+		this.speed = 3.5;
 		
 		// L'impatto del pugno dura esattamente 10 millisecondi
         this.punchDurationNs = 10 * 1_000_000L;
@@ -29,7 +29,7 @@ public class Turnip extends Player {
         this.spriteCols = 8;
         this.frameWidth = 16;
         this.frameHeight = 16;
-        this.renderScale = 6;  // Ingrandisce la pixel art esattamente x6 volte
+        this.renderScale = 10;  // Ingrandisce la pixel art esattamente x6 volte
         
         // Dati Fisici (La hitbox si adatta alla grafica ingrandita)
         this.width = this.frameWidth * this.renderScale;
@@ -37,9 +37,11 @@ public class Turnip extends Player {
         
         this.getBoundingBox().updateSize(this.width, this.height);
         
+        // Questa riga deve stare dopo tutti i settaggi delle variabili
+        this.saveBaseStats();
+        
         // Mappa delle animazioni
         // (riga, colonnaPartenza, numeroFrame, millisecondiPerFrame, loop)
-        
         // Nuovo Idle Stazionario (Ipotizziamo riga 4 per DX, riga 5 per SX, 3 frame slow)
         // !!! MODIFICA IL PRIMO NUMERO (rigaAtlas) QUANDO HAI L'ATLAS CORRETTO !!!
         animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 3, 200, true)); 

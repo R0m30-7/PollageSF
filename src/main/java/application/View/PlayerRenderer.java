@@ -39,23 +39,22 @@ public class PlayerRenderer {
         
         // --- Caricamento dello sprite ---
         try {
-            int scale = player.getRenderScale();
+            // 1. Recuperiamo la scala di base (quella scritta nella classe Turnip/RedTurnip)
+            double baseScale = player.getRenderScale(); 
             
-            // Calcoliamo quanto sarà grande l'INTERO atlas una volta ingrandito
-            double targetWidth = player.getSpriteCols() * player.getFrameWidth() * scale;
-            double targetHeight = player.getSpriteRows() * player.getFrameHeight() * scale;
+            // 2. Carichiamo l'atlas GIA' INGRANDITO alla sua dimensione di design
+            // Usiamo 'false' nell'ultimo parametro (smooth) per evitare il blur
+            double targetW = player.getSpriteCols() * player.getFrameWidth() * baseScale;
+            double targetH = player.getSpriteRows() * player.getFrameHeight() * baseScale;
             
-            // Carichiamo l'immagine dicendo a Java di ingrandirla subito.
-            // I parametri sono: (percorso, larghezza, altezza, mantieniProporzioni, SMOOTH)
-            // Mettendo l'ultimo parametro a FALSE, JavaFX usa il Nearest-Neighbor perfetto in memoria
-            atlas = new Image(getClass().getResourceAsStream(player.getAtlasPath()), targetWidth, targetHeight, true, false);
+            atlas = new Image(getClass().getResourceAsStream(player.getAtlasPath()), targetW, targetH, true, false);
             spriteView = new ImageView(atlas);
             
-            // Ora i "quadratini" di ritaglio sono direttamente quelli ingranditi
-            frameWidth = player.getFrameWidth() * scale;
-            frameHeight = player.getFrameHeight() * scale;
+            // 3. I frame per il ritaglio ora sono quelli "ingranditi" di base
+            frameWidth = player.getFrameWidth() * baseScale;
+            frameHeight = player.getFrameHeight() * baseScale;
             
-            // Impostiamo il viewport
+            spriteView.setSmooth(false); // Extra sicurezza per il ridimensionamento finestra
             spriteView.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
             
         } catch (Exception e) {
@@ -63,7 +62,8 @@ public class PlayerRenderer {
         }
 
         // --- IL PUGNO (Giallo) ---
-        punchVisual = new Rectangle(GameConfig.pPunchWidth, GameConfig.pPunchHeight, Color.YELLOW);
+        // Viene creato piccolo poi ingrandito nel render
+        punchVisual = new Rectangle(0, 0, Color.YELLOW);
         punchVisual.setStroke(Color.ORANGE);
         punchVisual.setVisible(false);
         
@@ -72,7 +72,6 @@ public class PlayerRenderer {
         hitboxVisual.setFill(null);       // Niente riempimento!
         hitboxVisual.setStroke(Color.RED); // Bordo rosso
         hitboxVisual.setStrokeWidth(2);    // Spessore del bordo
-        // Per ora la lasciamo 0x0, la aggiorneremo nel render
 
         // Aggiungiamo tutto al rootNode (lo sprite prende il posto del bodyContainer)
         if (spriteView != null) rootNode.getChildren().add(spriteView);
@@ -126,11 +125,16 @@ public class PlayerRenderer {
                     lastFrameTime = now; 
                 }
 
-                // Spostiamo il viewport leggendo le coordinate esatte
+                // 4. Ritaglio del frame (usando la frameWidth già scalata nel costruttore)
                 double cropX = (currentData.startCol + currentFrame) * frameWidth;
                 double cropY = currentData.row * frameHeight;
                 spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
 
+                // 5. APPLICHIAMO LO SCALING DINAMICO DELLA FINESTRA
+                // Questo adatterà il nostro sprite già nitido alla grandezza attuale della finestra
+                spriteView.setFitWidth(player.getWidth());
+                spriteView.setFitHeight(player.getHeight());	
+                
                 // 5. Aggiorniamo la posizione sullo schermo
                 spriteView.setLayoutX(Math.round(px));
                 spriteView.setLayoutY(Math.round(py));
@@ -159,14 +163,12 @@ public class PlayerRenderer {
             punchVisual.setVisible(true);
             punchVisual.toFront();
             
-            double punchY = py + (player.getHeight() * 0.2); 
-            double punchX;
+            // Aggiorniamo le dimensioni del rettangolo!
+            punchVisual.setWidth(player.getPunchWidth());
+            punchVisual.setHeight(player.getPunchHeight());
             
-            if (player.isFacingRight()) {
-                punchX = px + player.getWidth();
-            } else {
-                punchX = px - GameConfig.pPunchWidth;
-            }
+            double punchY = py + (player.getHeight() * 0.2); 
+            double punchX = player.isFacingRight() ? px + player.getWidth() : px - player.getPunchWidth();
             
             punchVisual.setX(punchX);
             punchVisual.setY(punchY);

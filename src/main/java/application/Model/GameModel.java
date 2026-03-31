@@ -180,14 +180,13 @@ public class GameModel {
         
         if (attacker.isPunchActive() && !attacker.hasDealtDamage()) {
             
-            // Usiamo ancora GameConfig solo per la forma del pugno finché non viene
-            // incapsulata anche quella, ma il calcolo usa le posizioni dinamiche.
+        	// ORA USIAMO LE DIMENSIONI DEL GIOCATORE, NON PIÙ GAMECONFIG!
             double punchX = attacker.isFacingRight() 
                     ? attacker.getPosition().getX() + attacker.getWidth() 
-                    : attacker.getPosition().getX() - GameConfig.pPunchWidth;
+                    : attacker.getPosition().getX() - attacker.getPunchWidth();
             double punchY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2);
             
-            Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), GameConfig.pPunchWidth, GameConfig.pPunchHeight);
+            Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), attacker.getPunchWidth(), attacker.getPunchHeight());
             
             if (punchHitbox.intersects(defender.getBoundingBox())) {
                 
@@ -278,6 +277,13 @@ public class GameModel {
     public void updateWindowSize(double newWidth, double newHeight, double newWorldWidth) {
         this.currentWindowWidth = newWidth;
         this.currentWindowHeight = newHeight;
+        
+        // --- SCALING ---
+        // Ipotizziamo che tu abbia bilanciato il gioco su uno schermo 1080p.
+        double scaleFactor = newHeight / 1080.0; 
+        player1.updateDynamicScale(scaleFactor);
+        player2.updateDynamicScale(scaleFactor);
+        // ------------------------------
         
         // Ricalcola del pavimento in tempo reale
         this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
