@@ -138,7 +138,7 @@ public class GameController {
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
         availableMaps.add(new MapData("UniPG", "/Arenas/uni.jpeg", 0.9));
         availableMaps.add(new MapData("Koloxtol", "/Arenas/villaggioRurale.jpeg", 0.9));
-        availableMaps.add(new MapData("Paradise & Hell", "/Arenas/doubleSide.jpeg", 0.815));
+        availableMaps.add(new MapData("Paradise & Hell", "/Arenas/doubleSide.png", 0.815));
         availableMaps.add(new MapData("Rifugio dell'amicizia", "/Arenas/broBase.jpeg", 0.83));
         availableMaps.add(new MapData("Villaggio incantato", "/Arenas/cherryVillage.jpeg", 0.9));
         availableMaps.add(new MapData("Mini Rifugio", "/Arenas/villaggioPiccolo.jpeg", 0.9));
