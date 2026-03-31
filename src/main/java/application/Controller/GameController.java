@@ -628,10 +628,17 @@ public class GameController {
             ImageView pfp = new ImageView();
             pfp.setFitWidth(120); 
             pfp.setFitHeight(120);
+            
+            // 1. Diciamo all'ImageView di non applicare MAI la sfocatura
+            pfp.setSmooth(false); 
+            
             try {
-                // Il metodo toExternalForm() è il modo più sicuro di JavaFX per caricare immagini dalle resources!
                 String imageURL = getClass().getResource(c.pfpPath).toExternalForm();
-                Image img = new Image(imageURL);
+                
+                // 2. Carichiamo l'immagine ingrandendola già a 120x120, mantenendo le proporzioni (true) 
+                // e soprattutto DISATTIVANDO lo smooth nativo (false)
+                Image img = new Image(imageURL, 120, 120, true, false);
+                
                 if (!img.isError()) pfp.setImage(img);
             } catch (Exception e) {
                 System.out.println("⚠️ Nessuna foto trovata al percorso: " + c.pfpPath);
