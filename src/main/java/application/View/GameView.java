@@ -119,7 +119,7 @@ public class GameView {
         
         // Aggiorniamo anche l'HUD
         if(this.hud != null) {
-        	this.hud.updateLayout(newWidth);
+        	this.hud.updateLayout(newWidth, scale);
         }
     }
     
