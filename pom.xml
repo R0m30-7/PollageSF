@@ -5,7 +5,7 @@
     
     <groupId>com.romeo</groupId>
     <artifactId>PollageSF</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,6 +29,10 @@
         </dependency>
 
         <dependency>
+<!--        	Con "classifier" = "mac-aarch64" intendiamo i Mac con gli "Apple Silicon (M1, M2, M3...)",-->
+<!--        	quelli prodotti dopo il 2020 insomma.-->
+<!--        	Con "classifier" = "mac" intendiamo i Mac prima del 2020,-->
+<!--        	quelli prodotti con tecnologia intel insomma.-->
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
