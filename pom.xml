@@ -20,31 +20,31 @@
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-graphics</artifactId>-->
+<!--            <version>${javafx.version}</version>-->
+<!--            <classifier>win</classifier>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>linux</classifier>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-graphics</artifactId>-->
+<!--            <version>${javafx.version}</version>-->
+<!--            <classifier>linux</classifier>-->
+<!--        </dependency>-->
 
-        <dependency>
 <!--        	Con "classifier" = "mac-aarch64" intendiamo i Mac con gli "Apple Silicon (M1, M2, M3...)",-->
 <!--        	quelli prodotti dopo il 2020 insomma.-->
 <!--        	Con "classifier" = "mac" intendiamo i Mac prima del 2020,-->
 <!--        	quelli prodotti con tecnologia intel insomma.-->
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>mac-aarch64</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>win</classifier>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-graphics</artifactId>-->
+<!--            <version>${javafx.version}</version>-->
+<!--            <classifier>mac-aarch64</classifier>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>com.badlogicgames.jamepad</groupId>
