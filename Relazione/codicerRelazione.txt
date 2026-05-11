@@ -1,0 +1,255 @@
+\documentclass[12pt,a4paper]{report}
+
+% --- Pacchetti Standard ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+% Configurazione link cliccabili
+\hypersetup{
+    colorlinks=true,
+    linkcolor=darkgray,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={Relazione PollageSF},
+}
+% ------------------------------
+
+% Impostazione della numerazione dei capitoli
+%\usepackage[Bjarne]{fncychap} % Prova anche [Lenny], [Glenn], [Bjarne]
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]{\huge\bfseries}{\thechapter. }{0pt}{\huge\bfseries}
+% -------------------------------------------
+
+\graphicspath{{figures/}}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Title Page [start]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Declare new goemetry for the title page only.
+\newgeometry{margin=1in}
+\begin{titlepage}
+	\centering
+	\includegraphics[width=0.34\textwidth]{logo-unipg}\par\vspace{1cm}
+	\large{Tesina Finale di}\par
+	\large{\textbf{Programmazione di Interfacce Grafiche e Dispositivi Mobili}}\par
+	\small{Corso di Laurea in Ingegneria Informatica ed Elettronica -- A.A. 2020-2021}\par
+	\textsc{\small{Dipartimento di Ingegneria}}\par
+	%\large{A.A. 2018-2019}\par
+
+	%\vfill
+	\vspace{0.5cm}
+	docente\par
+	Prof.~Luca \textsc{Grilli}
+
+	\vspace{1cm}
+	%\textsc{\large{Tesina Finale a.a. 2018-2019}}\par
+	\vspace{1cm}
+	\textbf{\huge{PollageSF}}\par
+	\vspace{0.2cm}
+	applicazione desktop \textsc{JavaFX}\par
+	\vspace{0.5cm}
+	\includegraphics[width=0.40\textwidth]{figures/PollageSF_logo.png}\par\vspace{1cm}
+	\vspace{1cm}
+
+	\large{studenti}\par
+	\vspace{0.2cm}
+	\begin{tabular}{ l l l l }
+	\large{364672} & \large{\textbf{Romeo}} & \large{\textbf{Miscio}} & \large{romeo.miscio@studenti.unipg.it}\\
+	\large{367169} & \large{\textbf{Paolo}} & \large{\textbf{Ferrari}} & \large{paolo.ferrari@studenti.unipg.it}\\
+	\end{tabular}
+
+	\vfill
+	\small{Ultimo aggiornamento: \today}
+\end{titlepage}
+% Ends the declared geometry for the titlepage
+\restoregeometry
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Title Page [end]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Indice [start]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tableofcontents
+%%%%%%%%%%%%%%%%%%%%%%%%
+%     Indice [end]     %
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Descrizione del Problema [start]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Descrizione del Problema}\label{ch:despro}
+L'obiettivo di questo lavoro è lo sviluppo di un'applicazione desktop, denominata \textbf{Pollage Street Fighter}, che realizza una versione semplificata del celebre videogioco picchiaduro \emph{Street Fighter}.
+
+\medskip L'applicazione è stata implementata utilizzando la tecnologia \textbf{JavaFX}, scelta per favorire la portabilità su diversi sistemi operativi e per la gestione efficiente del rendering grafico tramite Canvas.
+
+\medskip Di seguito sarà data una breve descrizione del videogioco originale \emph{Street Fighter}, dopodiché si fornirà una descrizione della versione semplificata che si intende realizzare.
+
+%----------------------------------------------
+% Sezione: Il Videogioco Street Fighter
+%----------------------------------------------
+\section{Il Videogioco Street Fighter}\label{se:gal}
+\emph{Street Fighter} è un videogioco di combattimento a incontri in tempo reale, strutturato su duelli uno contro uno all’interno di uno scenario bidimensionale. Il giocatore seleziona un personaggio dal roster disponibile, ognuno dotato di un set unico di colpi normali, mosse speciali e tecniche devastanti, il cui utilizzo più potente richiede il consumo di segmenti della barra Super (o Critical Art). Tale risorsa si accumula portando o subendo attacchi, rendendo necessaria una gestione oculata per volgere l'esito del round a proprio favore.
+
+\medskip L’interazione del giocatore è totale e richiede una coordinazione precisa tra il movimento e l'esecuzione dei comandi. Ogni azione — che si tratti di un pugno, un calcio o una parata — deve essere eseguita con un tempismo perfetto (frame data). A differenza dei sistemi automatici, qui il giocatore ha il controllo diretto su ogni spostamento e combo: il successo dipende dalla capacità di concatenare gli attacchi e di reagire istantaneamente alle offensive nemiche. Il ruolo del giocatore è quindi sia tattico che tecnico, unendo riflessi pronti a una profonda conoscenza delle distanze (footsies).
+
+\medskip L’obiettivo primario è azzerare la barra della salute dell'avversario prima che scada il tempo. La vittoria di due round su tre comporta la vittoria del match; in alternativa, allo scadere del tempo, vince chi possiede la percentuale di salute più alta. La sfida consiste nel:
+
+\begin{itemize}
+    \item Prevedere le intenzioni dell'avversario (mindgames);
+    \item Punire gli errori di posizionamento con combo efficaci;
+    \item Gestire lo spazio dello schermo per intrappolare l'altro "all'angolo", massimizzando la pressione offensiva di ogni singola scelta.
+\end{itemize}
+
+\begin{figure}[bt]
+\begin{subfigure}{.32\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figures/clash-royale-gameplay33.jpg}
+  %\caption{1a}
+  \caption{}
+  \label{fig:snap1}
+\end{subfigure}%
+\begin{subfigure}{.32\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figures/clash_royale_main_menu.png}
+  %\caption{1a}
+  \caption{}
+  \label{fig:snap2}
+\end{subfigure}%
+\begin{subfigure}{.32\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{figures/clash-royale-gameplay6.jpg}
+  %\caption{1b}
+  \caption{}
+  \label{fig:snap3}
+\end{subfigure}
+\caption{Tre schermate del videogioco Clash Royale originale. Le schermate (a) e (c) mostrano il campo di battaglia principale con due torri per ciascun giocatore, unità in movimento lungo le corsie centrali e l’interfaccia di gioco comprendente la barra di elisir e le carte disponibili. Gli elementi visivi evidenziano le dinamiche strategiche di attacco e difesa, nonché l’interazione tra truppe e torri. La schermata (b) mostra il menù principale.}
+\label{fig:fig}
+\end{figure}
+%----------------------------------------------
+% Sezione: Il Videogioco Clash Royale [end]
+%----------------------------------------------
+
+
+%----------------------------------------
+% Sezione: L'applicazione JRoyale [start]
+%----------------------------------------
+\section{L'applicazione PollageSF}\label{se:appPSF}
+JRoyale sarà un videogioco strategico sviluppato come versione semplificata di Clash Royale, progettato per offrire un’esperienza di gioco immediata e accessibile. Il gioco si svolgerà in un’arena per ciascun giocatore, composta da tre torri, in cui l’utente affronterà un’intelligenza artificiale. La schermata principale sarà concepita in modo minimale, permettendo all’utente di avviare rapidamente una partita e accedere alle funzionalità principali senza complessità aggiuntive.
+
+Il gameplay prevede l’utilizzo di un mazzo predefinito di otto carte, ciascuna rappresentante un’unità o un’azione specifica. Le carte verranno selezionate e posizionate sul campo mediante trascinamento, mentre il movimento e le azioni delle unità saranno gestiti automaticamente dal sistema. Una barra di elisir, in continua ricarica, regolerà la frequenza e il numero di carte che potranno essere schierate, richiedendo una gestione strategica delle risorse. Ogni partita sarà soggetta a un timer, definendo la durata massima dello scontro.
+
+Il sistema di progressione del gioco si baserà sull’acquisizione di coppe, che aumenteranno ad ogni vittoria e saranno associate al nome utente inserito all’avvio della partita. Inoltre, JRoyale includerà una classifica degli utenti con più coppe, incentivando la competizione e permettendo di confrontare le prestazioni tra i giocatori. L’esperienza di gioco punterà a valorizzare la strategia nella scelta e nel posizionamento delle carte, pur mantenendo la semplicità dell’interfaccia e delle meccaniche.
+%----------------------------------------
+% Sezione: L'applicazione JGalaga [end]
+%----------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Descrizione del Problema [end]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Specifica dei Requisiti [start]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{\let\clearpage\relax \chapter{Specifica dei Requisiti}\label{ch:spereq}}
+\chapter{Specifica dei Requisiti}\label{ch:spereq}
+
+L'applicazione che si intende realizzare dovrà soddisfare i seguenti requisiti tecnici e funzionali:
+\begin{itemize}
+    \item \textbf{Gestione degli Stati}: Ogni personaggio può trovarsi in stati specifici come IDLE, MOVING, JUMPING, ATTACKING o HURT, che determinano le azioni possibili e la resa grafica;
+    \item \textbf{Sistema di Combattimento}: Rilevamento delle collisioni tra i personaggi per determinare il successo di un attacco e la conseguente riduzione dei punti vita (health);
+    \item \textbf{Fisica e Movimento}: Implementazione della gravità tramite accelerazione verticale (velocityY) e gestione dei limiti dell'arena per impedire ai giocatori di uscire dal campo di battaglia;
+    \item \textbf{Input Contemporaneo}: Gestione di eventi da gamepad multipli per permettere a entrambi i giocatori di muoversi e attaccare simultaneamente senza latenza;
+    \item \textbf{Game Loop}: Ciclo di gioco costante basato su AnimationTimer per un aggiornamento fluido a un numero selezionabile di \emph{frame al secondo}.
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Specifica dei Requisiti [end]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     Progetto [start]     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Progetto}\label{ch:prog}
+
+% Architettura del Sistema Software [start]
+%-------------------------------------------
+\section{Architettura del Sistema Software}\label{ch:arch}
+Lo sviluppo del progetto si articola attorno all’architettura \textbf{Model View Controller} (\textbf{MVC}), una scelta metodologica rivelatasi ideale per gli obiettivi prefissati. Tale paradigma, basato sul netto \textit{disaccoppiamento} tra la logica applicativa, l'interfaccia utente e il controllo degli input, garantisce al software un’elevata \textit{scalabilità}. Questa separazione delle responsabilità è ottenuta attraverso un sistema di comunicazione basato rigorosamente sulle \textbf{interfacce}.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=1\textwidth, clip]{figures/MVC.jpeg}
+  \caption{Architettura MVC del videogioco PollageSF. Controller e View non dialogano, mentre il Model fa da tramite tra di essi.}
+  \label{fig:mvc}
+\end{center}
+\end{figure}
+
+In questa struttura, i package del Model, della View e del Controller dialogano tra loro senza mai accedere direttamente alle rispettive implementazioni interne; ogni componente espone esclusivamente i propri metodi attraverso contratti formali (interfacce), ignorando le logiche specifiche con cui tali operazioni vengono eseguite. Questo garantisce un’astrazione totale che facilita la manutenzione e l'eventuale sostituzione di interi moduli senza ripercussioni sul resto del sistema.
+
+Come verrà approfondito in seguito, un aspetto cruciale di questo disaccoppiamento riguarda la gestione delle coordinate. All'interno del Model, le entità si muovono e interagiscono secondo coordinate logiche, ottimizzate per i calcoli fisici e le collisioni. Al contrario, la View opera su coordinate grafiche (pixel) dipendenti dalla risoluzione dello schermo. Il compito di mediare tra questi due mondi spetta al Controller, il quale, attraverso opportune trasformazioni lineari, converte le posizioni logiche in coordinate visive, garantendo che la rappresentazione grafica sia sempre una proiezione coerente e precisa dello stato interno del gioco.
+
+% Architettura del Sistema Software [end]
+%-------------------------------------------
+% Model [start]
+%-------------------------------------------
+\section{Model}\label{se:arch.model}
+\lipsum[12]
+In Fig.~\ref{fig:model} viene illustrato il digramma di classe del modulo Model.\newline
+\textbf{N.B.} si tratta di un esempio che in realtà non ha nulla a che fare con il videogame JGalaga!
+
+\begin{figure}[tb]
+\begin{center}
+    \includegraphics[width=200pt]{figures/ModelUML.drawio.pdf}
+  \caption{Diagramma di classe del modulo Model. Si tratta in realt\`a di un esempio che non ha nulla a che fare con il videogame JGalaga!}
+  \label{fig:model}
+\end{center}
+\end{figure}
+
+\lipsum[13-15]
+\medskip
+
+Generalmente un diagramma di classe, come ogni diagramma UML, illustra una vista semplificata di un sistema. Per tale ragione, pu\`o anche essere prodotto con carta e penna, senza avvalersi di editor UML. Anzi, i diagrammi creati manualmente conferiscono al documento un forte carattere di progettualit\`a e creativit\`a. Per tale ragione si stanno diffondendo degli strumenti on-line per produrre diagrammi che sembrano essere creati con carta e penna~\cite{yUML}.
+
+\begin{figure}[tb]
+\begin{center}
+    \includegraphics[width=400pt]{figures/ModelEntities.drawio.pdf}
+  \caption{Diagramma di classe del modulo Model. Si tratta in realt\`a di un esempio che non ha nulla a che fare con il videogame JGalaga!}
+\end{center}
+\end{figure}
+
+\lipsum[14]
+
+\begin{figure}[tb]
+\begin{center}
+    \includegraphics[width=200pt]{figures/ModelAI.drawio.pdf}
+  \caption{Diagramma di classe del modulo Model. Si tratta in realt\`a di un esempio che non ha nulla a che fare con il videogame JGalaga!}
+\end{center}
+\end{figure}
+
+\begin{figure}[tb]
+\begin{center}
+    \includegraphics[width=400pt]{figures/ModelStickMan.drawio.pdf}
+  \caption{Diagramma di classe del modulo Model. Si tratta in realt\`a di un esempio che non ha nulla a che fare con il videogame JGalaga!}
+\end{center}
+\end{figure}
+
+\begin{figure}[tb]
+\begin{center}
+    \includegraphics[width=400pt]{figures/CollisionIllustration.drawio.pdf}
+  \caption{Diagramma di classe del modulo Model. Si tratta in realt\`a di un esempio che non ha nulla a che fare con il videogame JGalaga!}
+\end{center}
+\end{figure}
+% Model [end]
+%-------------------------------------------
+\end{document}

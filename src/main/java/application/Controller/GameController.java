@@ -133,8 +133,8 @@ public class GameController {
         availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
         availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
         // Aggiungiamo un paio di placeholder temporanei per testare la griglia
-        availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
-        availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
+        //availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
+        //availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
 
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));
