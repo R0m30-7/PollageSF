@@ -11,7 +11,7 @@ import java.util.Map;
 public class Player {
 	private Point2D position;
     protected double speed;
-    protected int testCommit;
+    
     // Statistiche personaggio
     protected String atlasPath;
     protected int spriteCols;
