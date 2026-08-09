@@ -4,6 +4,8 @@ import application.Controller.GameController;
 import application.Utils.Button;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
+import application.Utils.ScalableBackground;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
@@ -17,11 +19,6 @@ public class MainMenuScene {
 
     public Scene getScenaMenu(Stage stage) {
         StackPane root = new StackPane();
-        root.setStyle(
-                "-fx-background-image: url('/MenuBackgrounds/titleScreenMenu.png'); " +
-                "-fx-background-size: cover; " +
-                "-fx-background-position: center center;"
-            );
 
         // Il contenuto (bottoni) viene "congelato" alla dimensione di design e poi
         // scalato con una Scale transform uniforme, esattamente come in SettingsScene.
@@ -68,17 +65,23 @@ public class MainMenuScene {
 
         MenuButContainer.getChildren().addAll(MenuButList);
         content.getChildren().add(MenuButContainer);
-        root.getChildren().add(content);
 
         Scene mainMenuScene = new Scene(root);
+
+        // --- SFONDO: ImageView con scaling "cover" uniforme, sempre centrato ---
+        ImageView background = ScalableBackground.create("/MenuBackgrounds/titleScreenMenu.png", mainMenuScene);
+        root.getChildren().add(background);
+        root.getChildren().add(content);
 
         Scale scale = new Scale(1, 1, BASE_WIDTH / 2, BASE_HEIGHT / 2);
         content.getTransforms().add(scale);
 
+        // Stesso fattore (Math.max, "cover") usato per lo sfondo: contenuto e sfondo
+        // devono scalare insieme allo stesso ritmo, altrimenti si disallineano.
         Runnable updateScale = () -> {
             double factorX = mainMenuScene.getWidth() / BASE_WIDTH;
             double factorY = mainMenuScene.getHeight() / BASE_HEIGHT;
-            double factor = Math.min(factorX, factorY);
+            double factor = Math.max(factorX, factorY);
             scale.setX(factor);
             scale.setY(factor);
         };

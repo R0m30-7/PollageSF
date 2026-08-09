@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import application.Utils.ScalableBackground;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
@@ -21,13 +23,7 @@ public class SettingsScene {
 
     public Scene getSettingsScene(Stage stage, Scene previousScene) {
 
-        // --- SFONDO: riempie sempre l'intera scena, non viene mai scalato "a mano" ---
         StackPane root = new StackPane();
-        root.setStyle(
-                "-fx-background-image: url('/MenuBackgrounds/settingsMenu.png'); " +
-                "-fx-background-size: cover; " +
-                "-fx-background-position: center center;"
-            );
 
         // --- CONTENUTO: questo è il VBox che verrà scalato proporzionalmente ---
         VBox content = new VBox(20);
@@ -108,26 +104,29 @@ public class SettingsScene {
         content.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck, audioCheck,
                 playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck, saveBackButton);
 
-        root.getChildren().add(content);
-
         Scene scene = new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());
+
+        // --- SFONDO: ImageView con scaling "cover" uniforme, sempre centrato ---
+        ImageView background = ScalableBackground.create("/MenuBackgrounds/settingsMenu.png", scene);
+        root.getChildren().add(background);
+        root.getChildren().add(content);
 
         // --- SCALING DEL CONTENUTO ---
         // Il contenuto viene "clippato" alla dimensione di design (BASE_WIDTH x BASE_HEIGHT)
         // e poi scalato con una Scale transform in base al rapporto tra la dimensione
-        // reale della finestra e quella di design. Lo sfondo (root) non viene toccato:
-        // resta sempre grande quanto la scena grazie al CSS "cover".
+        // reale della finestra e quella di design.
         Scale scale = new Scale(1, 1, BASE_WIDTH / 2, BASE_HEIGHT / 2);
         content.getTransforms().add(scale);
 
-        // Fattore UNICO per X e Y (il minimo tra i due rapporti): l'interfaccia scala
-        // mantenendo le proporzioni originali, senza mai stirarsi. Se la finestra ha
-        // un aspect ratio diverso da quello di design, resta semplicemente un po' di
-        // sfondo visibile ai lati (o sopra/sotto), invece di deformare i controlli.
+        // Fattore UNICO per X e Y, e soprattutto lo STESSO tipo di calcolo usato per
+        // lo sfondo (Math.max = "cover"). Se usassimo Math.min ("contain") qui, il
+        // contenuto scalerebbe con un fattore diverso da quello dello sfondo e i due
+        // finirebbero per disallinearsi (i bottoni sembrerebbero "scentrati" rispetto
+        // agli elementi dello sfondo, anche se in realtà sono centrati nella finestra).
         Runnable updateScale = () -> {
             double factorX = scene.getWidth() / BASE_WIDTH;
             double factorY = scene.getHeight() / BASE_HEIGHT;
-            double factor = Math.min(factorX, factorY);
+            double factor = Math.max(factorX, factorY);
             scale.setX(factor);
             scale.setY(factor);
         };
