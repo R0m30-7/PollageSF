@@ -2,14 +2,12 @@ package application.View;
 
 import application.Model.Hitbox;
 import application.Model.Player;
-import application.Utils.GameConfig; 
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.transform.Scale;
 
 public class PlayerRenderer {
     // Contenitore libero (Pane) che terrà il corpo, il pugno e la difesa
