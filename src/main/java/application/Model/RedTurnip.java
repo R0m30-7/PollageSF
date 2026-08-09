@@ -9,7 +9,7 @@ public class RedTurnip extends Player {
 		// Dati HARDCODED
 		this.maxHealth = 100;
 		this.health = this.maxHealth;
-		this.parryStunDuration = 1200;
+		this.parryStunDuration = 1200; 
 		
 		// --- Per il menu della selezione dei personaggi ---
         this.displayName = "Ascanio";
@@ -25,15 +25,15 @@ public class RedTurnip extends Player {
         this.punchDamage = 10.0;
 		
 		this.atlasPath = "/Sprites/redTurnipAtlas.png";
-		this.spriteRows = 8;
-        this.spriteCols = 8;
-        this.frameWidth = 16;
-        this.frameHeight = 16;
-        this.renderScale = 10;  // Ingrandisce la pixel art esattamente x6 volte
+		//this.spriteRows = 8;
+        //this.spriteCols = 8;
+        //this.frameWidth = 16;
+        //this.frameHeight = 16;
+        //this.renderScale = 10;  // Ingrandisce la pixel art esattamente x6 volte
         
         // Dati Fisici (La hitbox si adatta alla grafica ingrandita)
-        this.width = this.frameWidth * this.renderScale;
-        this.height = this.frameHeight * this.renderScale;
+        //this.width = this.frameWidth * this.renderScale;
+        //this.height = this.frameHeight * this.renderScale;
         
         this.getBoundingBox().updateSize(this.width, this.height);
         

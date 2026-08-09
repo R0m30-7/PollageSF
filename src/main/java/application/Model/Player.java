@@ -14,19 +14,21 @@ public class Player {
     
     // Statistiche personaggio
     protected String atlasPath;
-    protected int spriteCols;
-    protected int spriteRows;
-    protected double frameWidth;	// Larghezza del singolo frame sull'atlas
-    protected double frameHeight;	// Altezza del singolo frame sull'atlas
+
+    protected TextureAtlas atlas;
+    protected double baseLogicalWidth;  // Larghezza fissa per la fisica
+    protected double baseLogicalHeight; // Altezza fissa per la fisica
     protected double renderScale;	// Moltiplicatore per la pixelart
+
     protected double width;
     protected double height;
     
     // --- Variabili per lo Scaling Dinamico ---
     protected double baseSpeed, baseGravity, baseJumpStrength, baseRenderScale;
-    protected double basePunchWidth = 70.0;		// Sostituisce GameConfig
-    protected double basePunchHeight = 30.0; 
+    protected double basePunchWidth = this.width * 1.6;		// Sostituisce GameConfig
+    protected double basePunchHeight = this.height; 
     
+
     protected double punchWidth;
     protected double punchHeight;
     
@@ -81,6 +83,7 @@ public class Player {
         // Inizializzo la hitbox a 0 per il momento
         this.boundingBox = new Hitbox(position, 0, 0);
     }
+    public TextureAtlas getAtlas() { return this.atlas; }
     
  // --- AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
@@ -292,8 +295,8 @@ public class Player {
         this.renderScale = this.baseRenderScale * windowScale;
 
         // Ricalcolo Hitbox del corpo
-        this.width = this.frameWidth * this.renderScale;
-        this.height = this.frameHeight * this.renderScale;
+        //this.width = this.frameWidth * this.renderScale;
+        //this.height = this.frameHeight * this.renderScale;
         this.boundingBox.updateSize(this.width, this.height);
         
         // Ricalcolo Hitbox degli attacchi
@@ -336,10 +339,7 @@ public class Player {
     public void setHasCheckedHit(boolean dealt) { this.hasCheckedHit = dealt; }
     
     public String getAtlasPath() {return atlasPath;}
-    public int getSpriteCols() {return spriteCols;}
-    public int getSpriteRows() {return spriteRows;}
-    public double getFrameWidth() {return frameWidth;}
-    public double getFrameHeight() {return frameHeight;}
+
     public double getRenderScale() {return renderScale;}
     public double getWidth() { return width; }
     public double getHeight() { return height; }

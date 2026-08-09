@@ -9,7 +9,7 @@ public class GameConfig {
 	
 	public static final String GAME_TITLE_STRING = "Giochini";
 	
-	public static final int TARGET_TPS = 200;
+	public static final int TARGET_TPS = 20; // Target Ticks Per Second (Aggiornamenti al secondo)
 	public static final double TIME_PER_TICK = 1_000_000_000.0 / TARGET_TPS;
 	
 	public static final int pWidth = 100;

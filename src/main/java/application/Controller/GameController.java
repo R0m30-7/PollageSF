@@ -130,14 +130,15 @@ public class GameController {
         this.inputManager = InputManager.getInstance();
         
         // Aggiungiamo Turnip leggendo i dati dalla SUA classe
-        availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
-        availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
-        // Aggiungiamo un paio di placeholder temporanei per testare la griglia
+        //availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
+        //availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
+       
+        availableCharacters.add(new CharacterData("Ryu", "/Sprites/row07_col04_frame00.png", application.Model.ryu::new));// Aggiungiamo un paio di placeholder temporanei per testare la griglia
         //availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
         //availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
 
         // Caricamento delle mappe in memoria
-        availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));
+        availableMaps.add(new MapData("Arena_1", "/Arenas/street-fighter-ii-the-world-warrior-usa-ken-snes-map.png", 0.85)); // da scalare la mappa in base alla risoluzione della finestra
         availableMaps.add(new MapData("9/11", "/Arenas/twinTowers.jpeg", 0.88));
         availableMaps.add(new MapData("Smordor", "/Arenas/smordor.jpeg", 0.77));
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
