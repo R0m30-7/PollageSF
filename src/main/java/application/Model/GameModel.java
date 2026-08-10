@@ -47,8 +47,8 @@ public class GameModel {
     	double spawnY = this.GROUND_LEVEL - GameConfig.pHeight;
     	
         // Spawn dei giocatori al centro del mondo (scelgo di base la classe Turnip)
-    	player1 = new Turnip(new Point2D(worldWidth / 2 - 200, spawnY)); 
-        player2 = new Turnip(new Point2D(worldWidth / 2 + 200, spawnY));
+    	player1 = new Ryu(new Point2D(worldWidth / 2 - 200, spawnY)); 
+        player2 = new Ryu(new Point2D(worldWidth / 2 + 200, spawnY));
         
         // Impostiamo le direzioni iniziali
         player1.setFacingRight(true); 

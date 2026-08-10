@@ -129,9 +129,12 @@ public class GameController {
         //this.view.initPlayers(model.getPlayer1(), model.getPlayer2());	// Inizializziamo la grafica dei giocatori
         this.inputManager = InputManager.getInstance();
         
+        availableCharacters.add(new CharacterData("Ryu", "/Sprites/row07_col04_frame00.png", application.Model.Ryu::new));// Aggiungiamo un paio di placeholder temporanei per testare la griglia
+        
+
         // Aggiungiamo Turnip leggendo i dati dalla SUA classe
-        availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
-        availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
+        //availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
+        //availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
         // Aggiungiamo un paio di placeholder temporanei per testare la griglia
         //availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
         //availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
