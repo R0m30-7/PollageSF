@@ -14,10 +14,19 @@ public class Player {
     
     // Statistiche personaggio
     protected String atlasPath;
-    protected int spriteCols;
-    protected int spriteRows;
-    protected double frameWidth;	// Larghezza del singolo frame sull'atlas
-    protected double frameHeight;	// Altezza del singolo frame sull'atlas
+
+    //VARIABILI PER I TURNIP
+    //protected int spriteCols;
+    //protected int spriteRows;
+    //protected double frameWidth;	// Larghezza del singolo frame sull'atlas
+    //protected double frameHeight;	// Altezza del singolo frame sull'atlas
+   
+
+    protected TextureAtlas atlas;
+    protected double baseLogicalWidth;  // Larghezza fissa per la fisica
+    protected double baseLogicalHeight; // Altezza fissa per la fisica
+    
+
     protected double renderScale;	// Moltiplicatore per la pixelart
     protected double width;
     protected double height;
@@ -291,9 +300,11 @@ public class Player {
         this.jumpStrength = this.baseJumpStrength * windowScale;
         this.renderScale = this.baseRenderScale * windowScale;
 
+
+        //VARIABILI PER I TURNIP
         // Ricalcolo Hitbox del corpo
-        this.width = this.frameWidth * this.renderScale;
-        this.height = this.frameHeight * this.renderScale;
+        //this.width = this.frameWidth * this.renderScale;
+        //this.height = this.frameHeight * this.renderScale;
         this.boundingBox.updateSize(this.width, this.height);
         
         // Ricalcolo Hitbox degli attacchi
@@ -334,12 +345,13 @@ public class Player {
     public boolean isDefending() { return isDefending; }
     public boolean hasCheckedHit() { return hasCheckedHit; }
     public void setHasCheckedHit(boolean dealt) { this.hasCheckedHit = dealt; }
-    
+    public TextureAtlas getAtlas() { return this.atlas; }
     public String getAtlasPath() {return atlasPath;}
-    public int getSpriteCols() {return spriteCols;}
-    public int getSpriteRows() {return spriteRows;}
-    public double getFrameWidth() {return frameWidth;}
-    public double getFrameHeight() {return frameHeight;}
+
+    //public int getSpriteCols() {return spriteCols;}
+    //public int getSpriteRows() {return spriteRows;}
+    //public double getFrameWidth() {return frameWidth;}
+    //public double getFrameHeight() {return frameHeight;}
     public double getRenderScale() {return renderScale;}
     public double getWidth() { return width; }
     public double getHeight() { return height; }

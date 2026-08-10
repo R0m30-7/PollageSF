@@ -15,9 +15,13 @@ public class PlayerRenderer {
     
     // --- Variabili per lo Sprite Animato ---
     private ImageView spriteView;
-    private Image atlas;
-    private double frameWidth;
-    private double frameHeight;
+    private Image atlasImage; //cambiato nome per chiarezza
+
+    //COMANDI PER I TURNIP
+    //private double frameWidth;
+    //private double frameHeight;
+    
+
     
     // Variabile per la State Machine
     private application.Model.AnimState lastAnimState = null;
@@ -35,22 +39,24 @@ public class PlayerRenderer {
         // --- Caricamento dello sprite ---
         try {
             // 1. Recuperiamo la scala di base (quella scritta nella classe Turnip/RedTurnip)
-            double baseScale = player.getRenderScale(); 
+            //double baseScale = player.getRenderScale(); 
             
             // 2. Carichiamo l'atlas GIA' INGRANDITO alla sua dimensione di design
             // Usiamo 'false' nell'ultimo parametro (smooth) per evitare il blur
-            double targetW = player.getSpriteCols() * player.getFrameWidth() * baseScale;
-            double targetH = player.getSpriteRows() * player.getFrameHeight() * baseScale;
+            //double targetW = player.getSpriteCols() * player.getFrameWidth() * baseScale;
+            //double targetH = player.getSpriteRows() * player.getFrameHeight() * baseScale;
             
-            atlas = new Image(getClass().getResourceAsStream(player.getAtlasPath()), targetW, targetH, true, false);
-            spriteView = new ImageView(atlas);
+            //atlasImage = new Image(getClass().getResourceAsStream(player.getAtlasPath()), targetW, targetH, true, false);
+            atlasImage = new Image(getClass().getResourceAsStream(player.getAtlasPath()));
+            
+            spriteView = new ImageView(atlasImage);
             
             // 3. I frame per il ritaglio ora sono quelli "ingranditi" di base
-            frameWidth = player.getFrameWidth() * baseScale;
-            frameHeight = player.getFrameHeight() * baseScale;
+            //frameWidth = player.getFrameWidth() * baseScale;
+            //frameHeight = player.getFrameHeight() * baseScale;
             
             spriteView.setSmooth(false); // Extra sicurezza per il ridimensionamento finestra
-            spriteView.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
+            //spriteView.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
             
         } catch (Exception e) {
             System.out.println("Errore caricamento atlas: " + player.getAtlasPath());
@@ -114,19 +120,57 @@ public class PlayerRenderer {
                     lastFrameTime = now; 
                 }
 
+                // ==========================================
+                // IL NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
+                // ==========================================
+                // 1. Chiediamo al TextureAtlas le coordinate del frame esatto
+                Rectangle2D frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
+                
+                // 2. Aggiorniamo la finestra dell'immagine
+                spriteView.setViewport(frameRect);
+
+                // 3. Applichiamo lo scaling dinamico, moltiplicando la grandezza NATIVA del frame per lo zoom
+                // Non usiamo più la Hitbox per ridimensionare lo sprite, lo sprite scala proporzionalmente a se stesso
+                double currentScale = player.getRenderScale();
+                spriteView.setFitWidth(frameRect.getWidth() * currentScale);
+                spriteView.setFitHeight(frameRect.getHeight() * currentScale);
+                
+                // ==========================================
+                // GESTIONE DIREZIONE (FLIP ORIZZONTALE)
+                // ==========================================
+                // Poiché il JSON di Ryu contiene solo le animazioni verso destra,
+                // dobbiamo flippare l'immagine se il giocatore guarda a sinistra
+                if (!player.isFacingRight()) {
+                    spriteView.setScaleX(-1);
+                    // IMPORTANTE: Quando si flippa con SetScaleX(-1), il punto di origine (X) si inverte.
+                    // Bisogna spostare l'immagine verso sinistra di una larghezza pari a se stessa
+                    // per compensare il capovolgimento attorno al centro.
+                    spriteView.setLayoutX(Math.round(px) + (frameRect.getWidth() * currentScale)/8);
+                } else {
+                    spriteView.setScaleX(1);
+                    spriteView.setLayoutX(Math.round(px));
+                }
+                // ==========================================
+                // FINE NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
+                // ==========================================
+
+                // 4. Aggiorniamo la Y (in genere fissa o calcolata rispetto al suolo)
+                spriteView.setLayoutY(Math.round(py));
+                
+
                 // 4. Ritaglio del frame (usando la frameWidth già scalata nel costruttore)
-                double cropX = (currentData.startCol + currentFrame) * frameWidth;
-                double cropY = currentData.row * frameHeight;
-                spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
+                //double cropX = (currentData.startCol + currentFrame) * frameWidth;
+                //double cropY = currentData.row * frameHeight;
+                //spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
 
                 // 5. APPLICHIAMO LO SCALING DINAMICO DELLA FINESTRA
                 // Questo adatterà il nostro sprite già nitido alla grandezza attuale della finestra
-                spriteView.setFitWidth(player.getWidth());
-                spriteView.setFitHeight(player.getHeight());	
+                //spriteView.setFitWidth(player.getWidth());
+                //spriteView.setFitHeight(player.getHeight());	
                 
                 // 5. Aggiorniamo la posizione sullo schermo
-                spriteView.setLayoutX(Math.round(px));
-                spriteView.setLayoutY(Math.round(py));
+                //spriteView.setLayoutX(Math.round(px));
+                //spriteView.setLayoutY(Math.round(py));
             }
         }
         
