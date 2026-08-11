@@ -25,6 +25,7 @@ public class MainMenuScene {
         StackPane content = new StackPane();
         content.setPrefSize(BASE_WIDTH, BASE_HEIGHT);
         content.setMaxSize(BASE_WIDTH, BASE_HEIGHT);
+        content.setMinSize(BASE_WIDTH, BASE_HEIGHT);
 
         VBox MenuButContainer = new VBox(20);
         MenuButContainer.setAlignment(Pos.CENTER);

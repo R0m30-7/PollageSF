@@ -32,6 +32,7 @@ public class SettingsScene {
         // tramite transform, non tramite layout, quindi resta sempre proporzionato.
         content.setPrefSize(BASE_WIDTH, BASE_HEIGHT);
         content.setMaxSize(BASE_WIDTH, BASE_HEIGHT);
+        content.setMinSize(BASE_WIDTH, BASE_HEIGHT);
 
         Label title = new Label("IMPOSTAZIONI");
         title.setStyle("-fx-font-size: 36px; -fx-text-fill: white; -fx-font-weight: bold;");
