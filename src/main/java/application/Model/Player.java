@@ -14,14 +14,7 @@ public class Player {
     
     // Statistiche personaggio
     protected String atlasPath;
-
-    //VARIABILI PER I TURNIP
-    //protected int spriteCols;
-    //protected int spriteRows;
-    //protected double frameWidth;	// Larghezza del singolo frame sull'atlas
-    //protected double frameHeight;	// Altezza del singolo frame sull'atlas
    
-
     protected TextureAtlas atlas;
     protected double baseLogicalWidth;  // Larghezza fissa per la fisica
     protected double baseLogicalHeight; // Altezza fissa per la fisica
@@ -29,8 +22,8 @@ public class Player {
     protected double renderOffsetX; // Offset per centrare lo sprite rispetto alla hitbox
     protected double renderOffsetY; // Offset per centrare lo sprite rispetto alla hitbox
 
-
     protected double renderScale = 1.0;	// Moltiplicatore per la pixelart
+    protected double menuRenderScaleMultiplier = 1.0;   // Moltiplicatore dello scaling quando si renderizza la texture nel menu di scelta
     protected double width;
     protected double height;
     
@@ -98,7 +91,7 @@ public class Player {
         this.boundingBox = new Hitbox(position, 0, 0);
     }
     
- // --- AGGIORNAMENTO TEMPO AZIONI ---
+    // --- AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
         if (isPunching) {
             AnimData anim = getCurrentAnimData();
@@ -142,7 +135,6 @@ public class Player {
         return elapsedNs >= ritardoNs;
     }
 
-
     public void setCrouching(boolean crouching) {
         if (isPunching || isDefending || !isGrounded) return;
         
@@ -179,9 +171,6 @@ public class Player {
     }
 
     public boolean isCrouching() {return isCrouching;}
-
-
-
 
     public void setDefending(boolean defending) {
         // Se ha appena iniziato a parare in questo frame
@@ -269,9 +258,6 @@ public class Player {
         position = new Point2D(newX, newY);
         boundingBox.updatePosition(position);
     }
-    
-
-
 
     // Cervello delle animazioni
     public void updateAnimationState() {
@@ -316,7 +302,7 @@ public class Player {
         // --- 4. LOGICA IDLE (Fermo) ---
         else {
         	if (inMenuMode) {
-                // Se siamo nel menu, usa la posa da "sbruffone" dedicata!
+                // Se siamo nel menu, si usa l'animazione IDLE del menu
                 currentAnimState = AnimState.MENU_IDLE;
             } else {
                 // Se siamo in gioco, usa l'idle standard
@@ -403,11 +389,12 @@ public class Player {
     public TextureAtlas getAtlas() { return this.atlas; }
     public String getAtlasPath() {return atlasPath;}
 
-    //public int getSpriteCols() {return spriteCols;}
-    //public int getSpriteRows() {return spriteRows;}
-    //public double getFrameWidth() {return frameWidth;}
-    //public double getFrameHeight() {return frameHeight;}
-    public double getRenderScale() {return renderScale;}
+    public double getRenderScale() {
+        if(inMenuMode){
+            return renderScale * menuRenderScaleMultiplier;
+        }
+        return renderScale;
+    }
     public double getWidth() { return width; }
     public double getHeight() { return height; }
     public String getDisplayName() { return displayName; }
