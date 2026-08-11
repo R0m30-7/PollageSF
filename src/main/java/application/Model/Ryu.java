@@ -1,12 +1,15 @@
 package application.Model;
 
 import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 
 public class Ryu extends Player {
     
 
     public Ryu(Point2D spawn) {
         super(spawn);
+        this.renderOffsetX = 0.0; 
+        this.renderOffsetY = 0.0;
         
         this.maxHealth = 100;
         this.health = this.maxHealth;
@@ -25,13 +28,24 @@ public class Ryu extends Player {
         this.atlasPath = "/Sprites/ryuAtlas.png";
         this.atlas = new TextureAtlas("src/main/resources/Sprites/ryuAtlasManifest.json");
         
-        this.renderScale = 5.0; 
+        this.baseRenderScale = 2.75; // Il tuo valore base isolato
         
-        this.width = 25.0 * this.renderScale;
-        this.height = 54.0 * this.renderScale;
-        
+        this.renderScale = this.baseRenderScale;
+       
+        // Chiedi all'atlas le dimensioni del primo frame (es. riga 0, colonna 0)
+        Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
+
+        // La Hitbox si adatta matematicamente alla grafica usando la stessa scala
+        this.width = defaultFrame.getWidth() * this.renderScale;
+        this.height = defaultFrame.getHeight() * this.renderScale;
+
         this.getBoundingBox().updateSize(this.width, this.height);
+    
+        System.out.println("baserenderscale then" + this.baseRenderScale);
+        // SALVI TUTTO NEI VALORI BASE (inclusi width, height e baseRenderScale)
         this.saveBaseStats();
+        System.out.println("baserenderscale after" + this.baseRenderScale);
+
 
         
         // Mappa delle animazioni basata sulle sezioni del JSON (row e col)

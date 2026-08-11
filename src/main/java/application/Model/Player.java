@@ -25,14 +25,17 @@ public class Player {
     protected TextureAtlas atlas;
     protected double baseLogicalWidth;  // Larghezza fissa per la fisica
     protected double baseLogicalHeight; // Altezza fissa per la fisica
-    
 
-    protected double renderScale;	// Moltiplicatore per la pixelart
+    protected double renderOffsetX; // Offset per centrare lo sprite rispetto alla hitbox
+    protected double renderOffsetY; // Offset per centrare lo sprite rispetto alla hitbox
+
+
+    protected double renderScale = 1.0;	// Moltiplicatore per la pixelart
     protected double width;
     protected double height;
     
     // --- Variabili per lo Scaling Dinamico ---
-    protected double baseSpeed, baseGravity, baseJumpStrength, baseRenderScale;
+    protected double baseSpeed, baseGravity, baseJumpStrength, baseRenderScale = 1.0;
     protected double basePunchWidth = 70.0;		// Sostituisce GameConfig
     protected double basePunchHeight = 30.0; 
     
@@ -286,6 +289,7 @@ public class Player {
         this.baseSpeed = this.speed;
         this.baseGravity = this.gravity;
         this.baseJumpStrength = this.jumpStrength;
+        
         this.baseRenderScale = this.renderScale;
 
         this.baseLogicalWidth = this.width;
@@ -361,4 +365,6 @@ public class Player {
     // Forza lo stato di "Tocca Terra" per l'animazione IDLE nel menu
     public void setGrounded(boolean grounded) { this.isGrounded = grounded; }
     public void setInMenuMode(boolean inMenu) { this.inMenuMode = inMenu; }
+    public double getRenderOffsetX() { return renderOffsetX; }
+    public double getRenderOffsetY() { return renderOffsetY; }
 }

@@ -66,9 +66,9 @@ public class PlayerRenderer {
         
         // Visualizzazione hitbox
         hitboxVisual = new Rectangle();
-        hitboxVisual.setFill(null);       // Niente riempimento!
-        hitboxVisual.setStroke(Color.RED); // Bordo rosso
-        hitboxVisual.setStrokeWidth(2);    // Spessore del bordo
+        hitboxVisual.setFill(null);        // Niente riempimento!
+        hitboxVisual.setStroke(Color.RED);        // Bordo rosso
+        hitboxVisual.setStrokeWidth(2);   // Spessore del bordo
 
         // Aggiungiamo tutto al rootNode (lo sprite prende il posto del bodyContainer)
         if (spriteView != null) rootNode.getChildren().add(spriteView);
@@ -80,8 +80,8 @@ public class PlayerRenderer {
     }
 
     public void render(Player player) {
-        double px = player.getPosition().getX();
-        double py = player.getPosition().getY();
+        double px = player.getPosition().getX() - player.getRenderOffsetX();
+        double py = player.getPosition().getY() - player.getRenderOffsetY();
         
         // ==========================================
         // ANIMAZIONE DELLO SPRITE
@@ -134,6 +134,8 @@ public class PlayerRenderer {
                 // 3. Applichiamo lo scaling dinamico, moltiplicando la grandezza NATIVA del frame per lo zoom
                 // Non usiamo più la Hitbox per ridimensionare lo sprite, lo sprite scala proporzionalmente a se stesso
                 double currentScale = player.getRenderScale();
+                //System.out.println("Current Scale: " + currentScale);
+
                 spriteView.setFitWidth(frameRect.getWidth() * currentScale);
                 spriteView.setFitHeight(frameRect.getHeight() * currentScale);
                 
@@ -152,6 +154,8 @@ public class PlayerRenderer {
                     spriteView.setScaleX(1);
                     spriteView.setLayoutX(Math.round(px));
                 }
+
+
                 // ==========================================
                 // FINE NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
                 // ==========================================
