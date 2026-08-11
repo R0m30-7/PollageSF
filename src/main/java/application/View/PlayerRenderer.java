@@ -128,16 +128,11 @@ public class PlayerRenderer {
                 // 1. Chiediamo al TextureAtlas le coordinate del frame esatto
                 Rectangle2D frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
                 
-                // 2. Aggiorniamo la finestra dell'immagine
-                spriteView.setImage(getCroppedFrame(frameRect));
-
-                // 3. Applichiamo lo scaling dinamico, moltiplicando la grandezza NATIVA del frame per lo zoom
-                // Non usiamo più la Hitbox per ridimensionare lo sprite, lo sprite scala proporzionalmente a se stesso
+                // Prendiamo la scala per ingrandire
                 double currentScale = player.getRenderScale();
-                //System.out.println("Current Scale: " + currentScale);
 
-                spriteView.setFitWidth(frameRect.getWidth() * currentScale);
-                spriteView.setFitHeight(frameRect.getHeight() * currentScale);
+                // 2. Aggiorniamo la finestra dell'immagine
+                spriteView.setImage(getCroppedFrame(frameRect, currentScale));
                 
                 // ==========================================
                 // GESTIONE DIREZIONE (FLIP ORIZZONTALE)
@@ -149,12 +144,11 @@ public class PlayerRenderer {
                     // IMPORTANTE: Quando si flippa con SetScaleX(-1), il punto di origine (X) si inverte.
                     // Bisogna spostare l'immagine verso sinistra di una larghezza pari a se stessa
                     // per compensare il capovolgimento attorno al centro.
-                    spriteView.setLayoutX(Math.round(px) + (frameRect.getWidth() * currentScale)/8);
+                    spriteView.setLayoutX(Math.round(px + (frameRect.getWidth() * currentScale)/8));
                 } else {
                     spriteView.setScaleX(1);
                     spriteView.setLayoutX(Math.round(px));
                 }
-
 
                 // ==========================================
                 // FINE NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
@@ -196,16 +190,35 @@ public class PlayerRenderer {
         hitboxVisual.toFront();
     }
 
-    // Metodo helper per renderizzare le texture in HD
-    private Image getCroppedFrame(Rectangle2D rect) {
-    String key = (int) rect.getMinX() + "_" + (int) rect.getMinY() + "_"
-               + (int) rect.getWidth() + "_" + (int) rect.getHeight();
-    return frameCache.computeIfAbsent(key, k ->
-        new WritableImage(atlasImage.getPixelReader(),
-            (int) rect.getMinX(), (int) rect.getMinY(),
-            (int) rect.getWidth(), (int) rect.getHeight())
-    );
-}
+    // Metodo helper per renderizzare le texture in HD (Nearest-Neighbor via Software)
+    private Image getCroppedFrame(Rectangle2D rect, double scale) {
+        // Aggiungiamo la scala alla chiave della cache
+        String key = (int) rect.getMinX() + "_" + (int) rect.getMinY() + "_"
+                   + (int) rect.getWidth() + "_" + (int) rect.getHeight() + "_" + scale;
+        
+        return frameCache.computeIfAbsent(key, k -> {
+            int srcW = (int) rect.getWidth();
+            int srcH = (int) rect.getHeight();
+            
+            // Calcoliamo le dimensioni finali
+            int dstW = (int) Math.round(srcW * scale);
+            int dstH = (int) Math.round(srcH * scale);
+            
+            WritableImage scaledImg = new WritableImage(dstW, dstH);
+            javafx.scene.image.PixelReader reader = atlasImage.getPixelReader();
+            javafx.scene.image.PixelWriter writer = scaledImg.getPixelWriter();
+            
+            // Scaliamo copiando lo stesso pixel più volte (Nearest-Neighbor)
+            for (int y = 0; y < dstH; y++) {
+                for (int x = 0; x < dstW; x++) {
+                    int srcX = (int) (rect.getMinX() + (x / scale));
+                    int srcY = (int) (rect.getMinY() + (y / scale));
+                    writer.setArgb(x, y, reader.getArgb(srcX, srcY));
+                }
+            }
+            return scaledImg;
+        });
+    }
     
     // Metodo speciale da chiamare quando renderizziamo il personaggio nel Menu
     public void setMenuMode() {
