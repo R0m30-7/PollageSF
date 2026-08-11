@@ -141,14 +141,10 @@ public class PlayerRenderer {
                 // dobbiamo flippare l'immagine se il giocatore guarda a sinistra
                 if (!player.isFacingRight()) {
                     spriteView.setScaleX(-1);
-                    // IMPORTANTE: Quando si flippa con SetScaleX(-1), il punto di origine (X) si inverte.
-                    // Bisogna spostare l'immagine verso sinistra di una larghezza pari a se stessa
-                    // per compensare il capovolgimento attorno al centro.
-                    spriteView.setLayoutX(Math.round(px + (frameRect.getWidth() * currentScale)/8));
                 } else {
                     spriteView.setScaleX(1);
-                    spriteView.setLayoutX(Math.round(px));
                 }
+                spriteView.setLayoutX(Math.round(px));
 
                 // ==========================================
                 // FINE NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
