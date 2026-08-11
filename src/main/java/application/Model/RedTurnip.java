@@ -15,10 +15,10 @@ public class RedTurnip extends Player {
         this.displayName = "Ascanio";
         this.pfpPath = "/Sprites/redTurnipPFP.png";
 		
-		this.jumpStrength = -13.0;
+		this.jumpStrength = -10.0;
 		this.gravity = 0.2;
 		
-		this.speed = 3.5;
+		this.speed = 1.3;
 		
 		// L'impatto del pugno dura esattamente 10 millisecondi
         this.punchDurationNs = 60 * 1_000_000L;
