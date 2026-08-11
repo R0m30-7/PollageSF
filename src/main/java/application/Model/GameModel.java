@@ -293,15 +293,14 @@ public class GameModel {
     }
     
     // Aggiornare larghezza, altezza e pavimento della finestra
-    public void updateWindowSize(double newWidth, double newHeight, double newWorldWidth) {
+    public void updateWindowSize(double newWidth, double newHeight, double newWorldWidth,double scale) {
         this.currentWindowWidth = newWidth;
         this.currentWindowHeight = newHeight;
         
         // --- SCALING ---
         // Ipotizziamo che tu abbia bilanciato il gioco su uno schermo 1080p.
-        double scaleFactor = newHeight / 1080.0; 
-        player1.updateDynamicScale(scaleFactor);
-        player2.updateDynamicScale(scaleFactor);
+        player1.updateDynamicScale(scale);
+        player2.updateDynamicScale(scale);
         // ------------------------------
         
         // Ricalcola del pavimento in tempo reale

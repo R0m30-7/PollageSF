@@ -22,6 +22,7 @@ public class GameView {
     private double bgHeight;
     private double originalBgWidth;
     private double originalBgHeight;
+    private double currentScale = 1.0;
     
     // Variabili per la schermata di vittoria
     private javafx.scene.layout.StackPane victoryLayer;
@@ -113,14 +114,14 @@ public class GameView {
         double scaleY = newHeight / this.originalBgHeight;
         
         // Prendiamo la scala MAGGIORE. Così siamo sicuri al 100% che non ci siano spazi bianchi
-        double scale = Math.max(scaleX, scaleY);
+        this.currentScale = Math.max(scaleX, scaleY);
         
         // Non rimpicciolire mai l'immagine sotto la sua misura originale
         //scale = Math.max(1.0, scale);
 
         // Calcoliamo le nuove dimensioni "Zoommate" dell'arena
-        this.bgWidth = this.originalBgWidth * scale;
-        this.bgHeight = this.originalBgHeight * scale;
+        this.bgWidth = this.originalBgWidth * currentScale;
+        this.bgHeight = this.originalBgHeight * currentScale;
 
         // Applichiamo le nuove dimensioni all'immagine grafica
         if (this.backgroundView != null) {
@@ -145,7 +146,7 @@ public class GameView {
         
         // Aggiorniamo anche l'HUD
         if(this.hud != null) {
-        	this.hud.updateLayout(newWidth, scale);
+        	this.hud.updateLayout(newWidth, currentScale);
         }
         
         // --- Codice della schermata di vittoria ---
@@ -153,8 +154,8 @@ public class GameView {
             this.victoryLayer.setPrefSize(newWidth, newHeight);
             
             // Scaliamo il testo e l'immagine in base allo schermo
-            this.victoryImageView.setFitHeight(400 * scale);
-            this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * scale));
+            this.victoryImageView.setFitHeight(400 * currentScale);
+            this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * currentScale));
         }
     }
     
@@ -213,5 +214,9 @@ public class GameView {
     
     public void showContinueText() {
         this.continueText.setVisible(true);
+    }
+
+    public double getScale() {
+        return this.currentScale;
     }
 }

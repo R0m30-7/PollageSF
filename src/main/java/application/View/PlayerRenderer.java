@@ -5,6 +5,7 @@ import application.Model.Player;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -12,6 +13,9 @@ import javafx.scene.shape.Rectangle;
 public class PlayerRenderer {
     // Contenitore libero (Pane) che terrà il corpo, il pugno e la difesa
     private Pane rootNode;
+
+    // Mappa dove copiare ogni frame delle animazioni per non renderizzarle sgranate
+    private java.util.Map<String, Image> frameCache = new java.util.HashMap<>();
     
     // --- Variabili per lo Sprite Animato ---
     private ImageView spriteView;
@@ -20,8 +24,6 @@ public class PlayerRenderer {
     //COMANDI PER I TURNIP
     //private double frameWidth;
     //private double frameHeight;
-    
-
     
     // Variabile per la State Machine
     private application.Model.AnimState lastAnimState = null;
@@ -127,7 +129,7 @@ public class PlayerRenderer {
                 Rectangle2D frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
                 
                 // 2. Aggiorniamo la finestra dell'immagine
-                spriteView.setViewport(frameRect);
+                spriteView.setImage(getCroppedFrame(frameRect));
 
                 // 3. Applichiamo lo scaling dinamico, moltiplicando la grandezza NATIVA del frame per lo zoom
                 // Non usiamo più la Hitbox per ridimensionare lo sprite, lo sprite scala proporzionalmente a se stesso
@@ -189,6 +191,17 @@ public class PlayerRenderer {
         // Lo portiamo in primo piano per vederlo sopra lo sprite
         hitboxVisual.toFront();
     }
+
+    // Metodo helper per renderizzare le texture in HD
+    private Image getCroppedFrame(Rectangle2D rect) {
+    String key = (int) rect.getMinX() + "_" + (int) rect.getMinY() + "_"
+               + (int) rect.getWidth() + "_" + (int) rect.getHeight();
+    return frameCache.computeIfAbsent(key, k ->
+        new WritableImage(atlasImage.getPixelReader(),
+            (int) rect.getMinX(), (int) rect.getMinY(),
+            (int) rect.getWidth(), (int) rect.getHeight())
+    );
+}
     
     // Metodo speciale da chiamare quando renderizziamo il personaggio nel Menu
     public void setMenuMode() {

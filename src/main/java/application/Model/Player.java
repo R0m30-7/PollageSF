@@ -287,6 +287,9 @@ public class Player {
         this.baseGravity = this.gravity;
         this.baseJumpStrength = this.jumpStrength;
         this.baseRenderScale = this.renderScale;
+
+        this.baseLogicalWidth = this.width;
+        this.baseLogicalHeight = this.height;
         
         // Inizializza i valori correnti
         this.punchWidth = this.basePunchWidth;
@@ -300,11 +303,8 @@ public class Player {
         this.jumpStrength = this.baseJumpStrength * windowScale;
         this.renderScale = this.baseRenderScale * windowScale;
 
-
-        //VARIABILI PER I TURNIP
-        // Ricalcolo Hitbox del corpo
-        //this.width = this.frameWidth * this.renderScale;
-        //this.height = this.frameHeight * this.renderScale;
+        this.width = this.baseLogicalWidth * windowScale;
+        this.height = this.baseLogicalHeight * windowScale;
         this.boundingBox.updateSize(this.width, this.height);
         
         // Ricalcolo Hitbox degli attacchi

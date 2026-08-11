@@ -206,7 +206,7 @@ public class GameController {
             view.updateWindowSize(newW, currentH);
             
             // Diciamo poi al Model di aggiornare i limiti passando il nuovo bgWidth della View
-            model.updateWindowSize(newW, currentH, view.getBgWidth());
+            model.updateWindowSize(newW, currentH, view.getBgWidth(), view.getScale());
         });
 
         // Se l'utente alza o abbassa la finestra...
@@ -218,7 +218,7 @@ public class GameController {
             view.updateWindowSize(currentW, newH);
             
             // Diciamo poi al Model di aggiornare i limiti passando il nuovo bgWidth della View
-            model.updateWindowSize(currentW, newH, view.getBgWidth());	
+            model.updateWindowSize(currentW, newH, view.getBgWidth(), view.getScale());	
         });
 
         // 3. Impostiamo la finestra e avviamo il gioco
@@ -964,7 +964,7 @@ public class GameController {
         
         // 2. FONDAMENTALE: Diciamo al Motore Fisico di aggiornare la larghezza
         // del mondo (muri invisibili) in base all'immagine appena caricata!
-        model.updateWindowSize(scene.getWidth(), scene.getHeight(), view.getBgWidth());
+        model.updateWindowSize(scene.getWidth(), scene.getHeight(), view.getBgWidth(), view.getScale());
         
         // --- Informiamo il motore fisico della presenza del pavimento ---
         model.setGroundLevelRatio(selectedMap.groundLevelRatio);
