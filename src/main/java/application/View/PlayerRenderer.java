@@ -122,9 +122,6 @@ public class PlayerRenderer {
                     lastFrameTime = now; 
                 }
 
-                // ==========================================
-                // IL NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
-                // ==========================================
                 // 1. Chiediamo al TextureAtlas le coordinate del frame esatto
                 Rectangle2D frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
                 
@@ -149,24 +146,8 @@ public class PlayerRenderer {
                 // ==========================================
                 // FINE NUOVO SISTEMA DI RITAGLIO TRAMITE ATLAS
                 // ==========================================
-
                 // 4. Aggiorniamo la Y (in genere fissa o calcolata rispetto al suolo)
                 spriteView.setLayoutY(Math.round(py));
-                
-
-                // 4. Ritaglio del frame (usando la frameWidth già scalata nel costruttore)
-                //double cropX = (currentData.startCol + currentFrame) * frameWidth;
-                //double cropY = currentData.row * frameHeight;
-                //spriteView.setViewport(new Rectangle2D(cropX, cropY, frameWidth, frameHeight));
-
-                // 5. APPLICHIAMO LO SCALING DINAMICO DELLA FINESTRA
-                // Questo adatterà il nostro sprite già nitido alla grandezza attuale della finestra
-                //spriteView.setFitWidth(player.getWidth());
-                //spriteView.setFitHeight(player.getHeight());	
-                
-                // 5. Aggiorniamo la posizione sullo schermo
-                //spriteView.setLayoutX(Math.round(px));
-                //spriteView.setLayoutY(Math.round(py));
             }
         }
         
