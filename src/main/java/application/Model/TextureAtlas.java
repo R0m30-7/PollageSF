@@ -2,6 +2,8 @@ package application.Model;
 
 import javafx.geometry.Rectangle2D;
 import org.json.JSONObject; //libreria per leggere il JSON
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -11,14 +13,21 @@ public class TextureAtlas {
     private Map<String, Rectangle2D> frames = new HashMap<>();
 
     public TextureAtlas(String jsonFilePath) {
-        try {
-            // Lettura del contenuto del file JSON
-            String content = new String(Files.readAllBytes(Paths.get(jsonFilePath)));
+        // Usiamo un try-with-resources per chiudere automaticamente l'InputStream
+        try (InputStream is = getClass().getResourceAsStream(jsonFilePath)) {
+            
+            if (is == null) {
+                System.out.println("File JSON non trovato nel classpath: " + jsonFilePath);
+                return;
+            }
+            
+            // Leggiamo tutti i byte dall'InputStream interno al JAR
+            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            
             // Parsing del JSON
             JSONObject root = new JSONObject(content);
-            // Estrazione dei dati dei frame
             JSONObject framesJson = root.getJSONObject("frames");
-            // Iterazione sui frame e memorizzazione delle coordinate
+            
             for (String key : framesJson.keySet()) {
                 JSONObject frameData = framesJson.getJSONObject(key).getJSONObject("frame");
                 double x = frameData.getDouble("x");
@@ -29,6 +38,7 @@ public class TextureAtlas {
                 frames.put(key, new Rectangle2D(x, y, w, h));
             }
         } catch (Exception e) {
+            System.out.println("Errore nel caricamento del JSON: " + jsonFilePath);
             e.printStackTrace();
         }
     }

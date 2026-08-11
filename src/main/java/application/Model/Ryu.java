@@ -26,7 +26,7 @@ public class Ryu extends Player {
         this.punchDamage = 10.0;
         
         this.atlasPath = "/Sprites/ryuAtlas.png";
-        this.atlas = new TextureAtlas("src/main/resources/Sprites/ryuAtlasManifest.json");
+        this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
         
         this.baseRenderScale = 2.75; // Il tuo valore base isolato
 

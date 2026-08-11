@@ -25,7 +25,7 @@ public class Turnip extends Player {
         this.punchDamage = 10.0;
 		
 		this.atlasPath = "/Sprites/turnipAtlas.png";
-        this.atlas = new TextureAtlas("src/main/resources/Sprites/turnipAtlasManifest.json");
+        this.atlas = new TextureAtlas("/Sprites/turnipAtlasManifest.json");
         this.renderScale = 7;  // Ingrandisce la pixel art esattamente x6 volte
         this.menuRenderScaleMultiplier = 2;
         
