@@ -13,7 +13,7 @@ public class Ryu extends Player {
         this.parryStunDuration = 1200;
         
         this.displayName = "Ryu";
-        this.pfpPath = "/Sprites/row07_col04_frame00.png";
+        this.pfpPath = "/Sprites/ryuPFP.png";
         
         this.jumpStrength = -13.0;
         this.gravity = 0.2;
@@ -22,8 +22,8 @@ public class Ryu extends Player {
         this.punchDurationNs = 60 * 1_000_000L;
         this.punchDamage = 10.0;
         
-        this.atlasPath = "/Sprites/ryu_chromakey.png";
-        this.atlas = new TextureAtlas("src/main/resources/Sprites/ryu_atlas_manifest.json");
+        this.atlasPath = "/Sprites/ryuAtlas.png";
+        this.atlas = new TextureAtlas("src/main/resources/Sprites/ryuAtlasManifest.json");
         
         this.renderScale = 5.0; 
         
