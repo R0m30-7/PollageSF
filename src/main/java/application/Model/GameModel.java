@@ -80,12 +80,32 @@ public class GameModel {
         // --- GIOCATORE 1 ---
         if (!player1.isStunned()) {
             double p1X = input.getLeftStickX(1);
+            double p1Y = input.getLeftStickY(1);
+
+
+            // Se la levetta è spinta decisamente verso il basso, attiva il crouch
+            if (p1Y > 0.5 ) {//&& player1.isGrounded()
+                player1.setCrouching(true);
+            } else {
+                player1.setCrouching(false);
+            }
+
+            if (!player1.isCrouching()) {
+                if (Math.abs(p1X) > 0.0) {
+                    player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+                }
+                if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
+                if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
+                player1.setDefending(input.isDefendButtonPressed(1));
+            }
+
             if (Math.abs(p1X) > 0.0) {
                 player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
             }
             if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
             if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
             player1.setDefending(input.isDefendButtonPressed(1));
+
         } else {
             // Se è stordito, abbassa le difese e si ferma!
             player1.setDefending(false);

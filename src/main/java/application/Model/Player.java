@@ -55,6 +55,10 @@ public class Player {
     protected double gravity;
     protected double jumpStrength;	// Deve essere negativo perché la y aumenta dal basso verso l'alto
     
+    // Variabili per il crouch
+    protected boolean isCrouching = false;
+    protected double normalHeight; // Ti memorizzi l'altezza standard
+
     // --- Meccanica di parata e stordimento ---
     protected long blockStartTime = 0;
     protected boolean wasDefending = false;
@@ -138,6 +142,47 @@ public class Player {
         return elapsedNs >= ritardoNs;
     }
 
+
+    public void setCrouching(boolean crouching) {
+        if (isPunching || isDefending || !isGrounded) return;
+        
+        // Se lo stato cambia
+        if (this.isCrouching != crouching) {
+            this.isCrouching = crouching;
+            
+            // Salviamo l'altezza normale la prima volta
+            if (normalHeight == 0) normalHeight = this.height;
+            
+            double targetHeight = crouching ? normalHeight * 0.6 : normalHeight; // Es: crouch è il 60% dell'altezza
+            double heightDifference = normalHeight - targetHeight;
+            
+            if (crouching) {
+                // Si abbassa: abbassiamo la Y del pavimento aggiungendo la differenza, 
+                // così la testa scende e i piedi restano piantati a terra!
+                position = new Point2D(position.getX(), position.getY() + heightDifference);
+            } else {
+                // Si alza: restituiamo lo spazio sottratto alla Y
+                position = new Point2D(position.getX(), position.getY() - heightDifference);
+            }
+            
+            // Aggiorniamo la dimensione della Hitbox fisica
+            this.boundingBox.updateSize(this.width, targetHeight);
+            this.boundingBox.updatePosition(position);
+
+            //aggiorniamo l'altezza del player per la grafica
+            this.height = targetHeight;
+        }
+        
+        if (crouching) {
+            this.isMoving = false;
+        }
+    }
+
+    public boolean isCrouching() {return isCrouching;}
+
+
+
+
     public void setDefending(boolean defending) {
         // Se ha appena iniziato a parare in questo frame
         if (defending && !this.wasDefending) {
@@ -167,7 +212,7 @@ public class Player {
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
     public void moveHorizontal(PlayerState DIR) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isDefending) return;
+        if (isPunching || isDefending || isCrouching) return;
         
         this.isMoving = true;
         
@@ -225,6 +270,9 @@ public class Player {
         boundingBox.updatePosition(position);
     }
     
+
+
+
     // Cervello delle animazioni
     public void updateAnimationState() {
         // Se il giocatore è stordito, NON cambiamo l'animazione.
@@ -255,6 +303,9 @@ public class Player {
             // Usiamo i nuovi stati BLOCK specifici
             currentAnimState = isFacingRight ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT;
         } 
+        else if (isCrouching) { // <-- NUOVA PRIORITÀ
+            currentAnimState = isFacingRight ? AnimState.CROUCH_RIGHT : AnimState.CROUCH_LEFT;
+        }
         else if (!isGrounded) {
             currentAnimState = isFacingRight ? AnimState.JUMP_RIGHT : AnimState.JUMP_LEFT;
         } 

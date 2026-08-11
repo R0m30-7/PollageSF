@@ -8,7 +8,7 @@ public class Ryu extends Player {
 
     public Ryu(Point2D spawn) {
         super(spawn);
-        this.renderOffsetX = 0.0; 
+        this.renderOffsetX = 20.0; 
         this.renderOffsetY = 0.0;
         
         this.maxHealth = 100;
@@ -29,14 +29,15 @@ public class Ryu extends Player {
         this.atlas = new TextureAtlas("src/main/resources/Sprites/ryuAtlasManifest.json");
         
         this.baseRenderScale = 2.75; // Il tuo valore base isolato
-        
+
         this.renderScale = this.baseRenderScale;
        
         // Chiedi all'atlas le dimensioni del primo frame (es. riga 0, colonna 0)
         Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
 
         // La Hitbox si adatta matematicamente alla grafica usando la stessa scala
-        this.width = defaultFrame.getWidth() * this.renderScale;
+        //quel .70 stringe un po la hitbox
+        this.width = defaultFrame.getWidth()*.70 * this.renderScale;
         this.height = defaultFrame.getHeight() * this.renderScale;
 
         this.getBoundingBox().updateSize(this.width, this.height);
@@ -65,6 +66,9 @@ public class Ryu extends Player {
         animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 1, 5, 200, false));
         animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 2, 7, 100, false));
         animations.put(AnimState.JUMP_LEFT, new AnimData(0, 3, 7, 150, false));
+        animations.put(AnimState.CROUCH_RIGHT, new AnimData(0, 4, 2, 400, false));
+        animations.put(AnimState.CROUCH_LEFT, new AnimData(0, 4, 2, 400, false));
+    
     }
 
     public TextureAtlas getAtlas() {

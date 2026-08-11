@@ -17,5 +17,8 @@ public enum AnimState {
     PUNCH_LEFT,                   // (Manterremo questi come placeholder futuri)
     PUNCH_RIGHT,
     JUMP_LEFT,
-    JUMP_RIGHT
+    JUMP_RIGHT,
+
+    CROUCH_LEFT,
+    CROUCH_RIGHT
 }

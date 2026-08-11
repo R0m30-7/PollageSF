@@ -102,6 +102,13 @@ public class InputManager {
         // Tasto Start/Options universale
         return state != null && state.start; 
     }
+
+    // --- METODO PER CROUCH ---
+    public boolean isCrouchButtonPressed(int playerNumber) {
+        ControllerState state = getState(playerNumber);
+        // Tasto B universale (Cerchio su PS, B su Xbox/Nintendo)
+        return state != null && state.b; 
+    }
     
     // --- METODI PER AZIONI DI COMBATTIMENTO ---
     public boolean isPunchButtonPressed(int playerNumber) {

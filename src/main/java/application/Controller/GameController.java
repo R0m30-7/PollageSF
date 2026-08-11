@@ -357,7 +357,6 @@ public class GameController {
                             else if (x1 > 0.5) { p1CharIndex++; lastCharInputTimeP1 = currentTimeMs; }
                             else if (y1 < -0.5) { p1CharIndex -= cols; lastCharInputTimeP1 = currentTimeMs; }
                             else if (y1 > 0.5) { p1CharIndex += cols; lastCharInputTimeP1 = currentTimeMs; }
-
                             // Ciclo infinito (se esci dai bordi torni all'inizio)
                             if (p1CharIndex < 0) p1CharIndex = availableCharacters.size() - 1;
                             if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
@@ -457,6 +456,7 @@ public class GameController {
                                 lastMenuInputTime = currentTimeMs;
                             }
                         }
+                        
                     }
                     
                     boolean isConfirm = inputManager.isJumpButtonPressed(1);
