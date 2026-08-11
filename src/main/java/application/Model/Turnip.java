@@ -25,15 +25,12 @@ public class Turnip extends Player {
         this.punchDamage = 10.0;
 		
 		this.atlasPath = "/Sprites/turnipAtlas.png";
-		this.spriteRows = 8;
-        this.spriteCols = 8;
-        this.frameWidth = 16;
-        this.frameHeight = 16;
+        this.atlas = new TextureAtlas("src/main/resources/Sprites/turnipAtlasManifest.json");
         this.renderScale = 10;  // Ingrandisce la pixel art esattamente x6 volte
         
         // Dati Fisici (La hitbox si adatta alla grafica ingrandita)
-        this.width = this.frameWidth * this.renderScale;
-        this.height = this.frameHeight * this.renderScale;
+        this.width = 16.0 * this.renderScale;
+        this.height = 16.0 * this.renderScale;
         
         this.getBoundingBox().updateSize(this.width, this.height);
         
