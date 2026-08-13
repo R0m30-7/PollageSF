@@ -449,10 +449,24 @@ public class GameController {
                             }
                             
                         } else if (yInput > 0.5) { // GIÙ (Salta alla riga sotto)
-                            if (currentMapIndex + cols < availableMaps.size()) {
+                            int maxIndex = availableMaps.size() - 1;
+                            
+                            // Calcoliamo in quale riga ci troviamo e qual è l'ultima riga disponibile
+                            int currentRow = currentMapIndex / cols;
+                            int maxRow = maxIndex / cols;
+                            
+                            // Se non siamo già all'ultima riga, possiamo scendere!
+                            if (currentRow < maxRow) {
                                 currentMapIndex += cols;
+                                
+                                // Se scendendo finiamo in un "buco vuoto" (perché l'ultima riga 
+                                // ha meno colonne), calamitiamo il cursore all'ultima mappa
+                                if (currentMapIndex > maxIndex) {
+                                    currentMapIndex = maxIndex;
+                                }
+                                
                                 updateMapSelectionUI();
-                                updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
+                                updateBackgroundPreview();  // Aggiorna la preview della mappa nello sfondo
                                 lastMenuInputTime = currentTimeMs;
                             }
                         }
