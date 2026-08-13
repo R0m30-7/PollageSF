@@ -849,7 +849,10 @@ public class GameController {
         mapsContainer.setPrefColumns(3); 
         mapsContainer.setMaxWidth(1200); 
         
-        mapNodes.clear(); 
+        mapNodes.clear();
+
+        // Aggiunge un po' di padding per non tagliare l'evidenziazione gialla
+        mapsContainer.setPadding(new javafx.geometry.Insets(40, 0, 30, 0));
 
         for (MapData map : availableMaps) {
             VBox singleMapBox = new VBox(15); 
@@ -866,6 +869,14 @@ public class GameController {
             } catch (Exception e) {
                 System.out.println("Nessuna foto trovata: " + map.imagePath);
             }
+
+            // Crea un rettangolo grande quanto l'anteprima di una mappa
+            javafx.scene.shape.Rectangle clipRect = new javafx.scene.shape.Rectangle(300, 170);
+            // Smussa gli angoli di questo rettangolo (per smussare anche quelli dell'anteprima della mappa)
+            clipRect.setArcWidth(20);
+            clipRect.setArcHeight(20);
+            // Applica il rettangolo come maschera di ritaglio all'immagine
+            thumb.setClip(clipRect);
 
             Label nameLabel = new Label(map.displayName);
             nameLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
