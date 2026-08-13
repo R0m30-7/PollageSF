@@ -23,6 +23,7 @@ public class GameView {
     private double originalBgWidth;
     private double originalBgHeight;
     private double currentScale = 1.0;
+    private double gameScale = 1.0;
     
     // Variabili per la schermata di vittoria
     private javafx.scene.layout.StackPane victoryLayer;
@@ -115,9 +116,9 @@ public class GameView {
         
         // Prendiamo la scala MAGGIORE. Così siamo sicuri al 100% che non ci siano spazi bianchi
         this.currentScale = Math.max(scaleX, scaleY);
-        
-        // Non rimpicciolire mai l'immagine sotto la sua misura originale
-        //scale = Math.max(1.0, scale);
+
+        // I personaggi e l'HUD devono scalare sempre in modo coerente rispetto al 1080p, e non in base alla dimensione dello sfondo
+        this.gameScale = newHeight / 768.0;
 
         // Calcoliamo le nuove dimensioni "Zoommate" dell'arena
         this.bgWidth = this.originalBgWidth * currentScale;
@@ -144,18 +145,17 @@ public class GameView {
             this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
         }
         
-        // Aggiorniamo anche l'HUD
+        // Passiamo gameScale al posto di currentScale
         if(this.hud != null) {
-        	this.hud.updateLayout(newWidth, currentScale);
+        	this.hud.updateLayout(newWidth, this.gameScale);
         }
         
-        // --- Codice della schermata di vittoria ---
+        // Schermata di vittoria indipendente dalla mappa
         if (this.victoryLayer != null) {
             this.victoryLayer.setPrefSize(newWidth, newHeight);
             
-            // Scaliamo il testo e l'immagine in base allo schermo
-            this.victoryImageView.setFitHeight(400 * currentScale);
-            this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * currentScale));
+            this.victoryImageView.setFitHeight(400 * this.gameScale);
+            this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * this.gameScale));
         }
     }
     
@@ -217,6 +217,6 @@ public class GameView {
     }
 
     public double getScale() {
-        return this.currentScale;
+        return this.gameScale;
     }
 }
