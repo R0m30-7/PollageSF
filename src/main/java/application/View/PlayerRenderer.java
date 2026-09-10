@@ -136,8 +136,29 @@ public class PlayerRenderer {
                 // ==========================================
                 // Poiché il JSON di Ryu contiene solo le animazioni verso destra,
                 // dobbiamo flippare l'immagine se il giocatore guarda a sinistra
+                
                 if (!player.isFacingRight()) {
+
                     spriteView.setScaleX(-1);
+
+                    // soluzione momentanea per ricentrare il personaggio durante il terzo frame del pugno a sinsitra,
+                    // siccome è largo  
+                    if(currentState == application.Model.AnimState.PUNCH_LEFT) {
+                        if (currentFrame == 2){
+                            double offsetCompensazione = 25.0 * currentScale; 
+                            px -= offsetCompensazione;
+                        }       
+                    
+                    }else if(currentState == application.Model.AnimState.PUNCH_CROUCH_LEFT){
+                        if (currentFrame == 0){
+                            double offsetCompensazione = 5.0 * currentScale; 
+                            px -= offsetCompensazione;
+                        }else if (currentFrame == 1){
+                            double offsetCompensazione = 23.0 * currentScale; 
+                            px -= offsetCompensazione;
+                        }     
+
+                    }
                 } else {
                     spriteView.setScaleX(1);
                 }

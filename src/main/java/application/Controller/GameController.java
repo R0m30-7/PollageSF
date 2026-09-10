@@ -566,6 +566,11 @@ public class GameController {
                             }
                         } else {
                             // IL GIOCO NON È FINITO! (Calcolo normale della fisica)
+                            // Aggiorniamo la fisica finchè l'accumulatore è maggiore del tempo per tick
+                            // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
+                            //es: se il gioco va a 100 TPS, ogni frame dura 10ms, quindi l'accumulatore accumula 10ms per frame.
+                            // Quando l'accumulatore supera 5ms (1 tick), viene eseguito un update della fisica, e l'accumulatore viene ridotto di 5ms.
+                            // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
                             while (physicsAccumulator >= application.Utils.GameConfig.TIME_PER_TICK) {
                                 inputManager.update(); // Mantiene fluido il movimento     
                                 model.update(inputManager); 

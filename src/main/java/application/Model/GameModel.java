@@ -72,7 +72,7 @@ public class GameModel {
         boolean isP1PunchHeld = input.isPunchButtonPressed(1);
         boolean isP2PunchHeld = input.isPunchButtonPressed(2);
 
-        // 2. Applichiamo la fisica passando lo stato del tasto!
+        // 2. Applichiamo la fisica passando lo stato del tasto! (gestione)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
         player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
         
@@ -97,30 +97,55 @@ public class GameModel {
                 if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
                 if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
                 player1.setDefending(input.isDefendButtonPressed(1));
+            }else {
+            // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
+            
+            // Controllo per il pugno basso
+                if (isP1PunchHeld && !wasP1PunchHeld) {
+                    player1.startCrouchPunch();
+                }
+                
+                // Opzionale ma consigliato: permettere la parata bassa
+                //player1.setDefending(input.isDefendButtonPressed(1));
             }
-
-            if (Math.abs(p1X) > 0.0) {
-                player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
-            }
-            if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
-            if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
-            player1.setDefending(input.isDefendButtonPressed(1));
-
         } else {
             // Se è stordito, abbassa le difese e si ferma!
             player1.setDefending(false);
         }
 
         // --- GIOCATORE 2 ---
-        if (!player2.isStunned()) {
+        if (!player2.isStunned()) {//da fare gestione di crouch e punchcrouch per player 2
+    
             double p2X = input.getLeftStickX(2);
-            if (Math.abs(p2X) > 0.0) {
-                player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+            double p2Y = input.getLeftStickY(2);
+            if (p2Y > .5){
+                player2.setCrouching(true);
+            }else{
+                player2.setCrouching(false);
             }
-            if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
-            if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
-            player2.setDefending(input.isDefendButtonPressed(2));
-        } else {
+            
+            if(!player2.isCrouching){
+                if (Math.abs(p2X) > 0.0) {
+                    player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+                }
+                if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
+                if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
+                player2.setDefending(input.isDefendButtonPressed(2));
+            }else {
+            // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
+            
+            // Controllo per il pugno basso
+                if (isP2PunchHeld && !wasP2PunchHeld) {
+                    player2.startCrouchPunch();
+                }
+                
+                // Opzionale ma consigliato: permettere la parata bassa
+                //player1.setDefending(input.isDefendButtonPressed(1));
+            }
+
+
+        }else {
+            // Se è stordito, abbassa le difese e si ferma!
             player2.setDefending(false);
         }
         
@@ -195,6 +220,7 @@ public class GameModel {
         wasP1PunchHeld = isP1PunchHeld;
         wasP2PunchHeld = isP2PunchHeld;
         
+        
         // ==========================================
         //         CONTROLLO FINE PARTITA
         // ==========================================
@@ -215,7 +241,7 @@ public class GameModel {
     private void handleCombat(Player attacker, Player defender) {
         if (attacker == defender) return;
         
-        if (attacker.isPunchActive() && !attacker.hasCheckedHit()) {
+        if (attacker.isAnyPunching() && !attacker.hasCheckedHit()) {
             
         	// Mettiamo SUBITO la sicura: questo pugno è stato "sparato", preso o mancato non si controlla più!
             attacker.setHasCheckedHit(true); 
@@ -230,12 +256,14 @@ public class GameModel {
             if (punchHitbox.intersects(defender.getBoundingBox())) {
                 
                 // IL DANNO ORA È DINAMICO!
+                
                 double baseDamage = attacker.getPunchDamage();
 
                 boolean isAttackerOnRight = attacker.getPosition().getX() > defender.getPosition().getX();
                 boolean isFacingAttacker = (isAttackerOnRight && defender.isFacingRight()) || (!isAttackerOnRight && !defender.isFacingRight());
 
                 if (defender.isDefending() && isFacingAttacker) {
+                    // percentuale di parata in base al tempo
                     long blockDuration = System.currentTimeMillis() - defender.getBlockStartTime();
                     
                     // Otteniamo dinamicamente i dati dell'animazione di parata del difensore!

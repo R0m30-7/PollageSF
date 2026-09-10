@@ -66,6 +66,7 @@ public class Player {
     protected int health;
     private boolean isFacingRight = true; 
     private boolean isPunching = false;
+    private boolean isCrouchPunching = false;
     protected double punchDamage;
     private long punchStartTime = 0; // Memorizza il nanosecondo esatto in cui parte il pugno
     protected long punchDurationNs; // Quanto dura l'impatto del pugno
@@ -93,7 +94,7 @@ public class Player {
     
     // --- AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
-        if (isPunching) {
+        if (isPunching || isCrouchPunching) {
             AnimData anim = getCurrentAnimData();
             if (anim != null) {
             	long elapsedNs = System.nanoTime() - punchStartTime;
@@ -104,24 +105,35 @@ public class Player {
                 // Il pugno finisce ESATTAMENTE quando scade il tempo totale dell'animazione
                 if (elapsedNs >= animDurationNs) {
                     isPunching = false;
+                    isCrouchPunching = false;
                     hasCheckedHit = false;
                 }
             }
         }
     }
 
+
     // --- LOGICA AZIONI ---
     public void startPunch() {
-        if (!isPunching && !isDefending) {
+        if (!isPunching && ! isCrouchPunching && !isDefending) {
             isPunching = true;
             hasCheckedHit = false;	
             this.punchStartTime = System.nanoTime(); // Registra il momento esatto!
         }
     }
     
+    // Nuovo metodo specifico per far partire il pugno da accovacciato
+    public void startCrouchPunch() {
+        if (!isPunching && !isCrouchPunching && !isDefending && isCrouching) {
+            isCrouchPunching = true;
+            hasCheckedHit = false;  
+            this.punchStartTime = System.nanoTime();
+        }
+    }
+
     // Ritorna TRUE solo se l'animazione si trova nella "finestra di impatto" (Active Frames)
     public boolean isPunchActive() {
-        if (!isPunching) return false;
+        if (!isPunching || !isCrouchPunching) return false;
         
         AnimData anim = getCurrentAnimData();
         if (anim == null) return false;
@@ -136,7 +148,7 @@ public class Player {
     }
 
     public void setCrouching(boolean crouching) {
-        if (isPunching || isDefending || !isGrounded) return;
+        if (isPunching || isCrouchPunching || isDefending || !isGrounded) return;
         
         // Se lo stato cambia
         if (this.isCrouching != crouching) {
@@ -201,7 +213,7 @@ public class Player {
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
     public void moveHorizontal(PlayerState DIR) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isDefending || isCrouching) return;
+        if (isPunching || isCrouchPunching || isDefending || isCrouching) return;
         
         this.isMoving = true;
         
@@ -222,7 +234,7 @@ public class Player {
     // 3. IL SALTO (La vera spinta verso l'alto)
     public void jump() {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isDefending) return;
+        if (isPunching || isCrouchPunching|| isDefending) return;
         
         // Può saltare solo se non è già in aria
         if (isGrounded) {
@@ -285,6 +297,9 @@ public class Player {
         if (isPunching) {
             currentAnimState = isFacingRight ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
         } 
+        else if (isCrouchPunching) {
+            currentAnimState = isFacingRight ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
+        }
         else if (isDefending) {
             // Usiamo i nuovi stati BLOCK specifici
             currentAnimState = isFacingRight ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT;
@@ -368,7 +383,7 @@ public class Player {
     // ==========================================
     public void setFacingRight(boolean facingRight) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isDefending) return;
+        if (isPunching || isCrouchPunching|| isDefending) return;
         
         // 2. Se la direzione sta CAMBIANDO e siamo a terra, attiviamo l'animazione TURN
         if (this.isFacingRight != facingRight && isGrounded) {
@@ -380,7 +395,11 @@ public class Player {
         this.isFacingRight = facingRight; 
     }
     public double getPunchDamage() { return punchDamage; }
-    public double getPunchWidth() { return punchWidth; }
+    public double getPunchWidth() { // il pungo a sinistra, definito come il pugno piu lungo ha bisogno di una hitbox piu lunga
+        if(!isFacingRight && isPunching)
+            return punchWidth*1.5;
+        return punchWidth;
+     }
     public double getPunchHeight() { return punchHeight; }
     public boolean isPunching() { return isPunching; }
     public boolean isDefending() { return isDefending; }
@@ -405,4 +424,9 @@ public class Player {
     public void setInMenuMode(boolean inMenu) { this.inMenuMode = inMenu; }
     public double getRenderOffsetX() { return renderOffsetX; }
     public double getRenderOffsetY() { return renderOffsetY; }
+    public boolean isCrouchPunching() { return isCrouchPunching; }
+
+    // Se vuoi un metodo generico che restituisce true se sta tirando QUALSIASI pugno:
+    public boolean isAnyPunching() { return isPunching || isCrouchPunching; }   
+
 }
