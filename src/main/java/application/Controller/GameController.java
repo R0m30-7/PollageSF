@@ -130,7 +130,7 @@ public class GameController {
         this.inputManager = InputManager.getInstance();
         
         availableCharacters.add(new CharacterData("Ryu", "/Sprites/ryuPFP.png", application.Model.Ryu::new));
-        
+        availableCharacters.add(new CharacterData("Ken", "/Sprites/kenPFP.png", application.Model.Ken::new));
         // Aggiungiamo Turnip leggendo i dati dalla SUA classe
         availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
         availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
