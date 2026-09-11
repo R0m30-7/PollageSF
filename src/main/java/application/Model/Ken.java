@@ -28,6 +28,11 @@ public class Ken extends Player {
         
         this.punchDurationNs = 55 * 1_000_000L; // Pugno leggermente più rapido
         this.punchDamage = 9.0; // ...ma fa 1 danno in meno
+
+        this.kickDurationNs = 70 * 1_000_000L; // Durata del calcio
+        this.kickDamage = 12.0; // Danno del calcio
+        this.kickWidth = 30.0; // Larghezza della hitbox del
+        this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
         // --- COLLEGAMENTO ASSET GRAFICI ---
         this.atlasPath = "/Sprites/kenAtlas.png";
@@ -63,7 +68,7 @@ public class Ken extends Player {
         animations.put(AnimState.BLOCK_RIGHT, new AnimData(0, 5, 1, 50, false));
         animations.put(AnimState.BLOCK_LEFT, new AnimData(0, 5, 1, 50, false));
 
-        animations.put(AnimState.PUNCH_RIGHT, new AnimData(1, 0, 3, 40, false)); 
+        animations.put(AnimState.PUNCH_RIGHT, new AnimData(1, 0, 3, 80, false)); 
         animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 1, 5, 80, false));
         animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 2, 7, 80, false));
         animations.put(AnimState.JUMP_LEFT, new AnimData(0, 3, 7, 80, false));
@@ -71,7 +76,9 @@ public class Ken extends Player {
         animations.put(AnimState.CROUCH_LEFT, new AnimData(0, 4, 2, 400, false));
         animations.put(AnimState.PUNCH_CROUCH_RIGHT, new AnimData(3, 0, 3, 40, false));
         animations.put(AnimState.PUNCH_CROUCH_LEFT, new AnimData(3, 0, 3, 40, false));
-        
+        animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 80, false));
+        animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 75, false));
+
         // ... (Copia qui il resto delle animazioni e aggiusta i numeri) ...
     }
     public TextureAtlas getAtlas() {

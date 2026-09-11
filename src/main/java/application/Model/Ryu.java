@@ -25,6 +25,12 @@ public class Ryu extends Player {
         this.punchDurationNs = 60 * 1_000_000L;
         this.punchDamage = 10.0;
         
+        this.kickDurationNs = 70 * 1_000_000L; // Durata del calcio
+        this.kickDamage = 12.0; // Danno del calcio
+        this.kickWidth = 30.0; // Larghezza della hitbox del
+        this.kickHeight = 20.0; // Altezza della hitbox del calcio
+        
+
         this.atlasPath = "/Sprites/ryuAtlas.png";
         this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
         
@@ -70,7 +76,9 @@ public class Ryu extends Player {
         animations.put(AnimState.CROUCH_LEFT, new AnimData(0, 4, 2, 400, false));
         animations.put(AnimState.PUNCH_CROUCH_RIGHT, new AnimData(3, 0, 3, 40, false));
         animations.put(AnimState.PUNCH_CROUCH_LEFT, new AnimData(3, 0, 3, 40, false));
-        
+        animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 40, false));
+        animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 40, false));
+
     
     }
 

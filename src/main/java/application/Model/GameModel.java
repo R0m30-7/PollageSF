@@ -22,6 +22,11 @@ public class GameModel {
     // Variabili per memorizzare il pugno nel frame precedente
     private boolean wasP1PunchHeld = false;
     private boolean wasP2PunchHeld = false;
+
+    // Variabili per memorizzare il calcio nel frame precedente
+    private boolean wasP1KickHeld = false;
+    private boolean wasP2KickHeld = false;
+
     
     // Serve per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
@@ -72,6 +77,11 @@ public class GameModel {
         boolean isP1PunchHeld = input.isPunchButtonPressed(1);
         boolean isP2PunchHeld = input.isPunchButtonPressed(2);
 
+        
+        boolean isP1KickHeld = input.isKickButtonPressed(1);
+        boolean isP2KickHeld = input.isKickButtonPressed(2);
+
+
         // 2. Applichiamo la fisica passando lo stato del tasto! (gestione)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
         player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
@@ -96,6 +106,8 @@ public class GameModel {
                 }
                 if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
                 if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
+                if (isP1KickHeld && !wasP1KickHeld) player1.startKiking();
+
                 player1.setDefending(input.isDefendButtonPressed(1));
             }else {
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
@@ -124,14 +136,19 @@ public class GameModel {
                 player2.setCrouching(false);
             }
             
-            if(!player2.isCrouching){
+            if(!player2.isCrouching()){
                 if (Math.abs(p2X) > 0.0) {
                     player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
                 }
                 if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
                 if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
+                if (isP2KickHeld && !wasP2KickHeld) player2.startKiking();
+                
                 player2.setDefending(input.isDefendButtonPressed(2));
-            }else {
+            
+            }
+            else {
+
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
             
             // Controllo per il pugno basso
@@ -220,6 +237,9 @@ public class GameModel {
         wasP1PunchHeld = isP1PunchHeld;
         wasP2PunchHeld = isP2PunchHeld;
         
+        wasP1KickHeld = isP1KickHeld;
+        wasP2KickHeld = isP2KickHeld;
+
         
         // ==========================================
         //         CONTROLLO FINE PARTITA
@@ -240,24 +260,52 @@ public class GameModel {
     // ==========================================
     private void handleCombat(Player attacker, Player defender) {
         if (attacker == defender) return;
-        
-        if (attacker.isAnyPunching() && !attacker.hasCheckedHit()) {
+        //in anypunciung considero anche i calci
+
+        if (attacker.isAnyPunching() && !attacker.hasCheckedHit() ) {
             
-        	// Mettiamo SUBITO la sicura: questo pugno è stato "sparato", preso o mancato non si controlla più!
             attacker.setHasCheckedHit(true); 
             
-            double punchX = attacker.isFacingRight() 
+            // --- 1. CAPIAMO CHE ATTACCO È ---
+            boolean isKicking = attacker.isKicking();
+            
+            // --- 2. PRENDIAMO LE MISURE DINAMICHE ---
+            double currentAttackWidth = isKicking ? attacker.getKickWidth() : attacker.getPunchWidth();
+            double currentAttackHeight = isKicking ? attacker.getKickHeight() : attacker.getPunchHeight();
+            
+            // Usa questo baseDamage al posto di attacker.getPunchDamage() nel resto del codice!
+            double baseDamage = isKicking ? attacker.getKickDamage() : attacker.getPunchDamage(); 
+            
+            // --- 3. CALCOLIAMO LA POSIZIONE ---
+            double attackX = attacker.isFacingRight() 
+                    ? attacker.getPosition().getX() + attacker.getWidth() 
+                    : attacker.getPosition().getX() - currentAttackWidth; // Qui usiamo currentAttackWidth!
+                    
+            double attackY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2); // Se il calcio è più alto, puoi variare anche questo!
+            
+            // Creiamo l'Hitbox finale
+            Hitbox attackHitbox = new Hitbox(new Point2D(attackX, attackY), currentAttackWidth, currentAttackHeight);
+        /*        
+            if (attackHitbox.intersects(defender.getBoundingBox())) {
+                // ... Il resto del tuo codice rimane uguale, assicurati solo di usare 
+                // la variabile "baseDamage" creata qui sopra al posto di attacker.getPunchDamage() !
+            }
+            
+        	// Mettiamo SUBITO la sicura: questo pugno è stato "sparato", preso o mancato non si controlla più!
+
+         double punchX = attacker.isFacingRight() 
                     ? attacker.getPosition().getX() + attacker.getWidth() 
                     : attacker.getPosition().getX() - attacker.getPunchWidth();
+                    
             double punchY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2);
             
             Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), attacker.getPunchWidth(), attacker.getPunchHeight());
-            
-            if (punchHitbox.intersects(defender.getBoundingBox())) {
+             */
+            if (attackHitbox.intersects(defender.getBoundingBox())) {
                 
                 // IL DANNO ORA È DINAMICO!
                 
-                double baseDamage = attacker.getPunchDamage();
+                //double baseDamage = attacker.getPunchDamage();
 
                 boolean isAttackerOnRight = attacker.getPosition().getX() > defender.getPosition().getX();
                 boolean isFacingAttacker = (isAttackerOnRight && defender.isFacingRight()) || (!isAttackerOnRight && !defender.isFacingRight());

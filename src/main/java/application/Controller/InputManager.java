@@ -117,6 +117,12 @@ public class InputManager {
         return state != null && state.x; 
     }
 
+    public boolean isKickButtonPressed(int playerNumber) {
+        ControllerState state = getState(playerNumber);
+        // Tasto Y (Triangolo su PS)
+        return state != null && state.y; 
+    }
+
     public boolean isDefendButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
         // Tasto B universale (Cerchio su PS)

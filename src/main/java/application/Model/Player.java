@@ -31,6 +31,14 @@ public class Player {
     protected double baseSpeed, baseGravity, baseJumpStrength, baseRenderScale = 1.0;
     protected double basePunchWidth = 70.0;		// Sostituisce GameConfig
     protected double basePunchHeight = 30.0; 
+
+    protected double baseKickWidth = 70.0;
+    protected double baseKickHeight = 30.0;
+
+       
+    protected double kickWidth;
+    protected double kickHeight;
+    
     
     protected double punchWidth;
     protected double punchHeight;
@@ -67,8 +75,16 @@ public class Player {
     private boolean isFacingRight = true; 
     private boolean isPunching = false;
     private boolean isCrouchPunching = false;
+    private boolean isKicking = false;
+
+    protected double kickDamage;
     protected double punchDamage;
+
+    protected long kickStartTime = 0;
     private long punchStartTime = 0; // Memorizza il nanosecondo esatto in cui parte il pugno
+
+    protected long kickDurationNs; // Quanto dura l'impatto del pugno
+
     protected long punchDurationNs; // Quanto dura l'impatto del pugno
     private boolean isDefending = false;
     private boolean hasCheckedHit = false; // Memorizza se il gioco ha già calcolato il pugno o no
@@ -94,15 +110,13 @@ public class Player {
     
     // --- AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
+        // 1. Gestione Pugni (Normale e Basso)
         if (isPunching || isCrouchPunching) {
             AnimData anim = getCurrentAnimData();
             if (anim != null) {
-            	long elapsedNs = System.nanoTime() - punchStartTime;
-                
-                // 1. Quando finisce l'animazione visiva?
+                long elapsedNs = System.nanoTime() - punchStartTime;
                 long animDurationNs = anim.frameCount * anim.speedNs;
                 
-                // Il pugno finisce ESATTAMENTE quando scade il tempo totale dell'animazione
                 if (elapsedNs >= animDurationNs) {
                     isPunching = false;
                     isCrouchPunching = false;
@@ -110,8 +124,21 @@ public class Player {
                 }
             }
         }
+        
+        // 2. Gestione Calcio (Separata)
+        if (isKicking) {
+            AnimData anim = getCurrentAnimData();
+            if (anim != null) {
+                long elapsedNs = System.nanoTime() - kickStartTime;
+                long animDurationNs = anim.frameCount * anim.speedNs;
+                
+                if (elapsedNs >= animDurationNs) {
+                    isKicking = false;
+                    hasCheckedHit = false;
+                }
+            }
+        }
     }
-
 
     // --- LOGICA AZIONI ---
     public void startPunch() {
@@ -124,12 +151,36 @@ public class Player {
     
     // Nuovo metodo specifico per far partire il pugno da accovacciato
     public void startCrouchPunch() {
-        if (!isPunching && !isCrouchPunching && !isDefending && isCrouching) {
+        if (!isPunching && !isCrouchPunching && !isDefending && isCrouching && !isKicking) {
             isCrouchPunching = true;
             hasCheckedHit = false;  
             this.punchStartTime = System.nanoTime();
         }
     }
+   
+    public void startKiking() {
+        if (!isPunching && !isCrouchPunching && !isDefending && !isKicking) {
+            isKicking = true;
+            hasCheckedHit = false;  
+            this.kickStartTime = System.nanoTime();
+        }
+    }
+
+    public boolean isKickActive() {
+        if (!isKicking) return false;
+        
+        AnimData anim = getCurrentAnimData();
+        if (anim == null) return false;
+        
+        long elapsedNs = System.nanoTime() - kickStartTime;
+        
+        // 1. IL TUO RITARDO: (numeroFrame - 1) * tempoPerFrame
+        long ritardoNs = (anim.frameCount - 1) * anim.speedNs; 
+        
+        // 2. L'hitbox è attiva solo DOPO il ritardo, per la durata che decidi tu!
+        return elapsedNs >= ritardoNs;
+    }
+
 
     // Ritorna TRUE solo se l'animazione si trova nella "finestra di impatto" (Active Frames)
     public boolean isPunchActive() {
@@ -213,7 +264,7 @@ public class Player {
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
     public void moveHorizontal(PlayerState DIR) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isCrouchPunching || isDefending || isCrouching) return;
+        if (isPunching || isCrouchPunching || isDefending || isCrouching || isKicking) return;
         
         this.isMoving = true;
         
@@ -234,7 +285,7 @@ public class Player {
     // 3. IL SALTO (La vera spinta verso l'alto)
     public void jump() {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isCrouchPunching|| isDefending) return;
+        if (isPunching || isCrouchPunching|| isDefending || isKicking) return;
         
         // Può saltare solo se non è già in aria
         if (isGrounded) {
@@ -297,6 +348,9 @@ public class Player {
         if (isPunching) {
             currentAnimState = isFacingRight ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
         } 
+        else if (isKicking) {
+            currentAnimState = isFacingRight ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
+        }
         else if (isCrouchPunching) {
             currentAnimState = isFacingRight ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
         }
@@ -350,6 +404,10 @@ public class Player {
         // Inizializza i valori correnti
         this.punchWidth = this.basePunchWidth;
         this.punchHeight = this.basePunchHeight;
+
+        this.kickHeight = this.baseKickHeight;
+        this.kickWidth = this.baseKickWidth;
+
     }
     
     // 2. Moltiplica tutti i valori per la grandezza dello schermo!
@@ -366,6 +424,8 @@ public class Player {
         // Ricalcolo Hitbox degli attacchi
         this.punchWidth = this.basePunchWidth * windowScale;
         this.punchHeight = this.basePunchHeight * windowScale;
+        this.kickWidth = this.baseKickWidth * windowScale;
+        this.kickHeight = this.baseKickHeight * windowScale;
     }
     
     public AnimState getCurrentAnimState() { return currentAnimState; }
@@ -383,7 +443,7 @@ public class Player {
     // ==========================================
     public void setFacingRight(boolean facingRight) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isCrouchPunching|| isDefending) return;
+        if (isPunching || isCrouchPunching|| isDefending || isKicking) return;
         
         // 2. Se la direzione sta CAMBIANDO e siamo a terra, attiviamo l'animazione TURN
         if (this.isFacingRight != facingRight && isGrounded) {
@@ -395,6 +455,16 @@ public class Player {
         this.isFacingRight = facingRight; 
     }
     public double getPunchDamage() { return punchDamage; }
+    public double getKickDamage() { return kickDamage;} // Se il calcio è attivo, restituisce il danno del pugno
+    public double getKickWidth() { return kickWidth; }
+    public double getKickHeight() { return kickHeight; }
+    public boolean isKicking() { return isKicking; }
+    public void setKickStartTime(long startTime) { this.kickStartTime = startTime; }
+    public long getKickStartTime() { return this.kickStartTime; }
+    public long getKickDurationNs() { return this.kickDurationNs; }
+    public void setKickDurationNs(long duration) { this.kickDurationNs = duration; }
+    public void setKickWidth(double width) { this.kickWidth = width; }
+    public void setKickHeight(double height) { this.kickHeight = height; }
     public double getPunchWidth() { // il pungo a sinistra, definito come il pugno piu lungo ha bisogno di una hitbox piu lunga
         if(!isFacingRight && isPunching)
             return punchWidth*1.5;
@@ -427,6 +497,6 @@ public class Player {
     public boolean isCrouchPunching() { return isCrouchPunching; }
 
     // Se vuoi un metodo generico che restituisce true se sta tirando QUALSIASI pugno:
-    public boolean isAnyPunching() { return isPunching || isCrouchPunching; }   
+    public boolean isAnyPunching() { return isPunching || isCrouchPunching || isKicking; }   
 
 }

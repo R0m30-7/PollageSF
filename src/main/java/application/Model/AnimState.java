@@ -18,9 +18,12 @@ public enum AnimState {
     PUNCH_RIGHT,
     PUNCH_CROUCH_LEFT,
     PUNCH_CROUCH_RIGHT,
+
     JUMP_LEFT,
     JUMP_RIGHT,
 
     CROUCH_LEFT,
-    CROUCH_RIGHT
+    CROUCH_RIGHT,
+    KICK_RIGHT,
+    KICK_LEFT
 }
