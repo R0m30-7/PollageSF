@@ -31,7 +31,7 @@ public class Ryu extends Player {
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
 
-        this.atlasPath = "/Sprites/paletteDiverse/ryu_blue_chromakey.png";
+        this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_blue_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
         
         this.baseRenderScale = 2.75; // Il tuo valore base isolato

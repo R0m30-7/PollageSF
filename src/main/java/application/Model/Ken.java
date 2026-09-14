@@ -35,7 +35,7 @@ public class Ken extends Player {
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
         // --- COLLEGAMENTO ASSET GRAFICI ---
-        this.atlasPath = "/Sprites/kenAtlas.png";
+        this.atlasPath = "/Sprites/paletteDiverseKen/ken_purple_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/kenAtlasManifest.json");
         
         this.baseRenderScale = 2.75; 
