@@ -1,7 +1,7 @@
 package application.View;
 
 import application.Model.Hitbox;
-import application.Model.Player;
+import application.Model.IReadOnlyPlayer;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -35,7 +35,7 @@ public class PlayerRenderer {
     // Per visualizzare l'hitbox del giocatore
     private Rectangle hitboxVisual;
 
-    public PlayerRenderer(Player player) {
+    public PlayerRenderer(IReadOnlyPlayer player) {
         rootNode = new Pane(); 
         
         // --- Caricamento dello sprite ---
@@ -79,7 +79,7 @@ public class PlayerRenderer {
         return rootNode;
     }
 
-    public void render(Player player) {
+    public void render(IReadOnlyPlayer player) {
         double px = player.getPosition().getX() - player.getRenderOffsetX();
         double py = player.getPosition().getY() - player.getRenderOffsetY();
         

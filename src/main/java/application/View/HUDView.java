@@ -3,7 +3,7 @@
  */
 package application.View;
 
-import application.Model.Player;
+import application.Model.IReadOnlyPlayer;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -196,7 +196,7 @@ public class HUDView {
     }
     
     // --- AGGIORNA LE BARRE IN TEMPO REALE ---
-    public void update(Player p1, Player p2) {
+    public void update(IReadOnlyPlayer p1, IReadOnlyPlayer p2) {
         // --- Aggiorna P1 ---
         double p1HpRatio = Math.max(0, (double) p1.getHealth() / p1MaxHealth);
         p1HealthFill.setWidth(currentBarWidth * p1HpRatio); // Usiamo currentBarWidth!

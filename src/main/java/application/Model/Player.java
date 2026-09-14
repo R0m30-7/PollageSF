@@ -8,7 +8,7 @@ import javafx.geometry.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Player {
+public class Player implements IReadOnlyPlayer{
 	private Point2D position;
     protected double speed;
     

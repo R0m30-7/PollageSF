@@ -1,6 +1,7 @@
 package application.View;
 
-import application.Model.GameModel;
+import application.Model.IReadOnlyGameModel;
+import application.Model.IReadOnlyPlayer;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -81,7 +82,7 @@ public class GameView {
     public double getBgWidth() { return bgWidth; }
     public double getBgHeight() { return bgHeight; }
 
-    public void render(GameModel model) {
+    public void render(IReadOnlyGameModel model) {
         double camX = model.getCameraX();
     	
     	// Spostiamo l'intero SFONDO all'indietro rispetto alla telecamera
@@ -186,7 +187,7 @@ public class GameView {
     }
     
     // Serve a costruire la grafica del giocatore DOPO che i giocatori sono stati creati dal Model
-    public void initPlayers(application.Model.Player p1, application.Model.Player p2) {
+    public void initPlayers(IReadOnlyPlayer p1, IReadOnlyPlayer p2) {
         this.rendererP1 = new PlayerRenderer(p1);
         this.rendererP2 = new PlayerRenderer(p2);
         

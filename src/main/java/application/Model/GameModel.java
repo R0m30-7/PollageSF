@@ -5,7 +5,7 @@ import application.Controller.InputManager;
 import application.Utils.GameConfig;
 import javafx.geometry.Point2D;
 
-public class GameModel {
+public class GameModel implements IReadOnlyGameModel{
     private Player player1;
     private Player player2;
     
