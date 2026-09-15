@@ -37,8 +37,10 @@ public class Ken extends Player {
         // --- COLLEGAMENTO ASSET GRAFICI ---
         this.atlasPath = "/Sprites/paletteDiverseKen/ken_purple_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/kenAtlasManifest.json");
+        // Colori disponibili
+        // brown, green, navy, orange, paleyellow, purple, teal.
         
-        this.baseRenderScale = 2.75; 
+        this.baseRenderScale = 2.75;
         this.renderScale = this.baseRenderScale;
        
         Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
