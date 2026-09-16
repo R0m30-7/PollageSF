@@ -77,10 +77,9 @@ public class GameModel implements IReadOnlyGameModel{
         boolean isP1PunchHeld = input.isPunchButtonPressed(1);
         boolean isP2PunchHeld = input.isPunchButtonPressed(2);
 
-        
         boolean isP1KickHeld = input.isKickButtonPressed(1);
         boolean isP2KickHeld = input.isKickButtonPressed(2);
-
+        
 
         // 2. Applichiamo la fisica passando lo stato del tasto! (gestione)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
@@ -100,21 +99,29 @@ public class GameModel implements IReadOnlyGameModel{
                 player1.setCrouching(false);
             }
 
+            
             if (!player1.isCrouching()) {
                 if (Math.abs(p1X) > 0.0) {
                     player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
                 }
                 if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
-                if (isP1PunchHeld && !wasP1PunchHeld) player1.startPunch();
-                if (isP1KickHeld && !wasP1KickHeld) player1.startKiking();
 
+                if (isP1PunchHeld && !wasP1PunchHeld) {
+                    AnimState state = player1.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+                    player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
+                }
+                if (isP1KickHeld && !wasP1KickHeld) {
+                    AnimState state = player1.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
+                    player1.executeMove(new MeleeMove(player1, state, player1.getKickDamage(), player1.getKickWidth(), player1.getKickHeight()));
+                }
                 player1.setDefending(input.isDefendButtonPressed(1));
             }else {
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
             
             // Controllo per il pugno basso
                 if (isP1PunchHeld && !wasP1PunchHeld) {
-                    player1.startCrouchPunch();
+                    AnimState state = player1.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
+                    player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
                 }
                 
                 // Opzionale ma consigliato: permettere la parata bassa
@@ -130,6 +137,7 @@ public class GameModel implements IReadOnlyGameModel{
     
             double p2X = input.getLeftStickX(2);
             double p2Y = input.getLeftStickY(2);
+
             if (p2Y > .5){
                 player2.setCrouching(true);
             }else{
@@ -137,13 +145,19 @@ public class GameModel implements IReadOnlyGameModel{
             }
             
             if(!player2.isCrouching()){
+                
                 if (Math.abs(p2X) > 0.0) {
                     player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
                 }
                 if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
-                if (isP2PunchHeld && !wasP2PunchHeld) player2.startPunch();
-                if (isP2KickHeld && !wasP2KickHeld) player2.startKiking();
-                
+                if (isP2PunchHeld && !wasP2PunchHeld) {
+                    AnimState state = player2.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+                    player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
+                }
+                if (isP2KickHeld && !wasP2KickHeld) {
+                    AnimState state = player2.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
+                    player2.executeMove(new MeleeMove(player2, state, player2.getKickDamage(), player2.getKickWidth(), player2.getKickHeight()));
+                }
                 player2.setDefending(input.isDefendButtonPressed(2));
             
             }
@@ -153,7 +167,9 @@ public class GameModel implements IReadOnlyGameModel{
             
             // Controllo per il pugno basso
                 if (isP2PunchHeld && !wasP2PunchHeld) {
-                    player2.startCrouchPunch();
+                    AnimState state = player2.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
+                    player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
+
                 }
                 
                 // Opzionale ma consigliato: permettere la parata bassa
@@ -254,82 +270,55 @@ public class GameModel implements IReadOnlyGameModel{
             }
         }
     }
-    
     // ==========================================
     //      IL MOTORE DEI DANNI E COLLISIONI
     // ==========================================
     private void handleCombat(Player attacker, Player defender) {
         if (attacker == defender) return;
-        //in anypunciung considero anche i calci
 
-        if (attacker.isAnyPunching() && !attacker.hasCheckedHit() ) {
-            
-            attacker.setHasCheckedHit(true); 
-            
-            // --- 1. CAPIAMO CHE ATTACCO È ---
-            boolean isKicking = attacker.isKicking();
-            
-            // --- 2. PRENDIAMO LE MISURE DINAMICHE ---
-            double currentAttackWidth = isKicking ? attacker.getKickWidth() : attacker.getPunchWidth();
-            double currentAttackHeight = isKicking ? attacker.getKickHeight() : attacker.getPunchHeight();
-            
-            // Usa questo baseDamage al posto di attacker.getPunchDamage() nel resto del codice!
-            double baseDamage = isKicking ? attacker.getKickDamage() : attacker.getPunchDamage(); 
-            
-            // --- 3. CALCOLIAMO LA POSIZIONE ---
-            double attackX = attacker.isFacingRight() 
-                    ? attacker.getPosition().getX() + attacker.getWidth() 
-                    : attacker.getPosition().getX() - currentAttackWidth; // Qui usiamo currentAttackWidth!
-                    
-            double attackY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2); // Se il calcio è più alto, puoi variare anche questo!
-            
-            // Creiamo l'Hitbox finale
-            Hitbox attackHitbox = new Hitbox(new Point2D(attackX, attackY), currentAttackWidth, currentAttackHeight);
-        /*        
-            if (attackHitbox.intersects(defender.getBoundingBox())) {
-                // ... Il resto del tuo codice rimane uguale, assicurati solo di usare 
-                // la variabile "baseDamage" creata qui sopra al posto di attacker.getPunchDamage() !
-            }
-            
-        	// Mettiamo SUBITO la sicura: questo pugno è stato "sparato", preso o mancato non si controlla più!
+        // 1. Chiediamo al giocatore se ha una mossa in esecuzione (Pugno, Calcio, ecc.)
+        Move currentAttack = attacker.getActiveMove();
 
-         double punchX = attacker.isFacingRight() 
-                    ? attacker.getPosition().getX() + attacker.getWidth() 
-                    : attacker.getPosition().getX() - attacker.getPunchWidth();
-                    
-            double punchY = attacker.getPosition().getY() + (attacker.getHeight() * 0.2);
+        if (currentAttack != null) {
             
-            Hitbox punchHitbox = new Hitbox(new Point2D(punchX, punchY), attacker.getPunchWidth(), attacker.getPunchHeight());
-             */
-            if (attackHitbox.intersects(defender.getBoundingBox())) {
+            // 2. Chiediamo alla mossa di fornirci la sua Hitbox in questo preciso frame.
+            // La mossa restituirà "null" se si sta ancora caricando (Startup) o se ha già colpito!
+            Hitbox attackHitbox = currentAttack.getActiveHitbox();
+
+            // 3. Se la Hitbox rossa esiste e tocca l'avversario... BAM!
+            if (attackHitbox != null && attackHitbox.intersects(defender.getBoundingBox())) {
                 
-                // IL DANNO ORA È DINAMICO!
+                // Mettiamo SUBITO la sicura ALLA MOSSA per non fare doppi danni
+                currentAttack.setHasHit(true); 
                 
-                //double baseDamage = attacker.getPunchDamage();
+                // Il danno viene letto direttamente dall'oggetto Move
+                double baseDamage = currentAttack.getDamage();
 
+                // ========================================================
+                // LA TUA LOGICA DI DIFESA E PARRY (Rimasta invariata!)
+                // ========================================================
                 boolean isAttackerOnRight = attacker.getPosition().getX() > defender.getPosition().getX();
                 boolean isFacingAttacker = (isAttackerOnRight && defender.isFacingRight()) || (!isAttackerOnRight && !defender.isFacingRight());
 
                 if (defender.isDefending() && isFacingAttacker) {
-                    // percentuale di parata in base al tempo
+                    // Percentuale di parata in base al tempo
                     long blockDuration = System.currentTimeMillis() - defender.getBlockStartTime();
                     
                     // Otteniamo dinamicamente i dati dell'animazione di parata del difensore!
                     AnimData blockData = defender.getBlockAnimData(); 
-                    long timePerFrameMs = blockData.speedNs / 1_000_000L; // Convertiamo nanosecondi in millisecondi
+                    long timePerFrameMs = blockData.speedNs / 1_000_000L; 
                     int totalFrames = blockData.frameCount;
                     
                     // Calcoliamo in quale "frame teorico" della parata si trova il difensore
                     int currentBlockFrame = (int) (blockDuration / timePerFrameMs);
 
-                    // Se l'animazione è arrivata all'ultimo frame (o lo ha superato tenendo premuto) -> PARRY PERFETTO!
+                    // PARRY PERFETTO!
                     if (currentBlockFrame >= totalFrames - 1) {
                         System.out.println("⭐ PARRY PERFETTO di " + defender.getDisplayName() + "!");
                         attacker.stun(defender.getParryStunDuration());
                         
                     } else {
-                        // Formula Dinamica: (FrameAttuale + 1) / FrameTotali.
-                        // Es: 3 frame totali. Frame 0 -> 33% bloccato. Frame 1 -> 66% bloccato.
+                        // PARATA PARZIALE
                         double blockPercentage = (double) (currentBlockFrame + 1) / totalFrames;
                         double damageMultiplier = 1.0 - blockPercentage;
                         
@@ -343,8 +332,6 @@ public class GameModel implements IReadOnlyGameModel{
                     System.out.println("💥 COLPITO IN PIENO! Danno: " + baseDamage);
                     defender.takeDamage((int) baseDamage);
                 }
-                
-                attacker.setHasCheckedHit(true);
             }
         }
     }

@@ -35,11 +35,11 @@ public class Player implements IReadOnlyPlayer{
     protected double baseKickWidth = 70.0;
     protected double baseKickHeight = 30.0;
 
-       
     protected double kickWidth;
     protected double kickHeight;
+    protected double kickDamage;
     
-    
+    protected double punchDamage;
     protected double punchWidth;
     protected double punchHeight;
     
@@ -57,9 +57,8 @@ public class Player implements IReadOnlyPlayer{
     protected double jumpStrength;	// Deve essere negativo perché la y aumenta dal basso verso l'alto
     
     // Variabili per il crouch
-    protected boolean isCrouching = false;
     protected double normalHeight; // Ti memorizzi l'altezza standard
-
+    
     // --- Meccanica di parata e stordimento ---
     protected long blockStartTime = 0;
     protected boolean wasDefending = false;
@@ -73,21 +72,10 @@ public class Player implements IReadOnlyPlayer{
     public int maxHealth;
     protected int health;
     private boolean isFacingRight = true; 
-    private boolean isPunching = false;
-    private boolean isCrouchPunching = false;
-    private boolean isKicking = false;
-
-    protected double kickDamage;
-    protected double punchDamage;
-
-    protected long kickStartTime = 0;
-    private long punchStartTime = 0; // Memorizza il nanosecondo esatto in cui parte il pugno
-
-    protected long kickDurationNs; // Quanto dura l'impatto del pugno
-
-    protected long punchDurationNs; // Quanto dura l'impatto del pugno
     private boolean isDefending = false;
-    private boolean hasCheckedHit = false; // Memorizza se il gioco ha già calcolato il pugno o no
+    protected boolean isCrouching = false;
+    
+    
     
     // --- Gestione delle animazioni ---
     protected Map<AnimState, AnimData> animations = new HashMap<>();
@@ -100,107 +88,42 @@ public class Player implements IReadOnlyPlayer{
     private long turnAnimStartTime = 0;
     private boolean isTurning = false;
 
+
+
     // Costruttore per impostare la posizione iniziale
     public Player(Point2D position) {
-        this.position = position;
         
+        this.position = position;
+
         // Inizializzo la hitbox a 0 per il momento
         this.boundingBox = new Hitbox(position, 0, 0);
     }
-    
-    // --- AGGIORNAMENTO TEMPO AZIONI ---
+
+
+
+    private Move activeMove = null;
+
+    // --- NUOVO AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
-        // 1. Gestione Pugni (Normale e Basso)
-        if (isPunching || isCrouchPunching) {
-            AnimData anim = getCurrentAnimData();
-            if (anim != null) {
-                long elapsedNs = System.nanoTime() - punchStartTime;
-                long animDurationNs = anim.frameCount * anim.speedNs;
-                
-                if (elapsedNs >= animDurationNs) {
-                    isPunching = false;
-                    isCrouchPunching = false;
-                    hasCheckedHit = false;
-                }
-            }
+        // Chiediamo semplicemente alla mossa se ha finito i suoi frame.
+        // Se ha finito, la distruggiamo e il giocatore torna libero!
+        if (activeMove != null && activeMove.isFinished()) {
+            activeMove = null;
         }
-        
-        // 2. Gestione Calcio (Separata)
-        if (isKicking) {
-            AnimData anim = getCurrentAnimData();
-            if (anim != null) {
-                long elapsedNs = System.nanoTime() - kickStartTime;
-                long animDurationNs = anim.frameCount * anim.speedNs;
-                
-                if (elapsedNs >= animDurationNs) {
-                    isKicking = false;
-                    hasCheckedHit = false;
-                }
+    }
+    // Lancia l'attacco se possibile
+    public void executeMove(Move move) {
+        if (this.activeMove == null && !isDefending && !isStunned()) {
+            this.activeMove = move;
+            this.isMoving = false; // Ferma il giocatore se stava camminando
             }
-        }
     }
 
-    // --- LOGICA AZIONI ---
-    public void startPunch() {
-        if (!isPunching && ! isCrouchPunching && !isDefending) {
-            isPunching = true;
-            hasCheckedHit = false;	
-            this.punchStartTime = System.nanoTime(); // Registra il momento esatto!
-        }
-    }
+    public Move getActiveMove() { return activeMove; }
     
-    // Nuovo metodo specifico per far partire il pugno da accovacciato
-    public void startCrouchPunch() {
-        if (!isPunching && !isCrouchPunching && !isDefending && isCrouching && !isKicking) {
-            isCrouchPunching = true;
-            hasCheckedHit = false;  
-            this.punchStartTime = System.nanoTime();
-        }
-    }
-   
-    public void startKiking() {
-        if (!isPunching && !isCrouchPunching && !isDefending && !isKicking) {
-            isKicking = true;
-            hasCheckedHit = false;  
-            this.kickStartTime = System.nanoTime();
-        }
-    }
-
-    public boolean isKickActive() {
-        if (!isKicking) return false;
-        
-        AnimData anim = getCurrentAnimData();
-        if (anim == null) return false;
-        
-        long elapsedNs = System.nanoTime() - kickStartTime;
-        
-        // 1. IL TUO RITARDO: (numeroFrame - 1) * tempoPerFrame
-        long ritardoNs = (anim.frameCount - 1) * anim.speedNs; 
-        
-        // 2. L'hitbox è attiva solo DOPO il ritardo, per la durata che decidi tu!
-        return elapsedNs >= ritardoNs;
-    }
-
-
-    // Ritorna TRUE solo se l'animazione si trova nella "finestra di impatto" (Active Frames)
-    public boolean isPunchActive() {
-        if (!isPunching || !isCrouchPunching) return false;
-        
-        AnimData anim = getCurrentAnimData();
-        if (anim == null) return false;
-        
-        long elapsedNs = System.nanoTime() - punchStartTime;
-        
-        // 1. IL TUO RITARDO: (numeroFrame - 1) * tempoPerFrame
-        long ritardoNs = (anim.frameCount - 1) * anim.speedNs; 
-        
-        // 2. L'hitbox è attiva solo DOPO il ritardo, per la durata che decidi tu!
-        return elapsedNs >= ritardoNs;
-    }
 
     public void setCrouching(boolean crouching) {
-        if (isPunching || isCrouchPunching || isDefending || !isGrounded) return;
-        
+        if (activeMove != null || isDefending) return;        
         // Se lo stato cambia
         if (this.isCrouching != crouching) {
             this.isCrouching = crouching;
@@ -264,8 +187,7 @@ public class Player implements IReadOnlyPlayer{
     // IL MOVIMENTO ORIZZONTALE (Sostituisce LEFT e RIGHT)
     public void moveHorizontal(PlayerState DIR) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isCrouchPunching || isDefending || isCrouching || isKicking) return;
-        
+        if (activeMove != null || isDefending) return;
         this.isMoving = true;
         
         double newX = position.getX();
@@ -285,8 +207,7 @@ public class Player implements IReadOnlyPlayer{
     // 3. IL SALTO (La vera spinta verso l'alto)
     public void jump() {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isCrouchPunching|| isDefending || isKicking) return;
-        
+        if (activeMove != null || isDefending) return;
         // Può saltare solo se non è già in aria
         if (isGrounded) {
             velocityY = jumpStrength;
@@ -345,14 +266,10 @@ public class Player implements IReadOnlyPlayer{
         }
 
         // --- 2. LOGICA AZIONI ---
-        if (isPunching) {
-            currentAnimState = isFacingRight ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
-        } 
-        else if (isKicking) {
-            currentAnimState = isFacingRight ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
-        }
-        else if (isCrouchPunching) {
-            currentAnimState = isFacingRight ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
+        if (activeMove != null) {
+        // Magia: non ci importa se è un pugno, calcio o Hadouken. 
+        // La mossa sa già quale stato AnimState restituire!
+        currentAnimState = activeMove.getAnimState();
         }
         else if (isDefending) {
             // Usiamo i nuovi stati BLOCK specifici
@@ -441,10 +358,10 @@ public class Player implements IReadOnlyPlayer{
     // ==========================================
     // GESTIONE DIREZIONE E ANIMAZIONE "TURN"
     // ==========================================
+    
     public void setFacingRight(boolean facingRight) {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (isPunching || isCrouchPunching|| isDefending || isKicking) return;
-        
+        if (activeMove != null || isDefending) return;
         // 2. Se la direzione sta CAMBIANDO e siamo a terra, attiviamo l'animazione TURN
         if (this.isFacingRight != facingRight && isGrounded) {
             this.isTurning = true;
@@ -458,23 +375,15 @@ public class Player implements IReadOnlyPlayer{
     public double getKickDamage() { return kickDamage;} // Se il calcio è attivo, restituisce il danno del pugno
     public double getKickWidth() { return kickWidth; }
     public double getKickHeight() { return kickHeight; }
-    public boolean isKicking() { return isKicking; }
-    public void setKickStartTime(long startTime) { this.kickStartTime = startTime; }
-    public long getKickStartTime() { return this.kickStartTime; }
-    public long getKickDurationNs() { return this.kickDurationNs; }
-    public void setKickDurationNs(long duration) { this.kickDurationNs = duration; }
-    public void setKickWidth(double width) { this.kickWidth = width; }
-    public void setKickHeight(double height) { this.kickHeight = height; }
+
     public double getPunchWidth() { // il pungo a sinistra, definito come il pugno piu lungo ha bisogno di una hitbox piu lunga
-        if(!isFacingRight && isPunching)
+        if(!isFacingRight && activeMove != null)
             return punchWidth*1.5;
         return punchWidth;
      }
     public double getPunchHeight() { return punchHeight; }
-    public boolean isPunching() { return isPunching; }
     public boolean isDefending() { return isDefending; }
-    public boolean hasCheckedHit() { return hasCheckedHit; }
-    public void setHasCheckedHit(boolean dealt) { this.hasCheckedHit = dealt; }
+
     public TextureAtlas getAtlas() { return this.atlas; }
     public String getAtlasPath() {return atlasPath;}
 
@@ -494,9 +403,7 @@ public class Player implements IReadOnlyPlayer{
     public void setInMenuMode(boolean inMenu) { this.inMenuMode = inMenu; }
     public double getRenderOffsetX() { return renderOffsetX; }
     public double getRenderOffsetY() { return renderOffsetY; }
-    public boolean isCrouchPunching() { return isCrouchPunching; }
 
     // Se vuoi un metodo generico che restituisce true se sta tirando QUALSIASI pugno:
-    public boolean isAnyPunching() { return isPunching || isCrouchPunching || isKicking; }   
 
 }

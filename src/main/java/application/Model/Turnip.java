@@ -21,7 +21,6 @@ public class Turnip extends Player {
 		this.speed = 1.3;
 		
 		// L'impatto del pugno dura esattamente 10 millisecondi
-        this.punchDurationNs = 100000 * 1_000_000L;
         this.punchDamage = 10.0;
 		
 		this.atlasPath = "/Sprites/turnipAtlas.png";

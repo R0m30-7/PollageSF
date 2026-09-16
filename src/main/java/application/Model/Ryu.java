@@ -18,20 +18,18 @@ public class Ryu extends Player {
         this.displayName = "Ryu";
         this.pfpPath = "/Sprites/ryuPFP.png";
         
-        this.jumpStrength = -13.0;
+        this.jumpStrength = -10.0;
         this.gravity = 0.2;
         this.speed = 3.5;
         
-        this.punchDurationNs = 60 * 1_000_000L;
         this.punchDamage = 10.0;
         
-        this.kickDurationNs = 70 * 1_000_000L; // Durata del calcio
         this.kickDamage = 12.0; // Danno del calcio
         this.kickWidth = 30.0; // Larghezza della hitbox del
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
 
-        this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_blue_chromakey.png";
+        this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_lime_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
         
         this.baseRenderScale = 2.75; // Il tuo valore base isolato

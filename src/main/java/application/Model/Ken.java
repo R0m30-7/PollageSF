@@ -22,20 +22,18 @@ public class Ken extends Player {
         this.pfpPath = "/Sprites/kenPFP.png"; // L'icona per il menu di selezione
         
         // --- STATISTICHE UNICHE (Esempio: Ken è più veloce di Ryu) ---
-        this.jumpStrength = -13.0;
+        this.jumpStrength = -10.0;
         this.gravity = 0.2;
         this.speed = 4.0; // Ryu aveva 3.5, facciamo Ken un po' più agile!
         
-        this.punchDurationNs = 55 * 1_000_000L; // Pugno leggermente più rapido
         this.punchDamage = 9.0; // ...ma fa 1 danno in meno
 
-        this.kickDurationNs = 70 * 1_000_000L; // Durata del calcio
         this.kickDamage = 12.0; // Danno del calcio
         this.kickWidth = 30.0; // Larghezza della hitbox del
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
         // --- COLLEGAMENTO ASSET GRAFICI ---
-        this.atlasPath = "/Sprites/paletteDiverseKen/ken_purple_chromakey.png";
+        this.atlasPath = "/Sprites/paletteDiverseKen/ken_paleyellow_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/kenAtlasManifest.json");
         // Colori disponibili
         // brown, green, navy, orange, paleyellow, purple, teal.
