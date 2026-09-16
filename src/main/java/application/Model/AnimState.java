@@ -25,5 +25,7 @@ public enum AnimState {
     CROUCH_LEFT,
     CROUCH_RIGHT,
     KICK_RIGHT,
-    KICK_LEFT
+    KICK_LEFT,
+    CROUCH_BLOCK_RIGHT, 
+    CROUCH_BLOCK_LEFT
 }

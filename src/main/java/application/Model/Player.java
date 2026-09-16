@@ -1,7 +1,3 @@
-/*
- * Classe dedicata ai giocatori, contiene le informazioni dei giocatori, come
- * la posizione (x, y), la salute, la velocità ecc...
- */
 package application.Model;
 
 import javafx.geometry.Point2D;
@@ -272,8 +268,11 @@ public class Player implements IReadOnlyPlayer{
         currentAnimState = activeMove.getAnimState();
         }
         else if (isDefending) {
-            // Usiamo i nuovi stati BLOCK specifici
-            currentAnimState = isFacingRight ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT;
+            if(isCrouching) {
+                currentAnimState = isFacingRight ? AnimState.CROUCH_BLOCK_RIGHT : AnimState.CROUCH_BLOCK_LEFT;
+            } else {
+                currentAnimState = isFacingRight ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT;
+            }
         } 
         else if (isCrouching) { // <-- NUOVA PRIORITÀ
             currentAnimState = isFacingRight ? AnimState.CROUCH_RIGHT : AnimState.CROUCH_LEFT;

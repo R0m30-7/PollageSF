@@ -79,7 +79,7 @@ public class GameModel implements IReadOnlyGameModel{
 
         boolean isP1KickHeld = input.isKickButtonPressed(1);
         boolean isP2KickHeld = input.isKickButtonPressed(2);
-        
+
 
         // 2. Applichiamo la fisica passando lo stato del tasto! (gestione)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
@@ -88,6 +88,7 @@ public class GameModel implements IReadOnlyGameModel{
         // 3. Movimento (con LIMITI DELL'ARENA)
         // --- GIOCATORE 1 ---
         if (!player1.isStunned()) {
+
             double p1X = input.getLeftStickX(1);
             double p1Y = input.getLeftStickY(1);
 
@@ -101,6 +102,7 @@ public class GameModel implements IReadOnlyGameModel{
 
             
             if (!player1.isCrouching()) {
+
                 if (Math.abs(p1X) > 0.0) {
                     player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
                 }
@@ -115,6 +117,7 @@ public class GameModel implements IReadOnlyGameModel{
                     player1.executeMove(new MeleeMove(player1, state, player1.getKickDamage(), player1.getKickWidth(), player1.getKickHeight()));
                 }
                 player1.setDefending(input.isDefendButtonPressed(1));
+
             }else {
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
             
@@ -125,7 +128,8 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 
                 // Opzionale ma consigliato: permettere la parata bassa
-                //player1.setDefending(input.isDefendButtonPressed(1));
+                player1.setDefending(input.isDefendButtonPressed(1));
+                
             }
         } else {
             // Se è stordito, abbassa le difese e si ferma!
@@ -173,7 +177,7 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 
                 // Opzionale ma consigliato: permettere la parata bassa
-                //player1.setDefending(input.isDefendButtonPressed(1));
+                player2.setDefending(input.isDefendButtonPressed(2));
             }
 
 

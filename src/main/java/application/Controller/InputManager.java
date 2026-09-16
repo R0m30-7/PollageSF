@@ -113,7 +113,7 @@ public class InputManager {
     // --- METODI PER AZIONI DI COMBATTIMENTO ---
     public boolean isPunchButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
-        // Tasto X o Y (Quadrato o Triangolo su PS)
+        // Tasto X (Quadrato su PS)
         return state != null && state.x; 
     }
 

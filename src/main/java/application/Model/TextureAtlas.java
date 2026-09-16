@@ -45,6 +45,7 @@ public class TextureAtlas {
 
     // Ricostruisce la chiave del JSON: es. "row00_col00_frame00"
     public Rectangle2D getFrame(int row, int col, int frameIndex) {
+
         String frameKey = String.format("row%02d_col%02d_frame%02d", row, col, frameIndex);
         return frames.getOrDefault(frameKey, new Rectangle2D(0, 0, 1, 1));
     }
