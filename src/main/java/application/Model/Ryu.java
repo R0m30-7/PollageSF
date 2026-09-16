@@ -68,6 +68,8 @@ public class Ryu extends Player {
 
         animations.put(AnimState.CROUCH_BLOCK_RIGHT, new AnimData(0, 5, 2, 0, false));
         animations.put(AnimState.CROUCH_BLOCK_LEFT, new AnimData(0, 5, 2, 0, false));
+        animations.put(AnimState.HOOK_RIGHT, new AnimData(1, 2, 3, 80, false));
+        animations.put(AnimState.HOOK_LEFT, new AnimData(1, 3, 7, 80, false));
 
 
         animations.put(AnimState.PUNCH_RIGHT, new AnimData(1, 0, 3, 40, false)); 

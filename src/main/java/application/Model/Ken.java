@@ -71,10 +71,12 @@ public class Ken extends Player {
         animations.put(AnimState.CROUCH_BLOCK_RIGHT, new AnimData(0, 5, 2, 0, false));
         animations.put(AnimState.CROUCH_BLOCK_LEFT, new AnimData(0, 5, 2, 0, false));
 
-
-
         animations.put(AnimState.PUNCH_RIGHT, new AnimData(1, 0, 3, 80, false)); 
         animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 1, 5, 80, false));
+        animations.put(AnimState.HOOK_RIGHT, new AnimData(1, 2, 3, 80, false));
+        animations.put(AnimState.HOOK_LEFT, new AnimData(1, 3, 7, 80, false));
+
+
         animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 2, 7, 80, false));
         animations.put(AnimState.JUMP_LEFT, new AnimData(0, 3, 7, 80, false));
         animations.put(AnimState.CROUCH_RIGHT, new AnimData(0, 4, 2, 400, false));

@@ -23,6 +23,10 @@ public class GameModel implements IReadOnlyGameModel{
     private boolean wasP1PunchHeld = false;
     private boolean wasP2PunchHeld = false;
 
+    private boolean wasP1HookHeld = false;
+    private boolean wasP2HookHeld = false;
+
+
     // Variabili per memorizzare il calcio nel frame precedente
     private boolean wasP1KickHeld = false;
     private boolean wasP2KickHeld = false;
@@ -80,6 +84,8 @@ public class GameModel implements IReadOnlyGameModel{
         boolean isP1KickHeld = input.isKickButtonPressed(1);
         boolean isP2KickHeld = input.isKickButtonPressed(2);
 
+        boolean isP1HookHeld = input.isHookButtonPressed(1);
+        boolean isP2HookHeld = input.isHookButtonPressed(2);
 
         // 2. Applichiamo la fisica passando lo stato del tasto! (gestione)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
@@ -108,6 +114,11 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
 
+
+                if (isP1HookHeld && !wasP1HookHeld) {
+                    AnimState state = player1.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
+                    player1.executeMove(new MeleeMove(player1, state, player1.getHookDamage(), player1.getHookWidth(), player1.getHookHeight()));
+                }
                 if (isP1PunchHeld && !wasP1PunchHeld) {
                     AnimState state = player1.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
@@ -157,6 +168,10 @@ public class GameModel implements IReadOnlyGameModel{
                 if (isP2PunchHeld && !wasP2PunchHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
                     player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
+                }
+                if (isP2HookHeld && !wasP2HookHeld) {
+                    AnimState state = player2.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
+                    player2.executeMove(new MeleeMove(player2, state, player2.getHookDamage(), player2.getHookWidth(), player2.getHookHeight()));
                 }
                 if (isP2KickHeld && !wasP2KickHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
@@ -260,6 +275,8 @@ public class GameModel implements IReadOnlyGameModel{
         wasP1KickHeld = isP1KickHeld;
         wasP2KickHeld = isP2KickHeld;
 
+        wasP1HookHeld = isP1HookHeld;
+        wasP2HookHeld = isP2HookHeld;
         
         // ==========================================
         //         CONTROLLO FINE PARTITA

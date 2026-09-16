@@ -116,6 +116,11 @@ public class InputManager {
         // Tasto X (Quadrato su PS)
         return state != null && state.x; 
     }
+    public boolean isHookButtonPressed(int playerNumber) {
+        ControllerState state = getState(playerNumber);
+        // Tasto R2 + quadrato
+        return state != null && state.x && state.rightTrigger > 0.5; 
+    }
 
     public boolean isKickButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
@@ -128,6 +133,7 @@ public class InputManager {
         // Tasto B universale (Cerchio su PS)
         return state != null && state.b; 
     }
+
     
     // --- GESTIONE EMERGENZA E STATO ---
     public boolean isPlayer1Connected() { return p1Index != -1; }
@@ -153,4 +159,5 @@ public class InputManager {
     public void chiudiTutto() {
         controllerManager.quitSDLGamepad();
     }
+
 }

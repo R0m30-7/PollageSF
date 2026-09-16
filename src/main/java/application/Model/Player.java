@@ -402,6 +402,9 @@ public class Player implements IReadOnlyPlayer{
     public void setInMenuMode(boolean inMenu) { this.inMenuMode = inMenu; }
     public double getRenderOffsetX() { return renderOffsetX; }
     public double getRenderOffsetY() { return renderOffsetY; }
+    public double getHookDamage() {return punchDamage;} // Se il gancio è attivo, restituisce il danno del pugno
+    public double getHookWidth() {return punchWidth;} // Se il gancio è attivo, restituisce la larghezza del pugno
+    public double getHookHeight() {return punchHeight;} // Se il gancio è attivo, restituisce l'altezza del pugno
 
     // Se vuoi un metodo generico che restituisce true se sta tirando QUALSIASI pugno:
 
