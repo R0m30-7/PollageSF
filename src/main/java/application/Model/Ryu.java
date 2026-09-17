@@ -51,8 +51,6 @@ public class Ryu extends Player {
         this.saveBaseStats();
         System.out.println("baserenderscale after" + this.baseRenderScale);
 
-
-        
         // Mappa delle animazioni basata sulle sezioni del JSON (row e col)
         animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 4, 100, true)); 
         animations.put(AnimState.IDLE_LEFT, new AnimData(0, 0, 4, 100, true));
@@ -71,7 +69,6 @@ public class Ryu extends Player {
         animations.put(AnimState.HOOK_RIGHT, new AnimData(1, 2, 3, 80, false));
         animations.put(AnimState.HOOK_LEFT, new AnimData(1, 3, 7, 80, false));
 
-
         animations.put(AnimState.PUNCH_RIGHT, new AnimData(1, 0, 3, 40, false)); 
         animations.put(AnimState.PUNCH_LEFT, new AnimData(1, 1, 5, 80, false));
         animations.put(AnimState.JUMP_RIGHT, new AnimData(0, 2, 7, 80, false));
@@ -82,8 +79,6 @@ public class Ryu extends Player {
         animations.put(AnimState.PUNCH_CROUCH_LEFT, new AnimData(3, 0, 3, 40, false));
         animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 40, false));
         animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 40, false));
-
-    
     }
 
     public TextureAtlas getAtlas() {
