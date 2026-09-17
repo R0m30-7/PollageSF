@@ -20,7 +20,7 @@ public class Ryu extends Player {
         
         this.jumpStrength = -10.0;
         this.gravity = 0.2;
-        this.speed = 3.5;
+        this.speed = 2.5;
         
         this.punchDamage = 10.0;
         
@@ -32,7 +32,7 @@ public class Ryu extends Player {
         this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
         
-        this.baseRenderScale = 2.75; // Il tuo valore base isolato
+        this.baseRenderScale = 4; // Il tuo valore base isolato
 
         this.renderScale = this.baseRenderScale;
        
@@ -58,8 +58,8 @@ public class Ryu extends Player {
         animations.put(AnimState.IDLE_LEFT, new AnimData(0, 0, 4, 100, true));
         animations.put(AnimState.MENU_IDLE, new AnimData(7, 3, 7, 200, true));
 
-        animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 100, true));
-        animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 100, true));
+        animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
+        animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
         //non ce animazione turn
         animations.put(AnimState.TURN, new AnimData(0, 1, 3, 50, false));
 

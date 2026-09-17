@@ -24,7 +24,7 @@ public class Ken extends Player {
         // --- STATISTICHE UNICHE (Esempio: Ken è più veloce di Ryu) ---
         this.jumpStrength = -10.0;
         this.gravity = 0.2;
-        this.speed = 4.0; // Ryu aveva 3.5, facciamo Ken un po' più agile!
+        this.speed = 2.5; // Ryu aveva 3.5, facciamo Ken un po' più agile!
         
         this.punchDamage = 9.0; // ...ma fa 1 danno in meno
 
@@ -38,7 +38,7 @@ public class Ken extends Player {
         // Colori disponibili
         // brown, green, navy, orange, paleyellow, purple, teal.
         
-        this.baseRenderScale = 2.75;
+        this.baseRenderScale = 4;
         this.renderScale = this.baseRenderScale;
        
         Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
@@ -60,8 +60,8 @@ public class Ken extends Player {
         animations.put(AnimState.IDLE_LEFT, new AnimData(0, 0, 4, 100, true));
         animations.put(AnimState.MENU_IDLE, new AnimData(7, 3, 7, 200, true));
 
-        animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 100, true));
-        animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 100, true));
+        animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
+        animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
         //non ce animazione turn
         animations.put(AnimState.TURN, new AnimData(0, 1, 3, 50, false));
 
