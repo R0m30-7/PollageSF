@@ -6,7 +6,7 @@ import application.Utils.GameConfig;
 import javafx.geometry.Point2D;
 
 public class GameModel implements IReadOnlyGameModel{
-    private Player player1;
+    private Player player1;     // Cervello dei player
     private Player player2;
     
     // L'arena è larga il doppio dello schermo
@@ -26,19 +26,18 @@ public class GameModel implements IReadOnlyGameModel{
     private boolean wasP1HookHeld = false;
     private boolean wasP2HookHeld = false;
 
-
     // Variabili per memorizzare il calcio nel frame precedente
     private boolean wasP1KickHeld = false;
     private boolean wasP2KickHeld = false;
 
     
-    // Serve per l'aggiornamento in tempo reale della finestra
+    // Memorizzazione dimensioni per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
     private double currentWindowHeight = 1080;
     
     // Definizione della posizione del pavimento
     private double GROUND_LEVEL;
-    private double currentGroundRatio = 0.9;
+    private double currentGroundRatio = 0.9;    //! Va spiegato meglio
     private double currentGroundLevel;
     
     // Variabili per la gestione della fine del gioco
@@ -50,12 +49,13 @@ public class GameModel implements IReadOnlyGameModel{
     	// Imposto la larghezza del mondo come quella dell'immagine
     	this.worldWidth = bgWidth;
     	// Imposto il pavimento della scena
-    	this.GROUND_LEVEL = currentWindowHeight - 100.0;
+    	this.GROUND_LEVEL = currentWindowHeight - 100;      //! Anche questo non cambia un cazzo
     	
     	// Calcoliamo la y per spawnare i giocatori con i piedi per terra
     	double spawnY = this.GROUND_LEVEL - GameConfig.pHeight;
     	
-        // Spawn dei giocatori al centro del mondo (scelgo di base la classe Turnip)
+        // Spawn dei giocatori al centro del mondo (scelgo di base la classe Ryu)
+        // Necessario per assegnare a un gamepad un giocatore spcifico
     	player1 = new Ryu(new Point2D(worldWidth / 2 - 200, spawnY)); 
         player2 = new Ryu(new Point2D(worldWidth / 2 + 200, spawnY));
         
@@ -69,11 +69,11 @@ public class GameModel implements IReadOnlyGameModel{
     public double getCameraX() { return cameraX; }	// Serve alla View
 
     public void update(InputManager input) {
-    	// Aggiornamento tick per la durata dei pugni
+    	// Aggiornamento tick per la durata dei pugni (se l'animazione è finita, resetta lo stato)
     	player1.updateTicks();
     	player2.updateTicks();
     	
-        // 1. Leggiamo lo stato dei tasti X di entrambi i giocatori
+        // Leggiamo lo stato dei tasti X di entrambi i giocatori
         boolean isP1JumpHeld = input.isJumpButtonPressed(1);
         boolean isP2JumpHeld = input.isJumpButtonPressed(2);
         
@@ -87,26 +87,24 @@ public class GameModel implements IReadOnlyGameModel{
         boolean isP1HookHeld = input.isHookButtonPressed(1);
         boolean isP2HookHeld = input.isHookButtonPressed(2);
 
-        // 2. Applichiamo la fisica passando lo stato del tasto! (gestione)
+        // Applichiamo la fisica passando lo stato del tasto (salto)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
         player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
         
-        // 3. Movimento (con LIMITI DELL'ARENA)
+        // Movimento (con limiti dell'arena)
         // --- GIOCATORE 1 ---
         if (!player1.isStunned()) {
-
             double p1X = input.getLeftStickX(1);
             double p1Y = input.getLeftStickY(1);
 
-
             // Se la levetta è spinta decisamente verso il basso, attiva il crouch
-            if (p1Y > 0.5 ) {//&& player1.isGrounded()
+            if (p1Y > 0.5 && player1.isGrounded()) {
                 player1.setCrouching(true);
             } else {
                 player1.setCrouching(false);
             }
 
-            
+            AnimState state;
             if (!player1.isCrouching()) {
 
                 if (Math.abs(p1X) > 0.0) {
@@ -114,57 +112,54 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
 
-
                 if (isP1HookHeld && !wasP1HookHeld) {
-                    AnimState state = player1.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
+                    state = player1.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getHookDamage(), player1.getHookWidth(), player1.getHookHeight()));
                 }
                 if (isP1PunchHeld && !wasP1PunchHeld) {
-                    AnimState state = player1.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+                    state = player1.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
                 }
                 if (isP1KickHeld && !wasP1KickHeld) {
-                    AnimState state = player1.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
+                    state = player1.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getKickDamage(), player1.getKickWidth(), player1.getKickHeight()));
                 }
                 player1.setDefending(input.isDefendButtonPressed(1));
 
             }else {
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
-            
             // Controllo per il pugno basso
                 if (isP1PunchHeld && !wasP1PunchHeld) {
-                    AnimState state = player1.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
+                    state = player1.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
                 }
                 
-                // Opzionale ma consigliato: permettere la parata bassa
+                // Permettere la parata bassa
                 player1.setDefending(input.isDefendButtonPressed(1));
-                
             }
         } else {
-            // Se è stordito, abbassa le difese e si ferma!
+            // Se è stordito, non può difendersi e resta fermo
             player1.setDefending(false);
+            //! Aggiungere animazione stordito
         }
 
         // --- GIOCATORE 2 ---
-        if (!player2.isStunned()) {//da fare gestione di crouch e punchcrouch per player 2
-    
+        if (!player2.isStunned()) {
             double p2X = input.getLeftStickX(2);
             double p2Y = input.getLeftStickY(2);
 
-            if (p2Y > .5){
+            if (p2Y > .5 && player2.isGrounded()){
                 player2.setCrouching(true);
             }else{
                 player2.setCrouching(false);
             }
             
             if(!player2.isCrouching()){
-                
                 if (Math.abs(p2X) > 0.0) {
                     player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
                 }
                 if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
+
                 if (isP2PunchHeld && !wasP2PunchHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
                     player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
@@ -178,34 +173,30 @@ public class GameModel implements IReadOnlyGameModel{
                     player2.executeMove(new MeleeMove(player2, state, player2.getKickDamage(), player2.getKickWidth(), player2.getKickHeight()));
                 }
                 player2.setDefending(input.isDefendButtonPressed(2));
-            
             }
             else {
 
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
-            
             // Controllo per il pugno basso
                 if (isP2PunchHeld && !wasP2PunchHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
                     player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
-
                 }
                 
-                // Opzionale ma consigliato: permettere la parata bassa
+                // Permettere la parata bassa
                 player2.setDefending(input.isDefendButtonPressed(2));
             }
 
-
         }else {
-            // Se è stordito, abbassa le difese e si ferma!
+            // Se è stordito, non può difendersi e resta fermo
             player2.setDefending(false);
         }
         
-        // --- 3. LOGICA DI COMBATTIMENTO ---
+        // --- LOGICA DI COMBATTIMENTO ---
         handleCombat(player1, player2);
         handleCombat(player2, player1);
 
-        // 4. LIMITI DEL MONDO (Muri invisibili)
+        // LIMITI DEL MONDO (Muri invisibili)
         // Impediamo ai giocatori di uscire dall'arena totale (WORLD_WIDTH)
         keepPlayerInBounds(player1);
         keepPlayerInBounds(player2);
@@ -259,13 +250,13 @@ public class GameModel implements IReadOnlyGameModel{
         player2.isMoving = false;
         
         // ==========================================
-        //         3. LIMITI DELLO SCHERMO
+        //           LIMITI DELLO SCHERMO
         // ==========================================
-        // Ora che la telecamera si è mossa, chiudiamo i giocatori dentro la finestra visibile!
+        // Ora che la telecamera si è mossa, chiudiamo i giocatori dentro la finestra visibile
         keepPlayerOnScreen(player1);
         keepPlayerOnScreen(player2);
         
-        // Memorizzazione dello stato attuale per il salto
+        // Aggiornamento dello stato attuale per il salto
         wasP1JumpHeld = isP1JumpHeld;
         wasP2JumpHeld = isP2JumpHeld;
         
@@ -295,28 +286,26 @@ public class GameModel implements IReadOnlyGameModel{
     //      IL MOTORE DEI DANNI E COLLISIONI
     // ==========================================
     private void handleCombat(Player attacker, Player defender) {
-        if (attacker == defender) return;
+        if (attacker == defender) return;   // Controllo di sicurezza
 
-        // 1. Chiediamo al giocatore se ha una mossa in esecuzione (Pugno, Calcio, ecc.)
+        // Verifichiamo se il giocatore ha una mossa in esecuzione
         Move currentAttack = attacker.getActiveMove();
 
         if (currentAttack != null) {
-            
-            // 2. Chiediamo alla mossa di fornirci la sua Hitbox in questo preciso frame.
-            // La mossa restituirà "null" se si sta ancora caricando (Startup) o se ha già colpito!
+            // Chiediamo alla mossa di fornirci la sua Hitbox in questo preciso frame.
+            // La mossa restituirà "null" se si sta ancora caricando (Startup) o se ha già colpito
             Hitbox attackHitbox = currentAttack.getActiveHitbox();
 
-            // 3. Se la Hitbox rossa esiste e tocca l'avversario... BAM!
+            // Se la Hitbox esiste e tocca l'avversario... colpito
             if (attackHitbox != null && attackHitbox.intersects(defender.getBoundingBox())) {
-                
-                // Mettiamo SUBITO la sicura ALLA MOSSA per non fare doppi danni
+                // Mettiamo sibuto la sicura alla mossa per non fare doppi danni
                 currentAttack.setHasHit(true); 
                 
-                // Il danno viene letto direttamente dall'oggetto Move
+                // Il danno viene letto direttamente dall'oggetto Move (player di conseguenza)
                 double baseDamage = currentAttack.getDamage();
 
                 // ========================================================
-                // LA TUA LOGICA DI DIFESA E PARRY (Rimasta invariata!)
+                //        LOGICA DI DIFESA E PARRY
                 // ========================================================
                 boolean isAttackerOnRight = attacker.getPosition().getX() > defender.getPosition().getX();
                 boolean isFacingAttacker = (isAttackerOnRight && defender.isFacingRight()) || (!isAttackerOnRight && !defender.isFacingRight());
@@ -333,24 +322,24 @@ public class GameModel implements IReadOnlyGameModel{
                     // Calcoliamo in quale "frame teorico" della parata si trova il difensore
                     int currentBlockFrame = (int) (blockDuration / timePerFrameMs);
 
-                    // PARRY PERFETTO!
+                    // Parry perfetto
                     if (currentBlockFrame >= totalFrames - 1) {
                         System.out.println("⭐ PARRY PERFETTO di " + defender.getDisplayName() + "!");
                         attacker.stun(defender.getParryStunDuration());
                         
                     } else {
-                        // PARATA PARZIALE
+                        // Parry parziale
                         double blockPercentage = (double) (currentBlockFrame + 1) / totalFrames;
                         double damageMultiplier = 1.0 - blockPercentage;
                         
                         double finalDamage = baseDamage * damageMultiplier;
                         
-                        System.out.println("🛡️ Parata Parziale (Frame " + (currentBlockFrame + 1) + "/" + totalFrames + ")! Danno subito: " + finalDamage);
+                        System.out.println("🛡️ Parata parziale (frame " + (currentBlockFrame + 1) + "/" + totalFrames + "). Danno subito: " + finalDamage);
                         defender.takeDamage((int) finalDamage);
                     }
                 } else {
-                    // Preso in pieno o di spalle!
-                    System.out.println("💥 COLPITO IN PIENO! Danno: " + baseDamage);
+                    // Preso in pieno o di spalle
+                    System.out.println("💥 Colpito in pieno. Danno: " + baseDamage);
                     defender.takeDamage((int) baseDamage);
                 }
             }
@@ -407,14 +396,15 @@ public class GameModel implements IReadOnlyGameModel{
         player2.updateDynamicScale(scale);
         // ------------------------------
         
-        // Ricalcola del pavimento in tempo reale
-        this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
+        // Ricalcolo del pavimento in tempo reale
+        this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;   //! Non fa niente???
         
         // Il mondo di gioco si allarga e restringe in base allo zoom dello sfondo
         this.worldWidth = newWorldWidth;
 
+        /*  Non serve perché la finestra non si può ridimensionare al di fuori delle impostazioni
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
-        // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su!
+        // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su.
         if (player1.getPosition().getY() + player1.getHeight() > this.currentGroundLevel) {
             player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.currentGroundLevel - player1.getHeight()));
             player1.getBoundingBox().updatePosition(player1.getPosition());
@@ -423,9 +413,10 @@ public class GameModel implements IReadOnlyGameModel{
             player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.currentGroundLevel - player2.getHeight()));
             player2.getBoundingBox().updatePosition(player2.getPosition());
         }
+        */
     }
     
-    public void setGroundLevelRatio(double ratio) {
+    public void setGroundLevelRatio(double ratio) {     //! Bisogna capire a che serve
     	this.currentGroundRatio = ratio;
         // Calcola subito il pavimento in pixel moltiplicando l'altezza per la percentuale
         this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
@@ -433,7 +424,7 @@ public class GameModel implements IReadOnlyGameModel{
     
     // Metodo universale per lo spawn
     public void spawnPlayers(CharacterFactory f1, CharacterFactory f2) {
-        // Le coordinate sono decise solo qui! 
+        // Le coordinate sono decise solo qui
         // Possiamo usare delle proporzioni rispetto alla larghezza del mondo (worldWidth)
         double spawnX1 = worldWidth * 0.2; 
         double spawnX2 = worldWidth * 0.8;
@@ -447,13 +438,13 @@ public class GameModel implements IReadOnlyGameModel{
     
     // --- INIEZIONE DEI GIOCATORI SELEZIONATI ---
     // Questo serve perché altrimenti, anche se il giocatore scegliesse il personaggio dalla mappa dei
-    // personaggi, vedrebbe comunque che il suo giocatore risulta Turnip (ovvero quello inizializato
-    // nel costruttore del GameModel()
+    // personaggi, vedrebbe comunque che il suo giocatore risulta Turnip (o quello inizializato
+    // nel costruttore del GameModel())
     public void setPlayers(Player p1, Player p2) {
         this.player1 = p1;
         this.player2 = p2;
-        // Se nel tuo GameModel gestisci anche le posizioni di spawn, 
-        // puoi riposizionarli qui! (es: p1.setPosition(...))
+        // Se nel GameModel gestisci anche le posizioni di spawn, 
+        // puoi riposizionarli qui (es: p1.setPosition(...))
     }
     
     public boolean getIsGameOver() { return isGameOver; }
