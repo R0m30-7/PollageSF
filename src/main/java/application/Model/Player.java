@@ -71,8 +71,6 @@ public class Player implements IReadOnlyPlayer{
     private boolean isDefending = false;
     protected boolean isCrouching = false;
     
-    
-    
     // --- Gestione delle animazioni ---
     protected Map<AnimState, AnimData> animations = new HashMap<>();
     private AnimState currentAnimState = AnimState.IDLE_RIGHT; // Stato di default
@@ -95,10 +93,7 @@ public class Player implements IReadOnlyPlayer{
         this.boundingBox = new Hitbox(position, 0, 0);
     }
 
-
-
     private Move activeMove = null;
-
     // --- NUOVO AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
         // Chiediamo semplicemente alla mossa se ha finito i suoi frame.
@@ -116,7 +111,6 @@ public class Player implements IReadOnlyPlayer{
     }
 
     public Move getActiveMove() { return activeMove; }
-    
 
     public void setCrouching(boolean crouching) {
         if (activeMove != null || isDefending) return;        
@@ -397,6 +391,7 @@ public class Player implements IReadOnlyPlayer{
     public String getDisplayName() { return displayName; }
     public String getPfpPath() { return pfpPath; }
     public long getParryStunDuration() { return parryStunDuration; }
+    public boolean isGrounded() { return isGrounded; }
     // Forza lo stato di "Tocca Terra" per l'animazione IDLE nel menu
     public void setGrounded(boolean grounded) { this.isGrounded = grounded; }
     public void setInMenuMode(boolean inMenu) { this.inMenuMode = inMenu; }
@@ -405,7 +400,4 @@ public class Player implements IReadOnlyPlayer{
     public double getHookDamage() {return punchDamage;} // Se il gancio è attivo, restituisce il danno del pugno
     public double getHookWidth() {return punchWidth;} // Se il gancio è attivo, restituisce la larghezza del pugno
     public double getHookHeight() {return punchHeight;} // Se il gancio è attivo, restituisce l'altezza del pugno
-
-    // Se vuoi un metodo generico che restituisce true se sta tirando QUALSIASI pugno:
-
 }
