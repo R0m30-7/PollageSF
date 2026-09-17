@@ -28,7 +28,6 @@ public class Ryu extends Player {
         this.kickWidth = 30.0; // Larghezza della hitbox del
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
-
         this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
         
@@ -54,7 +53,7 @@ public class Ryu extends Player {
         // Mappa delle animazioni basata sulle sezioni del JSON (row e col)
         animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 4, 100, true)); 
         animations.put(AnimState.IDLE_LEFT, new AnimData(0, 0, 4, 100, true));
-        animations.put(AnimState.MENU_IDLE, new AnimData(7, 3, 7, 200, true));
+        animations.put(AnimState.MENU_IDLE, new AnimData(0, 0, 4, 150, true));
 
         animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
         animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
@@ -79,6 +78,16 @@ public class Ryu extends Player {
         animations.put(AnimState.PUNCH_CROUCH_LEFT, new AnimData(3, 0, 3, 40, false));
         animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 40, false));
         animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 40, false));
+        
+        // --- INIZIO CODICE COLORI DELLE SKIN ---
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png"); // 0: Dark green
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_blue_chromakey.png");      // 1: Blu
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_gray_chromakey.png");      // 2: Grigio
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_lightblue_chromakey.png"); // 3: Blu chiaro
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_lime_chromakey.png");      // 4: Lime
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_maroon_chromakey.png");    // 5: Marrone
+        this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_orange_chromakey.png");    // 6: Arancione
+        // --- FINE CODICE COLORI DELLE SKIN ---
     }
 
     public TextureAtlas getAtlas() {

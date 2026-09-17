@@ -80,6 +80,15 @@ public class GameController {
     
     // Lista dei personaggi
     private List<CharacterData> availableCharacters = new ArrayList<>();
+
+    // Variabili per le Skin
+    private int p1SkinIndex = 0;
+    private int p2SkinIndex = 0;
+    private int lastP1SkinIndex = 0;
+    private int lastP2SkinIndex = 0;
+    private boolean wasL1P1Pressed = false, wasR1P1Pressed = false;
+    private boolean wasL1P2Pressed = false, wasR1P2Pressed = false;
+    private Label skinInstructionLabel;
     
     // --- Scelta della mappa ---
     private VBox mapSelectionMenu;
@@ -351,6 +360,9 @@ public class GameController {
                     if (!p1Confirmed) {
                         double x1 = inputManager.getLeftStickX(1);
                         double y1 = inputManager.getLeftStickY(1);
+
+                        // Memorizziamo il vecchio personaggio per capire se è cambiato
+                        int oldCharIndex = p1CharIndex;
                         
                         if (currentTimeMs - lastCharInputTimeP1 > 200) { 
                             if (x1 < -0.5) { p1CharIndex--; lastCharInputTimeP1 = currentTimeMs; }
@@ -361,6 +373,30 @@ public class GameController {
                             if (p1CharIndex < 0) p1CharIndex = availableCharacters.size() - 1;
                             if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
                         }
+
+                        // Se cambia personaggio, resetta il colore al default!
+                        if (p1CharIndex != oldCharIndex) {
+                            p1SkinIndex = 0;
+                        }
+
+                        // Cambio Colore P1
+                        boolean isL1P1 = inputManager.isL1ButtonPressed(1);
+                        boolean isR1P1 = inputManager.isR1ButtonPressed(1);
+
+                        if (p1Preview != null && !p1Preview.getAvailableSkins().isEmpty()) {
+                            if (isL1P1 && !wasL1P1Pressed) {
+                                System.out.println("P1: L1 premuto! Cambia colore a sinistra");
+                                p1SkinIndex--;
+                                if (p1SkinIndex < 0) p1SkinIndex = p1Preview.getAvailableSkins().size() - 1;
+                            }
+                            if (isR1P1 && !wasR1P1Pressed) {
+                                System.out.println("P1: R1 premuto! Cambia colore a destra");
+                                p1SkinIndex++;
+                                if (p1SkinIndex >= p1Preview.getAvailableSkins().size()) p1SkinIndex = 0;
+                            }
+                        }
+                        wasL1P1Pressed = isL1P1;
+                        wasR1P1Pressed = isR1P1;
                     }
 
                     boolean p1ConfirmBtn = inputManager.isJumpButtonPressed(1);
@@ -376,6 +412,9 @@ public class GameController {
                         if (!p2Confirmed) {
                             double x2 = inputManager.getLeftStickX(2);
                             double y2 = inputManager.getLeftStickY(2);
+
+                            // Memorizziamo il vecchio personaggio per capire se è cambiato
+                            int oldCharIndex2 = p2CharIndex;
                             
                             if (currentTimeMs - lastCharInputTimeP2 > 200) { 
                                 if (x2 < -0.5) { p2CharIndex--; lastCharInputTimeP2 = currentTimeMs; }
@@ -386,6 +425,27 @@ public class GameController {
                                 if (p2CharIndex < 0) p2CharIndex = availableCharacters.size() - 1;
                                 if (p2CharIndex >= availableCharacters.size()) p2CharIndex = 0;
                             }
+
+                            if (p2CharIndex != oldCharIndex2) {
+                                p2SkinIndex = 0;
+                            }
+
+                            // Cambio Colore P2
+                            boolean isL1P2 = inputManager.isL1ButtonPressed(2);
+                            boolean isR1P2 = inputManager.isR1ButtonPressed(2);
+                            
+                            if (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty()) {
+                                if (isL1P2 && !wasL1P2Pressed) {
+                                    p2SkinIndex--;
+                                    if (p2SkinIndex < 0) p2SkinIndex = p2Preview.getAvailableSkins().size() - 1;
+                                }
+                                if (isR1P2 && !wasR1P2Pressed) {
+                                    p2SkinIndex++;
+                                    if (p2SkinIndex >= p2Preview.getAvailableSkins().size()) p2SkinIndex = 0;
+                                }
+                            }
+                            wasL1P2Pressed = isL1P2;
+                            wasR1P2Pressed = isR1P2;
                         }
 
                         boolean p2ConfirmBtn = inputManager.isJumpButtonPressed(2);
@@ -750,9 +810,14 @@ public class GameController {
         Label instructions = new Label("Levetta: Scegli | [X] Conferma | [O] Annulla");
         instructions.setStyle("-fx-font-size: 20px; -fx-text-fill: lightgray;");
 
+        // Nuova etichetta a scomparsa per i colori
+        skinInstructionLabel = new Label("[L1] ◀ CAMBIA COLORE ▶ [R1]");
+        skinInstructionLabel.setStyle("-fx-font-size: 22px; -fx-text-fill: yellow; -fx-font-weight: bold;");
+        skinInstructionLabel.setVisible(false);
+
         // --- FINE DELLA COSTRUZIONE DELLA GRIGLIA ---
-        // Aggiungiamo i vari pezzi (titolo, griglia, istruzioni) al contenitore in colonna
-        charContent.getChildren().addAll(title, charScrollPane, instructions);
+        // Aggiungiamo i vari pezzi (titolo, griglia, istruzioni, skinInstructionLabel) al contenitore in colonna
+        charContent.getChildren().addAll(title, charScrollPane, instructions, skinInstructionLabel);
 
         // 2. Creiamo un livello trasparente (Pane vuoto) per appoggiare i personaggi liberi animati
         previewLayer = new javafx.scene.layout.Pane();
@@ -975,8 +1040,8 @@ public class GameController {
         CharacterFactory factoryP1 = availableCharacters.get(p1CharIndex).factory;
         CharacterFactory factoryP2 = availableCharacters.get(p2CharIndex).factory;
         
-        // 2. Chiediamo al Model di spawnarli (lui sa dove metterli!)
-        model.spawnPlayers(factoryP1, factoryP2);
+        // 2. Chiediamo al Model di spawnarli (lui sa dove metterli)
+        model.spawnPlayers(factoryP1, factoryP2, p1SkinIndex, p2SkinIndex);
 
         // 3. Inizializziamo la grafica per i nuovi oggetti Player creati
         view.initPlayers(model.getPlayer1(), model.getPlayer2());
@@ -1087,8 +1152,8 @@ public class GameController {
         double screenH = scene.getHeight();
         
         // Capiamo se dobbiamo aggiornare qualcosa
-        boolean p1Changed = (p1CharIndex != lastP1Index);
-        boolean p2Changed = (p2CharIndex != lastP2Index);
+        boolean p1Changed = (p1CharIndex != lastP1Index) || (p1SkinIndex != lastP1SkinIndex);
+        boolean p2Changed = (p2CharIndex != lastP2Index) || (p2SkinIndex != lastP2SkinIndex);
         boolean scaleChanged = (currentScale != lastPreviewScale);
 
         // --- AGGIORNAMENTO LOGICO (Creazione nuovi Player) ---
@@ -1100,6 +1165,10 @@ public class GameController {
                 p1Preview.setFacingRight(true); 
                 p1Preview.setGrounded(true); 
                 p1Preview.setInMenuMode(true); // Indica che deve usare MENU_IDLE
+
+                // Applichiamo il colore scelto prima di creare il Renderer.
+                // (Così il Renderer estrarrà la pixel art dall'immagine corretta)
+                p1Preview.setSkinIndex(p1SkinIndex);
             }
             p1PreviewRenderer = new application.View.PlayerRenderer(p1Preview);
             p1PreviewRenderer.setMenuMode();
@@ -1113,6 +1182,9 @@ public class GameController {
                 p2Preview.setFacingRight(false); 
                 p2Preview.setGrounded(true);
                 p2Preview.setInMenuMode(true);
+
+                // Applichiamo il colore scelto anche al P2
+                p2Preview.setSkinIndex(p2SkinIndex);
             }
             p2PreviewRenderer = new application.View.PlayerRenderer(p2Preview);
             p2PreviewRenderer.setMenuMode();
@@ -1126,10 +1198,24 @@ public class GameController {
                 previewLayer.getChildren().add(p2PreviewRenderer.getNode());
             }
             
-            // AGGIORNIAMO GLI INDICI SOLO QUI ALLA FINE!
+            // AGGIORNIAMO GLI INDICI SOLO QUI ALLA FINE
             lastP1Index = p1CharIndex;
             lastP2Index = p2CharIndex;
+
+            // Memorizziamo le ultime skin renderizzate per non ricaricarle a vuoto
+            lastP1SkinIndex = p1SkinIndex;
+            lastP2SkinIndex = p2SkinIndex;
+
             lastPreviewScale = currentScale;
+
+            // Mostriamo o nascondiamo il suggerimento testuale dei colori
+            // Verifichiamo se almeno uno dei due giocatori sta scegliendo un personaggio con più colori
+            boolean p1HasSkins = p1Preview != null && !p1Preview.getAvailableSkins().isEmpty();
+            boolean p2HasSkins = (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty() && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2);
+            
+            if (skinInstructionLabel != null) {
+                skinInstructionLabel.setVisible(p1HasSkins || p2HasSkins);
+            }
         }
 
         // --- RENDERING ANIMATO (Sempre attivo per far muovere i personaggi) ---

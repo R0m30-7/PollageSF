@@ -70,6 +70,10 @@ public class Player implements IReadOnlyPlayer{
     private boolean isFacingRight = true; 
     private boolean isDefending = false;
     protected boolean isCrouching = false;
+
+    // --- Variabili per i colori delle skin ---
+    protected java.util.List<String> availableSkins = new java.util.ArrayList<>();
+    protected int currentSkinIndex = 0;
     
     // --- Gestione delle animazioni ---
     protected Map<AnimState, AnimData> animations = new HashMap<>();
@@ -402,4 +406,18 @@ public class Player implements IReadOnlyPlayer{
     public double getHookDamage() {return punchDamage;} // Se il gancio è attivo, restituisce il danno del pugno
     public double getHookWidth() {return punchWidth;} // Se il gancio è attivo, restituisce la larghezza del pugno
     public double getHookHeight() {return punchHeight;} // Se il gancio è attivo, restituisce l'altezza del pugno
+
+    // Metodi per la gestione dei colori delle skin
+    public java.util.List<String> getAvailableSkins() { 
+        return availableSkins; 
+    }
+    
+    public void setSkinIndex(int index) {
+        if (!availableSkins.isEmpty()) {
+            this.currentSkinIndex = index % availableSkins.size();
+            // Aggiorna il percorso dell'immagine con la skin scelta
+            this.atlasPath = availableSkins.get(this.currentSkinIndex);
+        }
+    }
+    public int getSkinIndex() { return currentSkinIndex; }
 }

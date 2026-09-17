@@ -420,8 +420,8 @@ public class GameModel implements IReadOnlyGameModel{
         this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;
     }
     
-    // Metodo universale per lo spawn
-    public void spawnPlayers(CharacterFactory f1, CharacterFactory f2) {
+    // Metodo universale per lo spawn. Con "skin" si intende il colore 
+    public void spawnPlayers(CharacterFactory f1, CharacterFactory f2, int skin1, int skin2) {
         // Le coordinate sono decise solo qui
         // Possiamo usare delle proporzioni rispetto alla larghezza del mondo (worldWidth)
         double spawnX1 = worldWidth * 0.2; 
@@ -429,8 +429,10 @@ public class GameModel implements IReadOnlyGameModel{
         double spawnY = 0; // Verranno poi appoggiati al suolo da applyPhysics o setGroundLevel
 
         this.player1 = f1.create(new Point2D(spawnX1, spawnY));
+        this.player1.setSkinIndex(skin1);
         this.player2 = f2.create(new Point2D(spawnX2, spawnY));
-        
+        this.player2.setSkinIndex(skin2);
+
         this.player2.setFacingRight(false); // Il P2 guarda sempre a sinistra all'inizio
     }
     
