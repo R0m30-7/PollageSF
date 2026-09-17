@@ -115,8 +115,7 @@ public class GameModel implements IReadOnlyGameModel{
                 if (isP1HookHeld && !wasP1HookHeld) {
                     state = player1.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getHookDamage(), player1.getHookWidth(), player1.getHookHeight()));
-                }
-                if (isP1PunchHeld && !wasP1PunchHeld) {
+                } else if (isP1PunchHeld && !wasP1PunchHeld) {
                     state = player1.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
                 }
@@ -160,13 +159,12 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
 
-                if (isP2PunchHeld && !wasP2PunchHeld) {
-                    AnimState state = player2.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
-                    player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
-                }
                 if (isP2HookHeld && !wasP2HookHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
                     player2.executeMove(new MeleeMove(player2, state, player2.getHookDamage(), player2.getHookWidth(), player2.getHookHeight()));
+                }else if (isP2PunchHeld && !wasP2PunchHeld) {
+                    AnimState state = player2.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+                    player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
                 }
                 if (isP2KickHeld && !wasP2KickHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
