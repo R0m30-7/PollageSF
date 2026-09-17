@@ -63,7 +63,7 @@ public class Ken extends Player {
         animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
         animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
         //non ce animazione turn
-        animations.put(AnimState.TURN, new AnimData(0, 1, 3, 50, false));
+        animations.put(AnimState.TURN, new AnimData(7, 2, 1, 15, false));
 
         animations.put(AnimState.BLOCK_RIGHT, new AnimData(0, 5, 1, 50, false));
         animations.put(AnimState.BLOCK_LEFT, new AnimData(0, 5, 1, 50, false));
