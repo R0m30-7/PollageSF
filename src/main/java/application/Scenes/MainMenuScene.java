@@ -36,7 +36,8 @@ public class MainMenuScene {
         java.net.URL path = getClass().getResource("/Buttons/MainMenuAtlas.png");
 
         if (path == null) {
-            System.out.println("Caricamento dell'atlas fallito. Controlla il nome o la cartella!");
+            System.out.println("Caricamento dell'atlas dei pulsanti fallito. Controlla il nome o la cartella!\nMessaggio d'errore generato in 'MainMenuScene.java' alla riga 36.");
+            System.exit(1);
         } else {
             MenuButList[0] = new Button(path.toExternalForm(), 0, 0, 140, 56);
             MenuButList[1] = new Button(path.toExternalForm(), 0, 56, 140, 56);
