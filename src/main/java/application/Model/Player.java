@@ -124,13 +124,15 @@ public class Player implements IReadOnlyPlayer{
             double targetHeight = crouching ? normalHeight * 0.6 : normalHeight; // Es: crouch è il 60% dell'altezza
             double heightDifference = normalHeight - targetHeight;
             
-            if (crouching) {
-                // Si abbassa: abbassiamo la Y del pavimento aggiungendo la differenza, 
-                // così la testa scende e i piedi restano piantati a terra!
-                position = new Point2D(position.getX(), position.getY() + heightDifference);
-            } else {
-                // Si alza: restituiamo lo spazio sottratto alla Y
-                position = new Point2D(position.getX(), position.getY() - heightDifference);
+            if(!isTurning){
+                if (crouching) {
+                    // Si abbassa: abbassiamo la Y del pavimento aggiungendo la differenza, 
+                    // così la testa scende e i piedi restano piantati a terra!
+                    position = new Point2D(position.getX(), position.getY() + heightDifference);
+                } else {
+                    // Si alza: restituiamo lo spazio sottratto alla Y
+                    position = new Point2D(position.getX(), position.getY() - heightDifference);
+                }
             }
             
             // Aggiorniamo la dimensione della Hitbox fisica
@@ -243,7 +245,7 @@ public class Player implements IReadOnlyPlayer{
         
         long now = System.nanoTime();
 
-        // --- 1. PRIORITÀ MASSIMA: ANIMAZIONE TURN (UNA TANTUM) ---
+        // --- PRIORITÀ MASSIMA: ANIMAZIONE TURN (UNA TANTUM) ---
         if (isTurning) {
             // Controlliamo se è passato abbastanza tempo dall'inizio della svolta
             if (now - turnAnimStartTime < TURN_DURATION_NS) {
@@ -255,11 +257,11 @@ public class Player implements IReadOnlyPlayer{
             }
         }
 
-        // --- 2. LOGICA AZIONI ---
+        // --- LOGICA AZIONI ---
         if (activeMove != null) {
-        // Magia: non ci importa se è un pugno, calcio o Hadouken. 
-        // La mossa sa già quale stato AnimState restituire!
-        currentAnimState = activeMove.getAnimState();
+            // Non ci importa se è un pugno, calcio o Hadouken. 
+            // La mossa sa già quale stato AnimState restituire!
+            currentAnimState = activeMove.getAnimState();
         }
         else if (isDefending) {
             if(isCrouching) {
@@ -267,7 +269,7 @@ public class Player implements IReadOnlyPlayer{
             } else {
                 currentAnimState = isFacingRight ? AnimState.BLOCK_RIGHT : AnimState.BLOCK_LEFT;
             }
-        } 
+        }
         else if (isCrouching) { // <-- NUOVA PRIORITÀ
             currentAnimState = isFacingRight ? AnimState.CROUCH_RIGHT : AnimState.CROUCH_LEFT;
         }
