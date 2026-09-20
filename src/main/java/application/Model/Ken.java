@@ -85,6 +85,11 @@ public class Ken extends Player {
         animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 80, false));
         animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 75, false));
 
+        animations.put(AnimState.HURT_RIGHT, new AnimData(6, 1, 3, 100, false));
+        animations.put(AnimState.HURT_LEFT, new AnimData(6, 1, 3, 100, false));
+        animations.put(AnimState.HURT_CROUCH_RIGHT, new AnimData(6, 2, 1, 100, false));
+        animations.put(AnimState.HURT_CROUCH_LEFT, new AnimData(6, 2, 1, 100, false));
+
         // ... (Copia qui il resto delle animazioni e aggiusta i numeri) ...
     }
     public TextureAtlas getAtlas() {

@@ -72,7 +72,7 @@ public class GameModel implements IReadOnlyGameModel{
     	// Aggiornamento tick per la durata dei pugni (se l'animazione è finita, resetta lo stato)
     	player1.updateTicks();
     	player2.updateTicks();
-    	
+
         // Leggiamo lo stato dei tasti X di entrambi i giocatori
         boolean isP1JumpHeld = input.isJumpButtonPressed(1);
         boolean isP2JumpHeld = input.isJumpButtonPressed(2);
@@ -339,6 +339,7 @@ public class GameModel implements IReadOnlyGameModel{
                     // Preso in pieno o di spalle
                     System.out.println("💥 Colpito in pieno. Danno: " + baseDamage);
                     defender.takeDamage((int) baseDamage);
+                    defender.setHurt(true);; // Attiva lo stato di "colpito"
                 }
             }
         }

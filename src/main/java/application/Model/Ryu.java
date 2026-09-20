@@ -79,6 +79,11 @@ public class Ryu extends Player {
         animations.put(AnimState.PUNCH_CROUCH_LEFT, new AnimData(3, 0, 3, 40, false));
         animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 40, false));
         animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 40, false));
+
+        animations.put(AnimState.HURT_RIGHT, new AnimData(6, 1, 3, 100, false));
+        animations.put(AnimState.HURT_LEFT, new AnimData(6, 1, 3, 100, false));
+        animations.put(AnimState.HURT_CROUCH_RIGHT, new AnimData(6, 2, 1, 100, false));
+        animations.put(AnimState.HURT_CROUCH_LEFT, new AnimData(6, 2, 1, 100, false));
     }
 
     public TextureAtlas getAtlas() {

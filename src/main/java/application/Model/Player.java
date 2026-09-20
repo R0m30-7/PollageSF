@@ -47,6 +47,8 @@ public class Player implements IReadOnlyPlayer{
     // Variabili per la fisica
     private double velocityY = 0.0;
     private boolean isGrounded = false;
+    private boolean isHurt = false; // Variabile per lo stato di "colpito"
+    private long hurtStartTime = 0;
     
     // Variabili per il salto
     protected double gravity;
@@ -94,6 +96,7 @@ public class Player implements IReadOnlyPlayer{
     }
 
     private Move activeMove = null;
+
     // --- NUOVO AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
         // Chiediamo semplicemente alla mossa se ha finito i suoi frame.
@@ -162,7 +165,7 @@ public class Player implements IReadOnlyPlayer{
     public long getBlockStartTime() { 
         return blockStartTime; 
     }
-    
+
     public void stun(long durationMs) { 
         this.stunEndTime = System.currentTimeMillis() + durationMs; 
     }
@@ -206,6 +209,20 @@ public class Player implements IReadOnlyPlayer{
             isGrounded = false;
         }
     }
+
+    public void setHurt(boolean hurt) {
+        this.isHurt = hurt;
+        if (hurt) {
+            this.hurtStartTime = System.nanoTime();
+            this.activeMove = null; // Interrompe eventuali attacchi in corso
+            this.isMoving = false;
+        }
+    }
+
+    public boolean isHurt() {
+        return isHurt;
+    }
+
     
     public void applyPhysics(double groundLevelY, boolean isJumpHeld) {
         // Se il giocatore sta andando verso l'alto (velocityY negativo) 
@@ -244,6 +261,31 @@ public class Player implements IReadOnlyPlayer{
         }
         
         long now = System.nanoTime();
+
+        if (isHurt) {
+            AnimState hurtState = null;
+            if(isCrouching) {
+                hurtState = isFacingRight ? AnimState.HURT_CROUCH_RIGHT : AnimState.HURT_CROUCH_LEFT;
+            } else {
+                hurtState = isFacingRight ? AnimState.HURT_RIGHT : AnimState.HURT_LEFT;
+            }
+            
+            AnimData hurtAnim = animations.get(hurtState);
+            if (hurtAnim != null) {
+                long elapsedNs = now - hurtStartTime;
+                long totalDurationNs = hurtAnim.frameCount * hurtAnim.speedNs;
+                
+                if (elapsedNs < totalDurationNs) {
+                    currentAnimState = hurtState;
+                    return; // Rimane bloccato nello stato Hurt finché l'animazione non finisce
+                } else {
+                    isHurt = false; // Tempo scaduto, lo stato si spegne da solo!
+                }
+            } else {
+                isHurt = false; // Sicurezza se manca l'animazione nella map
+            }
+        }
+
 
         // --- PRIORITÀ MASSIMA: ANIMAZIONE TURN (UNA TANTUM) ---
         if (isTurning) {
