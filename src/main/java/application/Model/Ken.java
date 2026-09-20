@@ -61,7 +61,7 @@ public class Ken extends Player {
         animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
         animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
         //non ce animazione turn
-        animations.put(AnimState.TURN, new AnimData(7, 2, 1, 15, false));
+        animations.put(AnimState.TURN, new AnimData(7, 2, 1, 5, false));
 
         animations.put(AnimState.BLOCK_RIGHT, new AnimData(0, 5, 1, 50, false));
         animations.put(AnimState.BLOCK_LEFT, new AnimData(0, 5, 1, 50, false));
@@ -83,14 +83,12 @@ public class Ken extends Player {
         animations.put(AnimState.KICK_LEFT, new AnimData(2, 0, 3, 80, false));
         animations.put(AnimState.KICK_RIGHT, new AnimData(2, 1, 5, 75, false));
 
-<<<<<<< HEAD
         animations.put(AnimState.HURT_RIGHT, new AnimData(6, 1, 3, 100, false));
         animations.put(AnimState.HURT_LEFT, new AnimData(6, 1, 3, 100, false));
         animations.put(AnimState.HURT_CROUCH_RIGHT, new AnimData(6, 2, 1, 100, false));
         animations.put(AnimState.HURT_CROUCH_LEFT, new AnimData(6, 2, 1, 100, false));
 
         // ... (Copia qui il resto delle animazioni e aggiusta i numeri) ...
-=======
         // --- INIZIO CODICE COLORI DELLE SKIN ---
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_brown_chromakey.png");      // 0: Marrone
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_green_chromakey.png");      // 1: Verde
@@ -100,7 +98,6 @@ public class Ken extends Player {
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_teal_chromakey.png");       // 5: Verde acqua
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_orange_chromakey.png");     // 6: Arancione
         // --- FINE CODICE COLORI DELLE SKIN ---
->>>>>>> d53a4e9eb9a8e47f6185cb373f67cac710e1da66
     }
     public TextureAtlas getAtlas() {
         return atlas;

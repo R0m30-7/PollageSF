@@ -199,6 +199,9 @@ public class GameModel implements IReadOnlyGameModel{
         keepPlayerInBounds(player1);
         keepPlayerInBounds(player2);
 
+        // Controllo collisione tra i due giocatori
+        collisionDetection(player1, player2);
+
         // ==========================================
         //         LOGICA DELLA TELECAMERA
         // ==========================================
@@ -345,6 +348,37 @@ public class GameModel implements IReadOnlyGameModel{
         }
     }
     
+    private void collisionDetection(Player p1, Player p2) {
+        // Controllo collisione tra i due giocatori
+        if (p1.getBoundingBox().intersects(p2.getBoundingBox())) {
+        // Calcoliamo il punto centrale dei due giocatori per capire chi sta a destra e chi a sinistra
+            double p1CenterX = p1.getPosition().getX() + (p1.getWidth() / 2.0);
+            double p2CenterX = p2.getPosition().getX() + (p2.getWidth() / 2.0);
+            
+            // Profondità della sovrapposizione orizzontale
+            double overlap = (p1.getWidth() / 2.0 + p2.getWidth() / 2.0) - Math.abs(p1CenterX - p2CenterX);
+            
+            if (overlap > 0) {
+                // Spingiamo i giocatori verso l'esterno in egual misura (metà a testa)
+                double pushDist = overlap / 2.0;
+                
+                if (p1CenterX < p2CenterX) {
+                    p1.setPosition(new Point2D(p1.getPosition().getX() - pushDist, p1.getPosition().getY()));
+                    p2.setPosition(new Point2D(p2.getPosition().getX() + pushDist, p2.getPosition().getY()));
+                } else {
+                    p1.setPosition(new Point2D(p1.getPosition().getX() + pushDist, p1.getPosition().getY()));
+                    p2.setPosition(new Point2D(p2.getPosition().getX() - pushDist, p2.getPosition().getY()));
+                }
+                
+                // Aggiorniamo le bounding box dopo lo spostamento
+                p1.getBoundingBox().updatePosition(p1.getPosition());
+                p2.getBoundingBox().updatePosition(p2.getPosition());
+            }
+        }
+
+    }
+
+
     // Metodo di supporto per i muri invisibili dell'arena
     private void keepPlayerInBounds(Player p) {
         double currentX = p.getPosition().getX();
@@ -356,9 +390,9 @@ public class GameModel implements IReadOnlyGameModel{
         else if (currentX > worldWidth - p.getWidth()) {
             p.setPosition(new Point2D(worldWidth - p.getWidth(), p.getPosition().getY()));
         }
-        
         // Aggiorniamo la bounding box logica per riflettere la posizione bloccata
         p.getBoundingBox().updatePosition(p.getPosition());
+
     }
     
     // Metodo per impedire ai giocatori di uscire dall'inquadratura della telecamera
