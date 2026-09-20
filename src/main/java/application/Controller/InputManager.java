@@ -134,6 +134,16 @@ public class InputManager {
         return state != null && state.b; 
     }
 
+    // --- METODI PER CAMBIO SKIN (L1 / R1) ---
+    public boolean isL1ButtonPressed(int playerNumber) {
+        ControllerState state = getState(playerNumber);
+        return state != null && state.lb;
+    }
+
+    public boolean isR1ButtonPressed(int playerNumber) {
+        ControllerState state = getState(playerNumber);
+        return state != null && state.rb; 
+    }
     
     // --- GESTIONE EMERGENZA E STATO ---
     public boolean isPlayer1Connected() { return p1Index != -1; }
