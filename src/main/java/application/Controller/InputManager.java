@@ -128,6 +128,13 @@ public class InputManager {
         return state != null && state.y; 
     }
 
+    public boolean isHadoukenButtonPressed(int playerNumber) {
+        ControllerState state = getState(playerNumber);
+        // Tasto L2 + quadrato
+        return state != null && state.x && state.leftTrigger > 0.5; 
+    }
+
+
     public boolean isDefendButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
         // Tasto B universale (Cerchio su PS)

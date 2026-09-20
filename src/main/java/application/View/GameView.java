@@ -2,6 +2,7 @@ package application.View;
 
 import application.Model.IReadOnlyGameModel;
 import application.Model.IReadOnlyPlayer;
+import application.Model.Projectile;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;

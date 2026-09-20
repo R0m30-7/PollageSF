@@ -38,6 +38,9 @@ public class Player implements IReadOnlyPlayer{
     protected double punchDamage;
     protected double punchWidth;
     protected double punchHeight;
+
+    protected double hadoukenDamage = 15.0; // Danno del proiettile Hadouken
+    protected double hadoukenSpeed = 5.0; // Velocità del proiettile Hadouken
     
     // --- Variabili per il Menu di Selezione ---
     protected String displayName;
@@ -206,7 +209,7 @@ public class Player implements IReadOnlyPlayer{
     // 3. IL SALTO (La vera spinta verso l'alto)
     public void jump() {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
-        if (activeMove != null || isDefending) return;
+        if (activeMove != null || isDefending || isHurt) return;
         // Può saltare solo se non è già in aria
         if (isGrounded) {
             velocityY = jumpStrength;
@@ -462,4 +465,7 @@ public class Player implements IReadOnlyPlayer{
         }
     }
     public int getSkinIndex() { return currentSkinIndex; }
+    public double getHadoukenDamage() { return hadoukenDamage;}
+    
+    public double getHadoukenSpeed() { return hadoukenSpeed; }
 }

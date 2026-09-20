@@ -87,7 +87,9 @@ public class Ken extends Player {
         animations.put(AnimState.HURT_LEFT, new AnimData(6, 1, 3, 100, false));
         animations.put(AnimState.HURT_CROUCH_RIGHT, new AnimData(6, 2, 1, 100, false));
         animations.put(AnimState.HURT_CROUCH_LEFT, new AnimData(6, 2, 1, 100, false));
-
+        animations.put(AnimState.HADOUKEN_RIGHT, new AnimData(4, 5, 4, 80, false));
+        animations.put(AnimState.HADOUKEN_LEFT, new AnimData(4, 5, 4, 80, false));
+        
         // ... (Copia qui il resto delle animazioni e aggiusta i numeri) ...
         // --- INIZIO CODICE COLORI DELLE SKIN ---
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_brown_chromakey.png");      // 0: Marrone

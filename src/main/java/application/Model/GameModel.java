@@ -1,5 +1,8 @@
 package application.Model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import application.Controller.CharacterFactory;
 import application.Controller.InputManager;
 import application.Utils.GameConfig;
@@ -30,6 +33,8 @@ public class GameModel implements IReadOnlyGameModel{
     private boolean wasP1KickHeld = false;
     private boolean wasP2KickHeld = false;
 
+    private boolean wasP1HadoukenHeld = false;
+    private boolean wasP2HadoukenHeld = false;
     
     // Memorizzazione dimensioni per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
@@ -43,6 +48,8 @@ public class GameModel implements IReadOnlyGameModel{
     // Variabili per la gestione della fine del gioco
     private boolean isGameOver = false;
     private int winner = 0;
+
+    private List<Projectile> projectiles;
     
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
@@ -62,6 +69,7 @@ public class GameModel implements IReadOnlyGameModel{
         // Impostiamo le direzioni iniziali
         player1.setFacingRight(true); 
         player2.setFacingRight(false);
+        projectiles = new ArrayList<>();
     }
 
     public Player getPlayer1() { return player1; }
@@ -86,6 +94,9 @@ public class GameModel implements IReadOnlyGameModel{
 
         boolean isP1HookHeld = input.isHookButtonPressed(1);
         boolean isP2HookHeld = input.isHookButtonPressed(2);
+
+        boolean isP1HadoukenHeld = input.isHadoukenButtonPressed(1);
+        boolean isP2HadoukenHeld = input.isHadoukenButtonPressed(2);
 
         // Applichiamo la fisica passando lo stato del tasto (salto)
         player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
@@ -112,6 +123,10 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
 
+                if (isP1HadoukenHeld && !wasP1HadoukenHeld) {
+                    state = player1.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
+                    player1.executeMove(new RangedMove(player1, state, player1.getHadoukenDamage(), player1.getHadoukenSpeed()));
+                }
                 if (isP1HookHeld && !wasP1HookHeld) {
                     state = player1.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
                     player1.executeMove(new MeleeMove(player1, state, player1.getHookDamage(), player1.getHookWidth(), player1.getHookHeight()));
@@ -124,6 +139,15 @@ public class GameModel implements IReadOnlyGameModel{
                     player1.executeMove(new MeleeMove(player1, state, player1.getKickDamage(), player1.getKickWidth(), player1.getKickHeight()));
                 }
                 player1.setDefending(input.isDefendButtonPressed(1));
+
+                // --- GESTIONE PROIETTILI PLAYER 1 ---
+                if (player1.getActiveMove() instanceof RangedMove) {
+                    RangedMove ranged = (RangedMove) player1.getActiveMove();
+                    Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta grazie a hasFired
+                    if (p != null) {
+                        projectiles.add(p);
+                    }
+                }
 
             }else {
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
@@ -158,7 +182,10 @@ public class GameModel implements IReadOnlyGameModel{
                     player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
                 }
                 if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
-
+                if (isP2HadoukenHeld && !wasP2HadoukenHeld) {
+                    AnimState state = player2.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
+                    player2.executeMove(new RangedMove(player2, state, player2.getHadoukenDamage(), player2.getHadoukenSpeed()));
+                }
                 if (isP2HookHeld && !wasP2HookHeld) {
                     AnimState state = player2.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
                     player2.executeMove(new MeleeMove(player2, state, player2.getHookDamage(), player2.getHookWidth(), player2.getHookHeight()));
@@ -171,6 +198,15 @@ public class GameModel implements IReadOnlyGameModel{
                     player2.executeMove(new MeleeMove(player2, state, player2.getKickDamage(), player2.getKickWidth(), player2.getKickHeight()));
                 }
                 player2.setDefending(input.isDefendButtonPressed(2));
+
+                // --- GESTIONE PROIETTILI PLAYER 2 ---
+                if (player2.getActiveMove() instanceof RangedMove) {
+                    RangedMove ranged = (RangedMove) player2.getActiveMove();
+                    Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta
+                    if (p != null) {
+                        projectiles.add(p);
+                    }
+                }
             }
             else {
 
@@ -190,6 +226,28 @@ public class GameModel implements IReadOnlyGameModel{
             player2.setDefending(false);
         }
         
+        for (Projectile p : projectiles) {
+            p.update();
+            
+            // Controllo uscita dai muri
+            if (p.getPosition().getX() < 0 || p.getPosition().getX() > worldWidth) {
+                p.setActive(false);
+            }
+            
+            // Controllo collisione (se il proiettile appartiene a P1, colpisce P2 e viceversa)
+            // Puoi definire un riferimento al "proprietario" dentro la classe Projectile
+            Player target = (p.getOwner() == player1) ? player2 : player1;
+            
+            if (p.getBoundingBox().intersects(target.getBoundingBox())) {
+                target.takeDamage((int) p.getDamage());
+                target.setHurt(true);
+                p.setActive(false); // Il proiettile si distrugge all'impatto
+            }
+        }
+
+        // Rimuove i proiettili non più attivi
+        projectiles.removeIf(p -> !p.isActive());
+        
         // --- LOGICA DI COMBATTIMENTO ---
         handleCombat(player1, player2);
         handleCombat(player2, player1);
@@ -201,6 +259,7 @@ public class GameModel implements IReadOnlyGameModel{
 
         // Controllo collisione tra i due giocatori
         collisionDetection(player1, player2);
+
 
         // ==========================================
         //         LOGICA DELLA TELECAMERA
@@ -269,6 +328,9 @@ public class GameModel implements IReadOnlyGameModel{
 
         wasP1HookHeld = isP1HookHeld;
         wasP2HookHeld = isP2HookHeld;
+
+        wasP1HadoukenHeld = isP1HadoukenHeld;
+        wasP2HadoukenHeld = isP2HadoukenHeld;
         
         // ==========================================
         //         CONTROLLO FINE PARTITA
