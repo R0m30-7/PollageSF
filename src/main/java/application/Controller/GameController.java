@@ -51,6 +51,7 @@ public class GameController {
     private TilePane charsContainer; 
     private ScrollPane charScrollPane;
     private List<VBox> charNodes = new ArrayList<>();
+    private List<CharacterData> availableCharacters = new ArrayList<>();    // Lista dei personaggi
     
     // --- NUOVE VARIABILI PER LE ANIMAZIONI DI PREVIEW ---
     private javafx.scene.layout.Pane previewLayer;
@@ -68,7 +69,7 @@ public class GameController {
     private boolean p1Confirmed = false;
     private boolean p2Confirmed = false;
     
-    // Timer per lo scorrimento indipendente (evita che la levetta scorra a 200 all'ora)
+    // Timer per lo scorrimento indipendente
     private long lastCharInputTimeP1 = 0;
     private long lastCharInputTimeP2 = 0;
     
@@ -77,9 +78,6 @@ public class GameController {
     private boolean wasCancelP1Pressed = false;
     private boolean wasConfirmP2Pressed = false;
     private boolean wasCancelP2Pressed = false;
-    
-    // Lista dei personaggi
-    private List<CharacterData> availableCharacters = new ArrayList<>();
 
     // Variabili per le Skin
     private int p1SkinIndex = 0;
@@ -92,9 +90,9 @@ public class GameController {
     
     // --- Scelta della mappa ---
     private VBox mapSelectionMenu;
-    private TilePane mapsContainer; // Contenitore orizzontale per le mappe
-    private ScrollPane mapScrollPane;	// Telecamera scorrevole per mostrare tutte le mappe
-    private List<VBox> mapNodes = new ArrayList<>(); // Lista dei quadretti visivi
+    private TilePane mapsContainer;                     // Contenitore orizzontale per le mappe
+    private ScrollPane mapScrollPane;                   // Telecamera scorrevole per mostrare tutte le mappe
+    private List<VBox> mapNodes = new ArrayList<>();    // Lista dei quadretti visivi
     private int currentMapIndex = 0;
     private List<MapData> availableMaps = new ArrayList<>();
     
@@ -120,7 +118,7 @@ public class GameController {
     // Variabili per la navigazione dei menu tramite controller
     private List<Button> pauseButtons = new ArrayList<>();
     private int currentPauseIndex = 0;
-    private long lastMenuInputTime = 0; // Serve per non scorrere i bottoni a 200 all'ora!
+    private long lastMenuInputTime = 0;
     private boolean wasConfirmPressed = false;
     
     // Variabili per il Game Over
@@ -135,17 +133,14 @@ public class GameController {
         this.stage = stage;
         this.view = new GameView();
         this.model = new GameModel(view.getBgWidth(), view.getBgHeight());
-        //this.view.initPlayers(model.getPlayer1(), model.getPlayer2());	// Inizializziamo la grafica dei giocatori
         this.inputManager = InputManager.getInstance();
         
         availableCharacters.add(new CharacterData("Ryu", "/Sprites/ryuPFP.png", application.Model.Ryu::new));
         availableCharacters.add(new CharacterData("Ken", "/Sprites/kenPFP.png", application.Model.Ken::new));
-        // Aggiungiamo Turnip leggendo i dati dalla SUA classe
         availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
         availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
-        // Aggiungiamo un paio di placeholder temporanei per testare la griglia
-        //availableCharacters.add(new CharacterData("Carrot (LOCKED)", "/Sprites/carrotPFP.png"));
-        //availableCharacters.add(new CharacterData("Onion (LOCKED)", "/Sprites/onionPFP.png"));
+
+        //! Capire in che risoluzione sono stati trovati i groundLevelRatio
 
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));
@@ -179,7 +174,7 @@ public class GameController {
     	createMapSelectionMenu();
     	mainRoot.getChildren().add(mapSelectionMenu);
     	
-    	// AGGIUNGIAMO ANCHE IL MENU DI PAUSA AL PANINO (Nascosto)
+    	// AGGIUNGIAMO ANCHE IL MENU DI PAUSA AL PANINO (nascosto)
         createPauseMenu();
         mainRoot.getChildren().add(pauseMenu);
         
@@ -202,11 +197,13 @@ public class GameController {
         // Chiediamo a PlayScene di creare la scena passandole il root della nostra View
         scene = playScene.getScene(mainRoot);
         
-        // Diciamo allo ScrollPane di essere sempre alto esattamente il 65% (0.65) dell'altezza della finestra!
+        // Diciamo allo ScrollPane di essere sempre alto esattamente il 65% (0.65) dell'altezza della finestra
         mapScrollPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.65));
         
         // --- ASCOLTATORI DI RIDIMENSIONAMENTO ---
+        //! In realtà non servirebbe più, perché la finestra è bloccata, ma lasciamoli per sicurezza
         // Se l'utente allarga o stringe la finestra...
+        /*
         scene.widthProperty().addListener((obs, oldVal, newVal) -> {
             double newW = newVal.doubleValue();
             double currentH = scene.getHeight(); // Prendiamo l'altezza attuale
@@ -229,8 +226,9 @@ public class GameController {
             // Diciamo poi al Model di aggiornare i limiti passando il nuovo bgWidth della View
             model.updateWindowSize(currentW, newH, view.getBgWidth(), view.getScale());	
         });
+        */
 
-        // 3. Impostiamo la finestra e avviamo il gioco
+        // Impostiamo la finestra e avviamo il gioco
         stage.setTitle(GameConfig.GAME_TITLE_STRING);
         stage.setScene(scene);
         stage.show();
@@ -263,7 +261,7 @@ public class GameController {
                 long frameTime = now - lastTime;
                 lastTime = now;
                 
-                // --- 1. CONTROLLO EMERGENZA DISCONNESSIONE ---
+                // --- CONTROLLO EMERGENZA DISCONNESSIONE ---
                 int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
                 
                 // Attiviamo l'allarme solo se stiamo giocando (non se siamo già nel menu di connessione iniziale)
@@ -285,10 +283,10 @@ public class GameController {
                     
                     int numP = application.Utils.Settings.getInstance().getNumberOfPlayers();
                     
-                    // 2. Se l'InputManager ci dice che i controller sono tornati operativi...
+                    // Se l'InputManager ci dice che i controller sono stati ricollegati tutti...
                     if (!inputManager.hasLostControllers(numP)) {
                         
-                        // 3. ... aspettiamo che il giocatore prema il tasto Salto (X / A) per confermare!
+                        // ... aspettiamo che il giocatore prema il tasto Salto (X / A) per confermare
                         if (inputManager.isJumpButtonPressed(1) || (numP == 2 && inputManager.isJumpButtonPressed(2))) {
                             isDisconnected = false;
                             disconnectMenu.setVisible(false);
@@ -298,7 +296,7 @@ public class GameController {
                                 view.getRoot().setEffect(null);
                             }
                             
-                            // Evitiamo che il personaggio salti accidentalmente appena riparte il gioco!
+                            // Evitiamo che il personaggio salti accidentalmente appena riparte il gioco
                             wasConfirmPressed = true; 
                         }
                     }
@@ -306,7 +304,7 @@ public class GameController {
                     // Resettiamo gli accumulatori di fisica e render per "congelare" l'arena
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
-                    return; // Interrompe l'esecuzione del frame qui. Il gioco è in pausa assoluta!
+                    return; // Interrompe l'esecuzione del frame qui. Il gioco è in pausa (fa ripartire l'handle da capo)
                 }
                 
                 // --- Contatore FPS a schermo ---
@@ -541,7 +539,7 @@ public class GameController {
                     
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
-                    
+
                 } else {
                 	// ==========================================
                     //         FASE DI GIOCO E COMBATTIMENTO

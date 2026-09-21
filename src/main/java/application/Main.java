@@ -1,6 +1,6 @@
 package application;
 
-// --- IMPORT ESPLICITI (Così Eclipse non si confonde) ---
+// --- IMPORT ESPLICITI ---
 import application.Scenes.MainMenuScene;
 import application.Utils.Settings;
 import javafx.application.Application;
