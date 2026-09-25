@@ -42,7 +42,7 @@ public class GameModel implements IReadOnlyGameModel{
     
     // Definizione della posizione del pavimento
     private double GROUND_LEVEL;
-    private double currentGroundRatio = 0.9;    //! Va spiegato meglio
+    private double currentGroundRatio = 0.9;    // La posizione precisa del pavimento nelle mappe, e il ratio serve per tenerlo preciso in tutte le risoluzioni
     private double currentGroundLevel;
     
     // Variabili per la gestione della fine del gioco
