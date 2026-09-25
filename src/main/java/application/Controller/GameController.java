@@ -336,12 +336,12 @@ public class GameController {
                     boolean canStartGame = false;
                     
                     if (numPlayers == 1 && inputManager.isPlayer1Connected()) {
-                        canStartGame = true; // Basta un controller!
+                        canStartGame = true; // Basta un controller
                     } else if (numPlayers == 2 && inputManager.isPlayer1Connected() && inputManager.isPlayer2Connected()) {
-                        canStartGame = true; // Servono entrambi i controller!
+                        canStartGame = true; // Servono entrambi i controller
                     }
 
-                    // Se i requisiti sono soddisfatti, via col gioco!
+                    // Se i requisiti sono soddisfatti si fa partire il gioco
                     if (canStartGame) {
                         closeConnectionMenu();
                     }
@@ -372,7 +372,7 @@ public class GameController {
                             if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
                         }
 
-                        // Se cambia personaggio, resetta il colore al default!
+                        // Se cambia personaggio, resetta il colore al default
                         if (p1CharIndex != oldCharIndex) {
                             p1SkinIndex = 0;
                         }
@@ -397,6 +397,7 @@ public class GameController {
                         wasR1P1Pressed = isR1P1;
                     }
 
+                    // --- GESTIONE DEI TASTI DI CONFERMA E CANCELLAZIONE ---
                     boolean p1ConfirmBtn = inputManager.isJumpButtonPressed(1);
                     if (p1ConfirmBtn && !wasConfirmP1Pressed) p1Confirmed = true;
                     wasConfirmP1Pressed = p1ConfirmBtn;
@@ -458,7 +459,7 @@ public class GameController {
                         p2Confirmed = true; 
                     }
 
-                    // Se ENTRAMBI hanno confermato (lock-in), passiamo alle mappe!
+                    // Se ENTRAMBI hanno confermato, passiamo alla selezione delle mappe
                     if (p1Confirmed && p2Confirmed) {
                         closeCharacterSelectionMenu();
                     }
@@ -471,15 +472,13 @@ public class GameController {
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
                 } else if (waitingForMapSelection) {
-                	
                     inputManager.update();
                     
                     long currentTimeMs = System.currentTimeMillis();
                     double xInput = inputManager.getLeftStickX(1); 
                     double yInput = inputManager.getLeftStickY(1); // Leggiamo anche l'asse Y
                     
-                    if (currentTimeMs - lastMenuInputTime > 250) { 
-                        
+                    if (currentTimeMs - lastMenuInputTime > 250) {
                         // Calcoliamo quante colonne ci sono fisicamente a schermo in questo momento
                         // (300 di larghezza immagine + 40 di gap = 340)
                         int cols = Math.max(1, (int) (mapsContainer.getWidth() / 340));
@@ -490,53 +489,52 @@ public class GameController {
                             updateMapSelectionUI();
                             updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                             lastMenuInputTime = currentTimeMs;
-                            
+
                         } else if (xInput > 0.5) { // DESTRA
                             currentMapIndex++;
                             if (currentMapIndex >= availableMaps.size()) currentMapIndex = 0;
                             updateMapSelectionUI();
                             updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                             lastMenuInputTime = currentTimeMs;
-                            
-                        } else if (yInput < -0.5) { // SU (Salta alla riga sopra)
+
+                        } else if (yInput < -0.5) { // SU (salta alla riga sopra)
                             if (currentMapIndex - cols >= 0) {
                                 currentMapIndex -= cols;
                                 updateMapSelectionUI();
                                 updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
                                 lastMenuInputTime = currentTimeMs;
                             }
-                            
-                        } else if (yInput > 0.5) { // GIÙ (Salta alla riga sotto)
+
+                        } else if (yInput > 0.5) { // GIÙ (salta alla riga sotto)
                             int maxIndex = availableMaps.size() - 1;
-                            
+
                             // Calcoliamo in quale riga ci troviamo e qual è l'ultima riga disponibile
                             int currentRow = currentMapIndex / cols;
                             int maxRow = maxIndex / cols;
-                            
-                            // Se non siamo già all'ultima riga, possiamo scendere!
+
+                            // Se non siamo già all'ultima riga, possiamo scendere
                             if (currentRow < maxRow) {
                                 currentMapIndex += cols;
-                                
+
                                 // Se scendendo finiamo in un "buco vuoto" (perché l'ultima riga 
                                 // ha meno colonne), calamitiamo il cursore all'ultima mappa
                                 if (currentMapIndex > maxIndex) {
                                     currentMapIndex = maxIndex;
                                 }
-                                
+
                                 updateMapSelectionUI();
                                 updateBackgroundPreview();  // Aggiorna la preview della mappa nello sfondo
                                 lastMenuInputTime = currentTimeMs;
                             }
                         }
-                        
                     }
-                    
+
                     boolean isConfirm = inputManager.isJumpButtonPressed(1);
                     if (isConfirm && !wasConfirmPressed) {
                         confirmMapSelection(); 
                     }
                     wasConfirmPressed = isConfirm;
-                    
+
                     physicsAccumulator = 0;
                     renderAccumulator = 0;
 
@@ -563,15 +561,20 @@ public class GameController {
                     if (isPaused) {
                         // Se siamo in pausa, azzeriamo l'accumulatore fisico.
                         // Questo evita che, togliendo la pausa, il gioco cerchi di "recuperare"
-                        // tutti i secondi persi sparando i giocatori nello spazio!
+                        // tutti i secondi persi muovendo i giocatori in un frame unico
                         physicsAccumulator = 0; 
                         
                         // ==========================================
                         //  NAVIGAZIONE MENU DI PAUSA CON CONTROLLER
                         // ==========================================
                         long currentTimeMs = System.currentTimeMillis();
-                        double yInput = inputManager.getLeftStickY(1); // Usiamo il P1 per scorrere
-                        
+                        double yInput;
+                        if(isP1Pause){
+                            yInput = inputManager.getLeftStickY(1); // Usiamo il P1 per scorrere
+                        } else {
+                            yInput = inputManager.getLeftStickY(2); // Usiamo il P2 per scorrere
+                        }
+
                         // Il delay (200ms) serve per permettere all'utente di scorrere un bottone alla volta
                         if (currentTimeMs - lastMenuInputTime > 200) {
                             if (yInput < -0.5) { // Levetta verso l'ALTO
@@ -586,36 +589,36 @@ public class GameController {
                                 lastMenuInputTime = currentTimeMs;
                             }
                         }
-                        
+
                         // Selezione con il tasto del Salto (X / A)
                         boolean isConfirm = inputManager.isJumpButtonPressed(1);
                         if (isConfirm && !wasConfirmPressed) {
-                            // .fire() simula esattamente il click del mouse su quel bottone!
+                            // .fire() simula il click sul pulsante selezionato
                             pauseButtons.get(currentPauseIndex).fire();
                         }
                         wasConfirmPressed = isConfirm;
-                        
+
                     } else {
-                        // GIOCO ATTIVO! Facciamo muovere i giocatori.
-                        
+                        // Gioco non in pausa, i giocatori possono muoversi
+
                     	physicsAccumulator += frameTime;
-                        
-                        // ---> NUOVO CONTROLLO: IL GIOCO È FINITO? <---
+
+                        // --- CONTROLLO SE IL GIOCO È FINITO ---
                         if (model.getIsGameOver()) {
-                            // IL GIOCO E' FINITO! (La fisica viene saltata)
+                            // Il gioco è finito (la fisica viene saltata)
                             physicsAccumulator = 0; // Svuotiamo l'accumulatore per congelare il tempo
-                            
+
                             if (!isVictoryScreenActive) {
                                 isVictoryScreenActive = true;
                                 victoryStartTime = System.currentTimeMillis();
-                                view.showVictoryScreen(model.getWinner()); // Mostra l'immagine!
+                                view.showVictoryScreen(model.getWinner()); // Mostra l'immagine di vittoria
                             } else {
                                 // Controlliamo se sono passati 2 secondi (2000 millisecondi)
                                 if (!canSkipVictory && (System.currentTimeMillis() - victoryStartTime > 2000)) {
                                     canSkipVictory = true;
                                     view.showContinueText(); // Appare la scritta in basso a destra
                                 }
-                                
+
                                 // Se si può saltare e viene premuto un tasto (salto o pugno di uno dei due)
                                 if (canSkipVictory && (inputManager.isJumpButtonPressed(1) || inputManager.isPunchButtonPressed(1) || 
                                                        inputManager.isJumpButtonPressed(2) || inputManager.isPunchButtonPressed(2))) {
@@ -623,7 +626,7 @@ public class GameController {
                                 }
                             }
                         } else {
-                            // IL GIOCO NON È FINITO! (Calcolo normale della fisica)
+                            // IL GIOCO NON È FINITO (calcolo normale della fisica)
                             // Aggiorniamo la fisica finchè l'accumulatore è maggiore del tempo per tick
                             // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
                             //es: se il gioco va a 100 TPS, ogni frame dura 10ms, quindi l'accumulatore accumula 10ms per frame.
@@ -637,7 +640,7 @@ public class GameController {
                         }
                     }
 
-                    // --- RENDER GRAFICO (Gira sempre, sia in gioco che in pausa) ---
+                    // --- RENDER GRAFICO (gira sempre, sia in gioco che in pausa) ---
                     renderAccumulator += frameTime;
                     double targetFrameTime = 1_000_000_000.0 / application.Utils.Settings.getInstance().getTargetFps();
 
@@ -672,7 +675,7 @@ public class GameController {
         
         // Se c'è un solo giocatore, il Giocatore 2 diventa la CPU (o comunque non serve il controller)
         if (numPlayers == 1) {
-            p2Label.setText("Giocatore 2: CPU (Nessun controller richiesto)");
+            p2Label.setText("Giocatore 2: CPU (nessun controller richiesto)");
             p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: gray;"); // Lo facciamo grigio per far capire che è disabilitato
         }
         
@@ -681,19 +684,19 @@ public class GameController {
         backToMenuBtn.setStyle("-fx-font-size: 18px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
         
         backToMenuBtn.setOnAction(e -> {
-            // 1. Fermiamo il loop per evitare che il gioco continui a girare in background
+            // Fermiamo il loop per evitare che il gioco continui a girare in background
             if (gameLoop != null) {
                 gameLoop.stop();
             }
             
-            // 2. Creiamo una nuova istanza del MainMenuScene
+            // Creiamo una nuova istanza del MainMenuScene
             application.Scenes.MainMenuScene mainMenu = new application.Scenes.MainMenuScene();
             
-            // 3. Impostiamo il titolo e ricarichiamo la scena
+            // Impostiamo il titolo e ricarichiamo la scena
             stage.setTitle("Main Menu");
             stage.setScene(mainMenu.getScenaMenu(stage));
             
-            // 4. Manteniamo le impostazioni di fullscreen
+            // Manteniamo le impostazioni di fullscreen
             stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
         });
 
@@ -754,13 +757,13 @@ public class GameController {
             pfp.setFitWidth(120); 
             pfp.setFitHeight(120);
             
-            // 1. Diciamo all'ImageView di non applicare MAI la sfocatura
+            // Diciamo all'ImageView di non applicare MAI la sfocatura
             pfp.setSmooth(false); 
             
             try {
                 String imageURL = getClass().getResource(c.pfpPath).toExternalForm();
                 
-                // 2. Carichiamo l'immagine ingrandendola già a 120x120, mantenendo le proporzioni (true) 
+                // Carichiamo l'immagine ingrandendola già a 120x120, mantenendo le proporzioni (true) 
                 // e soprattutto DISATTIVANDO lo smooth nativo (false)
                 Image img = new Image(imageURL, 120, 120, true, false);
                 
@@ -769,7 +772,7 @@ public class GameController {
                 System.out.println("⚠️ Nessuna foto trovata al percorso: " + c.pfpPath);
             }
 
-            // Etichette P1 e P2 (Inizialmente invisibili)
+            // Etichette P1 e P2 (inizialmente invisibili)
             Label p1Cursor = new Label("P1");
             p1Cursor.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
             StackPane.setAlignment(p1Cursor, Pos.TOP_LEFT);
@@ -817,11 +820,11 @@ public class GameController {
         // Aggiungiamo i vari pezzi (titolo, griglia, istruzioni, skinInstructionLabel) al contenitore in colonna
         charContent.getChildren().addAll(title, charScrollPane, instructions, skinInstructionLabel);
 
-        // 2. Creiamo un livello trasparente (Pane vuoto) per appoggiare i personaggi liberi animati
+        // Creiamo un livello trasparente (Pane vuoto) per appoggiare i personaggi liberi animati
         previewLayer = new javafx.scene.layout.Pane();
         previewLayer.setMouseTransparent(true); // Fondamentale per evitare che i click vengano bloccati dall'invisibilità
 
-        // 3. Ricreiamo il VERO menu principale come "Panino" (StackPane)
+        // Ricreiamo il VERO menu principale come "Panino" (StackPane)
         charSelectionMenu = new StackPane();
         charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
         charSelectionMenu.setVisible(false);
@@ -894,11 +897,11 @@ public class GameController {
         Label title = new Label("CONTROLLER SCOLLEGATO!");
         title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        // Aggiorniamo le istruzioni!
+        // Aggiorniamo le istruzioni
         Label subTitle = new Label("Ricollega il controller e premi [X / A] per riprendere la partita.");
         subTitle.setStyle("-fx-font-size: 24px; -fx-text-fill: yellow;");
 
-        // Teniamo solo il bottone per tornare al menu (se proprio non trovano il cavo!)
+        // Mostra solo il bottone per tornare al menu
         Button backToMenuBtn = new Button("Torna al Menu Principale");
         backToMenuBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
         backToMenuBtn.setOnAction(e -> {
@@ -909,7 +912,7 @@ public class GameController {
             stage.setFullScreen(application.Utils.Settings.getInstance().isFullscreen());
         });
 
-        // Niente più resumeBtn qui!
+        // Niente più resumeBtn qui
         disconnectMenu.getChildren().addAll(title, subTitle, backToMenuBtn);
     }
     
@@ -1038,25 +1041,25 @@ public class GameController {
         CharacterFactory factoryP1 = availableCharacters.get(p1CharIndex).factory;
         CharacterFactory factoryP2 = availableCharacters.get(p2CharIndex).factory;
         
-        // 2. Chiediamo al Model di spawnarli (lui sa dove metterli)
+        // Chiediamo al Model di spawnarli
         model.spawnPlayers(factoryP1, factoryP2, p1SkinIndex, p2SkinIndex);
 
-        // 3. Inizializziamo la grafica per i nuovi oggetti Player creati
+        // Inizializziamo la grafica per i nuovi oggetti Player creati
         view.initPlayers(model.getPlayer1(), model.getPlayer2());
         
         // ========================================================
 
-        // Svegliamo la View e le diciamo quanto è grande lo schermo, così posiziona l'HUD!
+        // Diciamo alla view quanto è grande lo schermo, così posiziona l'HUD
         view.updateWindowSize(scene.getWidth(), scene.getHeight());
         
         // --- Mostriamo HUD e giocatori ---
         view.setGameElementsVisible(true);
 
-        // 1. Diciamo alla View di caricare e disegnare lo sfondo scelto
+        // Diciamo alla View di caricare e disegnare lo sfondo scelto
         MapData selectedMap = availableMaps.get(currentMapIndex);
         
-        // 2. FONDAMENTALE: Diciamo al Motore Fisico di aggiornare la larghezza
-        // del mondo (muri invisibili) in base all'immagine appena caricata!
+        // FONDAMENTALE: Diciamo al motore fisico di aggiornare la larghezza
+        // del mondo (muri invisibili) in base all'immagine appena caricata
         model.updateWindowSize(scene.getWidth(), scene.getHeight(), view.getBgWidth(), view.getScale());
         
         // --- Informiamo il motore fisico della presenza del pavimento ---
@@ -1091,7 +1094,7 @@ public class GameController {
         quitBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
         quitBtn.setOnAction(e -> System.exit(0));
         
-        // SVUOTIAMO E RIEMPIAMO LA LISTA (Per la logica del controller)
+        // SVUOTIAMO E RIEMPIAMO LA LISTA (per la logica del controller)
         pauseButtons.clear();
         pauseButtons.add(resumeBtn);
         pauseButtons.add(backToMenuBtn);
@@ -1108,7 +1111,7 @@ public class GameController {
         for (int i = 0; i < pauseButtons.size(); i++) {
             Button btn = pauseButtons.get(i);
             if (i == currentPauseIndex) {
-                // Bottone Selezionato: Lo ingrandiamo un po' e gli diamo un'ombra luminosa gialla!
+                // Bottone Selezionato: Lo ingrandiamo un po' e gli diamo un'ombra luminosa gialla
                 btn.setScaleX(1.1);
                 btn.setScaleY(1.1);
                 btn.setEffect(new DropShadow(20, Color.YELLOW));
@@ -1126,11 +1129,11 @@ public class GameController {
         isPaused = !isPaused;
         
         if (isPaused) {
-            // Quando apri la pausa, l'indice torna sempre al primo bottone ("Riprendi")
+            // Quando si apre la pausa, l'indice torna sempre al primo bottone ("Riprendi")
             currentPauseIndex = 0;
             updatePauseMenuSelection();
             
-            // Serve per evitare che se metti in pausa saltando, il menu clicchi subito il primo bottone!
+            // Serve per evitare che se si mette in pausa saltando, il menu clicchi subito il primo bottone
             wasConfirmPressed = inputManager.isJumpButtonPressed(1);
             
             pauseMenu.setVisible(true);
@@ -1149,12 +1152,12 @@ public class GameController {
         double screenW = scene.getWidth();
         double screenH = scene.getHeight();
         
-        // Capiamo se dobbiamo aggiornare qualcosa
+        // Verifichiamo se dobbiamo aggiornare qualcosa
         boolean p1Changed = (p1CharIndex != lastP1Index) || (p1SkinIndex != lastP1SkinIndex);
         boolean p2Changed = (p2CharIndex != lastP2Index) || (p2SkinIndex != lastP2SkinIndex);
         boolean scaleChanged = (currentScale != lastPreviewScale);
 
-        // --- AGGIORNAMENTO LOGICO (Creazione nuovi Player) ---
+        // --- AGGIORNAMENTO LOGICO (creazione nuovi Player) ---
         if (p1Changed || scaleChanged) {
             CharacterData data = availableCharacters.get(p1CharIndex);
             if (data.factory != null) {
@@ -1188,7 +1191,7 @@ public class GameController {
             p2PreviewRenderer.setMenuMode();
         }
 
-        // --- AGGIORNAMENTO GRAFICO (Svuotiamo e riempiamo il livello) ---
+        // --- AGGIORNAMENTO GRAFICO (svuotiamo e riempiamo il livello) ---
         if (p1Changed || p2Changed || scaleChanged) {
             previewLayer.getChildren().clear();
             if (p1PreviewRenderer != null) previewLayer.getChildren().add(p1PreviewRenderer.getNode());
@@ -1216,7 +1219,7 @@ public class GameController {
             }
         }
 
-        // --- RENDERING ANIMATO (Sempre attivo per far muovere i personaggi) ---
+        // --- RENDERING ANIMATO (sempre attivo per far muovere i personaggi) ---
         double margin = 150 * currentScale; 
         if (p1Preview != null) {
             p1Preview.setPosition(new javafx.geometry.Point2D(margin, screenH - p1Preview.getHeight() - margin));
@@ -1233,7 +1236,7 @@ public class GameController {
     private void returnToMainMenu() {
         gameLoop.stop(); // Fermiamo definitivamente questo loop di gioco
         
-        // Ricreiamo la scena del menu principale usando la tua classe!
+        // Ricreiamo la scena del menu principale
         application.Scenes.MainMenuScene menu = new application.Scenes.MainMenuScene();
         stage.setScene(menu.getScenaMenu(stage));
     }
