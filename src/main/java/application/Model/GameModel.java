@@ -56,7 +56,7 @@ public class GameModel implements IReadOnlyGameModel{
     	// Imposto la larghezza del mondo come quella dell'immagine
     	this.worldWidth = bgWidth;
     	// Imposto il pavimento della scena
-    	this.GROUND_LEVEL = currentWindowHeight - 100;      //! Anche questo non cambia un cazzo
+    	this.GROUND_LEVEL = currentWindowHeight - 100;      // Cambiare il valore non serve a niente, perché viene ricalcolato al momento del caricamento della mappa
     	
     	// Calcoliamo la y per spawnare i giocatori con i piedi per terra
     	double spawnY = this.GROUND_LEVEL - GameConfig.pHeight;
