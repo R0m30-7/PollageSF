@@ -43,6 +43,4 @@ public class Projectile {
     }
 
     public boolean isActive() {return active; } // Placeholder, implementa la logica per determinare se il proiettile è ancora attivo
-    
-
 }
