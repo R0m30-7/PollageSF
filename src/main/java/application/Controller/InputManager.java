@@ -28,10 +28,10 @@ public class InputManager {
 
     // --- AGGIORNAMENTO E ASSEGNAZIONE CONTROLLER ---
     public void update() {
-        // Fondamentale: Jamepad gestisce le periferiche USB in automatico qui!
+        // Jamepad gestisce le periferiche USB in automatico qui
         controllerManager.update(); 
         
-        // 1. Controllo disconnessioni fisiche
+        // Controllo disconnessioni fisiche
         if (p1Index != -1 && !controllerManager.getState(p1Index).isConnected) {
             System.out.println("❌ Giocatore 1 Disconnesso!");
             p1Index = -1;
@@ -41,12 +41,12 @@ public class InputManager {
             p2Index = -1;
         }
 
-        // 2. Assegnazione Automatica (Drop-in)
+        // Assegnazione Automatica (Drop-in)
         for (int i = 0; i < controllerManager.getNumControllers(); i++) {
             ControllerState state = controllerManager.getState(i);
             
             if (state.isConnected) {
-                // Se preme un tasto d'azione qualsiasi per confermare la presenza
+                // Si preme un tasto d'azione qualsiasi per confermare la presenza
                 if (state.a || state.b || state.x || state.y || state.start) {
                     
                     if (p1Index == -1 && i != p2Index) {
@@ -83,7 +83,6 @@ public class InputManager {
         ControllerState state = getState(playerNumber);
         if (state != null && Math.abs(state.leftStickY) > 0.15) {
             // Nota: Jamepad restituisce Y positivo verso l'alto.
-            // Se nel menu le mappe scorrono al contrario, basta togliere il meno (-) qui!
             return state.leftStickY; 
         }
         return 0.0;
@@ -92,7 +91,7 @@ public class InputManager {
     // --- IL METODO DEL SALTO ---
     public boolean isJumpButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
-        // Tasto A universale (Croce su PlayStation, A su Xbox/Nintendo)
+        // Tasto A universale (croce su PlayStation, A su Xbox/Nintendo)
         return state != null && state.a; 
     }
     
@@ -106,14 +105,14 @@ public class InputManager {
     // --- METODO PER CROUCH ---
     public boolean isCrouchButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
-        // Tasto B universale (Cerchio su PS, B su Xbox/Nintendo)
+        // Tasto B universale (cerchio su PS, B su Xbox/Nintendo)
         return state != null && state.b; 
     }
     
     // --- METODI PER AZIONI DI COMBATTIMENTO ---
     public boolean isPunchButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
-        // Tasto X (Quadrato su PS)
+        // Tasto X (quadrato su PS)
         return state != null && state.x; 
     }
     public boolean isHookButtonPressed(int playerNumber) {
@@ -124,7 +123,7 @@ public class InputManager {
 
     public boolean isKickButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
-        // Tasto Y (Triangolo su PS)
+        // Tasto Y (triangolo su PS)
         return state != null && state.y; 
     }
 
@@ -137,7 +136,7 @@ public class InputManager {
 
     public boolean isDefendButtonPressed(int playerNumber) {
         ControllerState state = getState(playerNumber);
-        // Tasto B universale (Cerchio su PS)
+        // Tasto B universale (cerchio su PS)
         return state != null && state.b; 
     }
 
@@ -162,7 +161,7 @@ public class InputManager {
         return false;
     }
 
-    // Questo metodo ora spegne e riaccende brutalmente (ma in sicurezza) la libreria SDL
+    // Questo metodo ora spegne e riaccende brutalmente la libreria SDL
     public void rescanControllers() {
         System.out.println("🔄 Riavvio forzato del driver USB (Jamepad)...");
         controllerManager.quitSDLGamepad();
@@ -172,9 +171,7 @@ public class InputManager {
         p2Index = -1; 
     }
     
-    // Buona pratica: chiamarlo quando si chiude il gioco intero (System.exit)
     public void chiudiTutto() {
         controllerManager.quitSDLGamepad();
     }
-
 }
