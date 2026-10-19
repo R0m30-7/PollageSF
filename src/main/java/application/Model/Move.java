@@ -4,7 +4,7 @@ public abstract class Move {
 
     protected Player user;
     protected long startTimeNs;
-    protected boolean hasHit = false; // La "sicura" per non colpire due volte
+    protected boolean hasHit = false; // Serve per non colpire più di una volta
 
     public Move(Player user) {
         this.user = user;

@@ -440,7 +440,6 @@ public class GameModel implements IReadOnlyGameModel{
 
     }
 
-
     // Metodo di supporto per i muri invisibili dell'arena
     private void keepPlayerInBounds(Player p) {
         double currentX = p.getPosition().getX();
@@ -486,13 +485,13 @@ public class GameModel implements IReadOnlyGameModel{
         this.currentWindowHeight = newHeight;
         
         // --- SCALING ---
-        // Ipotizziamo che tu abbia bilanciato il gioco su uno schermo 1080p.
+        // Bilanciamento del gioco fatto su uno schermo 1080p.
         player1.updateDynamicScale(scale);
         player2.updateDynamicScale(scale);
         // ------------------------------
         
         // Ricalcolo del pavimento in tempo reale
-        this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;   //! Non fa niente???
+        this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;   // currentGroundRatio viene impostato a ogni cambio mappa
         
         // Il mondo di gioco si allarga e restringe in base allo zoom dello sfondo
         this.worldWidth = newWorldWidth;
@@ -511,7 +510,8 @@ public class GameModel implements IReadOnlyGameModel{
         */
     }
     
-    public void setGroundLevelRatio(double ratio) {     //! Bisogna capire a che serve
+    // Imposta il Ratio, necessario per trovare il punto corretto quando si cambia dimensione (rispetto a 1080)
+    public void setGroundLevelRatio(double ratio) {
     	this.currentGroundRatio = ratio;
         // Calcola subito il pavimento in pixel moltiplicando l'altezza per la percentuale
         this.currentGroundLevel = this.currentWindowHeight * this.currentGroundRatio;

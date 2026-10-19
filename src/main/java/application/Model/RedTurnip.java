@@ -25,7 +25,7 @@ public class RedTurnip extends Player {
 		
 		this.atlasPath = "/Sprites/redTurnipAtlas.png";
         this.atlas = new TextureAtlas("/Sprites/redTurnipAtlasManifest.json");
-        this.renderScale = 7;  // Ingrandisce la pixel art esattamente x6 volte
+        this.renderScale = 7;  // Ingrandisce la pixel art esattamente x volte
         this.menuRenderScaleMultiplier = 2;
         
         // Dati Fisici (La hitbox si adatta alla grafica ingrandita)

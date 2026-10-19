@@ -14,7 +14,7 @@ public enum AnimState {
     BLOCK_LEFT,                   // La parata specifica
     BLOCK_RIGHT,
     
-    PUNCH_LEFT,                   // (Manterremo questi come placeholder futuri)
+    PUNCH_LEFT,                   // (Manteniamo questi come placeholder futuri)
     PUNCH_RIGHT,
     PUNCH_CROUCH_LEFT,
     PUNCH_CROUCH_RIGHT,

@@ -58,13 +58,13 @@ public class Player implements IReadOnlyPlayer{
     protected double jumpStrength;	// Deve essere negativo perché la y aumenta dal basso verso l'alto
     
     // Variabili per il crouch
-    protected double normalHeight; // Ti memorizzi l'altezza standard
+    protected double normalHeight; // Memorizza l'altezza standard
     
     // --- Meccanica di parata e stordimento ---
     protected long blockStartTime = 0;
     protected boolean wasDefending = false;
     protected long stunEndTime = 0;
-    protected long parryStunDuration; 	// Quanto tempo rimane stordito il nemico se esegui un parry
+    protected long parryStunDuration; 	// Quanto tempo rimane stordito il nemico se si esegue un parry
     
     // L'hurtbox del player
     private Hitbox boundingBox;
@@ -91,8 +91,6 @@ public class Player implements IReadOnlyPlayer{
     private long turnAnimStartTime = 0;
     private boolean isTurning = false;
 
-
-
     // Costruttore per impostare la posizione iniziale
     public Player(Point2D position) {
         
@@ -107,7 +105,7 @@ public class Player implements IReadOnlyPlayer{
     // --- NUOVO AGGIORNAMENTO TEMPO AZIONI ---
     public void updateTicks() {
         // Chiediamo semplicemente alla mossa se ha finito i suoi frame.
-        // Se ha finito, la distruggiamo e il giocatore torna libero!
+        // Se ha finito, la rimuoviamo e il giocatore torna libero
         if (activeMove != null && activeMove.isFinished()) {
             activeMove = null;
         }
@@ -137,7 +135,7 @@ public class Player implements IReadOnlyPlayer{
             if(!isTurning){
                 if (crouching) {
                     // Si abbassa: abbassiamo la Y del pavimento aggiungendo la differenza, 
-                    // così la testa scende e i piedi restano piantati a terra!
+                    // così la testa scende e i piedi restano attaccati a terra
                     position = new Point2D(position.getX(), position.getY() + heightDifference);
                 } else {
                     // Si alza: restituiamo lo spazio sottratto alla Y
@@ -206,7 +204,7 @@ public class Player implements IReadOnlyPlayer{
         boundingBox.updatePosition(position);
     }
 
-    // 3. IL SALTO (La vera spinta verso l'alto)
+    // IL SALTO (La vera spinta verso l'alto)
     public void jump() {
     	// --- Blocco azione: movimento bloccato se si attacca o difende ---
         if (activeMove != null || isDefending || isHurt) return;
@@ -230,7 +228,6 @@ public class Player implements IReadOnlyPlayer{
         return isHurt;
     }
 
-    
     public void applyPhysics(double groundLevelY, boolean isJumpHeld) {
         // Se il giocatore sta andando verso l'alto (velocityY negativo) 
         // MA ha rilasciato il tasto del salto...
@@ -286,13 +283,12 @@ public class Player implements IReadOnlyPlayer{
                     currentAnimState = hurtState;
                     return; // Rimane bloccato nello stato Hurt finché l'animazione non finisce
                 } else {
-                    isHurt = false; // Tempo scaduto, lo stato si spegne da solo!
+                    isHurt = false; // Tempo scaduto, lo stato si spegne da solo
                 }
             } else {
                 isHurt = false; // Sicurezza se manca l'animazione nella map
             }
         }
-
 
         // --- PRIORITÀ MASSIMA: ANIMAZIONE TURN (UNA TANTUM) ---
         if (isTurning) {
@@ -308,8 +304,6 @@ public class Player implements IReadOnlyPlayer{
 
         // --- LOGICA AZIONI ---
         if (activeMove != null) {
-            // Non ci importa se è un pugno, calcio o Hadouken. 
-            // La mossa sa già quale stato AnimState restituire!
             currentAnimState = activeMove.getAnimState();
         }
         else if (isDefending) {
@@ -325,11 +319,11 @@ public class Player implements IReadOnlyPlayer{
         else if (!isGrounded) {
             currentAnimState = isFacingRight ? AnimState.JUMP_RIGHT : AnimState.JUMP_LEFT;
         } 
-        // --- 3. LOGICA MOVIMENTO Orizzontale ---
+        // --- LOGICA MOVIMENTO Orizzontale ---
         else if (isMoving) {
             currentAnimState = isFacingRight ? AnimState.WALK_RIGHT : AnimState.WALK_LEFT;
         } 
-        // --- 4. LOGICA IDLE (Fermo) ---
+        // --- LOGICA IDLE (Fermo) ---
         else {
         	if (inMenuMode) {
                 // Se siamo nel menu, si usa l'animazione IDLE del menu
@@ -351,7 +345,7 @@ public class Player implements IReadOnlyPlayer{
     // SISTEMA DI SCALING DINAMICO UNIVERSALE
     // ==========================================
     
-    // 1. Salva i valori "originali" scritti nella classe (es. RedTurnip)
+    // Salva i valori "originali" scritti nella classe (es. RedTurnip)
     public void saveBaseStats() {
         this.baseSpeed = this.speed;
         this.baseGravity = this.gravity;
@@ -371,7 +365,7 @@ public class Player implements IReadOnlyPlayer{
 
     }
     
-    // 2. Moltiplica tutti i valori per la grandezza dello schermo!
+    // Moltiplica tutti i valori per la grandezza dello schermo
     public void updateDynamicScale(double windowScale) {
         this.speed = this.baseSpeed * windowScale;
         this.gravity = this.baseGravity * windowScale;
@@ -412,7 +406,7 @@ public class Player implements IReadOnlyPlayer{
             this.turnAnimStartTime = System.nanoTime();
         }
         
-        // 3. Aggiorniamo la variabile effettiva
+        // Aggiorniamo la variabile effettiva
         this.isFacingRight = facingRight; 
     }
     public double getPunchDamage() { return punchDamage; }

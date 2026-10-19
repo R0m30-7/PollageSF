@@ -25,7 +25,7 @@ public class Ryu extends Player {
         this.punchDamage = 10.0;
         
         this.kickDamage = 12.0; // Danno del calcio
-        this.kickWidth = 30.0; // Larghezza della hitbox del
+        this.kickWidth = 30.0; // Larghezza della hitbox del calcio
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
         this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png";
@@ -39,7 +39,7 @@ public class Ryu extends Player {
         Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
 
         // La Hitbox si adatta matematicamente alla grafica usando la stessa scala
-        //quel .70 stringe un po la hitbox
+        // Quel .70 stringe un po la hitbox
         this.width = defaultFrame.getWidth()*.70 * this.renderScale;
         this.height = defaultFrame.getHeight() * this.renderScale;
 
@@ -57,7 +57,7 @@ public class Ryu extends Player {
 
         animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
         animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
-        //non ce animazione turn
+        // Non c'è animazione turn
         animations.put(AnimState.TURN, new AnimData(7, 2, 1, 5, false));
 
         animations.put(AnimState.BLOCK_RIGHT, new AnimData(0, 5, 1, 50, false));

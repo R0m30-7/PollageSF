@@ -24,12 +24,12 @@ public class Ken extends Player {
         // --- STATISTICHE UNICHE (Esempio: Ken è più veloce di Ryu) ---
         this.jumpStrength = -10.0;
         this.gravity = 0.2;
-        this.speed = 2.5; // Ryu aveva 3.5, facciamo Ken un po' più agile!
+        this.speed = 2.5;
         
-        this.punchDamage = 9.0; // ...ma fa 1 danno in meno
+        this.punchDamage = 9.0;
 
         this.kickDamage = 12.0; // Danno del calcio
-        this.kickWidth = 30.0; // Larghezza della hitbox del
+        this.kickWidth = 30.0; // Larghezza della hitbox del calcio
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
         
         // --- COLLEGAMENTO ASSET GRAFICI ---
@@ -50,9 +50,9 @@ public class Ken extends Player {
         // ==========================================
         // MAPPATURA ANIMAZIONI DI KEN
         // ==========================================
-        // ATTENZIONE: Qui devi cambiare i numeri (riga, colonna, frameTotali)
+        // ATTENZIONE: Qui occorre cambiare i numeri (riga, colonna, frameTotali)
         // leggendo il file kenAtlasManifest.json. Se Ken ha le mosse su righe
-        // diverse rispetto a Ryu, modificale qui!
+        // diverse rispetto a Ryu, vanno modificate qui
         // Mappa delle animazioni basata sulle sezioni del JSON (row e col)
         animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 4, 100, true)); 
         animations.put(AnimState.IDLE_LEFT, new AnimData(0, 0, 4, 100, true));
@@ -60,7 +60,7 @@ public class Ken extends Player {
 
         animations.put(AnimState.WALK_RIGHT, new AnimData(0, 1, 5, 75, true));
         animations.put(AnimState.WALK_LEFT, new AnimData(0, 1, 5, 75, true));
-        //non ce animazione turn
+        // Non c'è più lìanimazione turn
         animations.put(AnimState.TURN, new AnimData(7, 2, 1, 5, false));
 
         animations.put(AnimState.BLOCK_RIGHT, new AnimData(0, 5, 1, 50, false));
@@ -90,7 +90,6 @@ public class Ken extends Player {
         animations.put(AnimState.HADOUKEN_RIGHT, new AnimData(4, 5, 4, 80, false));
         animations.put(AnimState.HADOUKEN_LEFT, new AnimData(4, 5, 4, 80, false));
         
-        // ... (Copia qui il resto delle animazioni e aggiusta i numeri) ...
         // --- INIZIO CODICE COLORI DELLE SKIN ---
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_brown_chromakey.png");      // 0: Marrone
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_green_chromakey.png");      // 1: Verde
