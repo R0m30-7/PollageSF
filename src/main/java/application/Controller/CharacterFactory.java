@@ -1,6 +1,6 @@
 package application.Controller;
 
-//Questa interfaccia dice: "Dammi un punto di spawn e io ti creo il Player"
+// Interfaccia per creare il player dato un punto di spawn
 @FunctionalInterface
 public interface CharacterFactory {
 	application.Model.Player create(javafx.geometry.Point2D spawn);

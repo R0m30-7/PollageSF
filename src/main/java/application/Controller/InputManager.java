@@ -15,7 +15,7 @@ public class InputManager {
     private InputManager() {
         controllerManager = new ControllerManager();
         controllerManager.initSDLGamepad();
-        System.out.println("🎮 Motore Jamepad (SDL2) inizializzato. Muovi una levetta o premi un tasto per unirti!");
+        System.out.println("Jamepad (SDL2) inizializzato. Muovere una levetta o premere un tasto per unirsi.");
     }
 
     // Metodo per ottenere l'istanza globale
@@ -33,11 +33,11 @@ public class InputManager {
         
         // Controllo disconnessioni fisiche
         if (p1Index != -1 && !controllerManager.getState(p1Index).isConnected) {
-            System.out.println("❌ Giocatore 1 Disconnesso!");
+            System.out.println("Giocatore 1 DISCONNESSO");
             p1Index = -1;
         }
         if (p2Index != -1 && !controllerManager.getState(p2Index).isConnected) {
-            System.out.println("❌ Giocatore 2 Disconnesso!");
+            System.out.println("Giocatore 2 DISCONNESSO");
             p2Index = -1;
         }
 
@@ -51,10 +51,10 @@ public class InputManager {
                     
                     if (p1Index == -1 && i != p2Index) {
                         p1Index = i;
-                        System.out.println("✅ Giocatore 1 unito! (Pad index: " + i + ")");
+                        System.out.println("Giocatore 1 UNITO! (Pad index: " + i + ")");
                     } else if (p2Index == -1 && i != p1Index) {
                         p2Index = i;
-                        System.out.println("✅ Giocatore 2 unito! (Pad index: " + i + ")");
+                        System.out.println("Giocatore 2 UNITO! (Pad index: " + i + ")");
                     }
                 }
             }
