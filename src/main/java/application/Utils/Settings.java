@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.util.Properties;
 
 public class Settings {
-    // 1. L'unica istanza condivisa di Settings (Singleton)
+    // L'unica istanza condivisa di Settings (Singleton)
     private static Settings instance;
     private static final String FILE_PATH = "config.properties";
 
@@ -20,7 +20,7 @@ public class Settings {
     private int targetFps = 60;
     private boolean showFps = false;
 
-    // 2. Costruttore privato! Si può chiamare solo da dentro questa classe
+    // Costruttore privato! Si può chiamare solo da dentro questa classe
     private Settings() {
         // Valori di default
         this.isFullscreen = false;
@@ -37,7 +37,7 @@ public class Settings {
         load();
     }
 
-    // 3. Metodo per ottenere le impostazioni da qualsiasi parte del gioco
+    // Metodo per ottenere le impostazioni da qualsiasi parte del gioco
     public static Settings getInstance() {
         if (instance == null) {
             instance = new Settings();
