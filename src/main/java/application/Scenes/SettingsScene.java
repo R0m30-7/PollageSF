@@ -84,7 +84,7 @@ public class SettingsScene {
 
         // Rete di sicurezza: disabilitare la cella blocca il click del mouse, ma non
         // sempre la selezione da tastiera. Se per caso finisse selezionata una
-        // risoluzione troppo grande, torniamo automaticamente all'ultima valida.
+        // risoluzione troppo grande, si torna automaticamente all'ultima valida.
         resolutionBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !fitsScreen.test(newVal)) {
                 resolutionBox.setValue(oldVal != null && fitsScreen.test(oldVal) ? oldVal : currentRes);
@@ -126,7 +126,7 @@ public class SettingsScene {
             double chosenWidth = Double.parseDouble(resParts[0]);
             double chosenHeight = Double.parseDouble(resParts[1]);
 
-            // Rete di sicurezza finale: anche se per qualche motivo arrivasse qui un
+            // Misura di sicurezza finale: anche se per qualche motivo arrivasse qui un
             // valore troppo grande, non lo applichiamo mai oltre lo spazio disponibile.
             javafx.geometry.Rectangle2D bounds = javafx.stage.Screen.getPrimary().getVisualBounds();
             chosenWidth = Math.min(chosenWidth, bounds.getWidth());
