@@ -42,8 +42,7 @@ public class HUDView {
     private double currentBarWidth = BASE_BAR_WIDTH;
 	
 	public HUDView(double p1MaxHealth, double p2MaxHealth) {
-        // ... (IL TUO COSTRUTTORE RIMANE IDENTICO A QUELLO CHE HAI GIÀ) ...
-        // ... (lascia intatto tutto il blocco hudRoot.getChildren().addAll(...) e hudRoot = new Pane(); ecc.)
+        // ... (IL COSTRUTTORE RIMANE IDENTICO A QUELLO CHE C'È GIÀ) ...
 		this.p1MaxHealth = p1MaxHealth;
 		this.p2MaxHealth = p2MaxHealth;
 		
@@ -121,23 +120,23 @@ public class HUDView {
 	}
 	
 	// --- AGGIORNA LA DISPOSIZIONE E LO ZOOM ---
-	// NOTA: Abbiamo aggiunto "scaleFactor" ai parametri!
+	// NOTA: Abbiamo aggiunto "scaleFactor" ai parametri
     public void updateLayout(double screenWidth, double scaleFactor) {
         
-        // 1. Ricalcoliamo tutte le dimensioni moltiplicandole per lo zoom!
+        // Ricalcoliamo tutte le dimensioni moltiplicandole per lo zoom
         currentBarWidth = BASE_BAR_WIDTH * scaleFactor;
         double currentHealthHeight = BASE_HEALTH_HEIGHT * scaleFactor;
         double currentPowerHeight = BASE_POWER_HEIGHT * scaleFactor;
         double currentTopMargin = BASE_TOP_MARGIN * scaleFactor;
         double currentSideMargin = BASE_SIDE_MARGIN * scaleFactor;
 
-        // 2. Aggiorniamo la dimensione dei Testi (Font perfetti a qualsiasi scala!)
+        // Aggiorniamo la dimensione dei Testi (Font perfetti a qualsiasi scala)
         Font nameFont = Font.font("Arial", FontWeight.BOLD, 24 * scaleFactor);
         p1Label.setFont(nameFont);
         p2Label.setFont(nameFont);
         timerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 50 * scaleFactor));
 
-        // 3. Aggiorniamo Altezze
+        // Aggiorniamo Altezze
         p1HealthBg.setHeight(currentHealthHeight);
         p1HealthFill.setHeight(currentHealthHeight);
         p2HealthBg.setHeight(currentHealthHeight);
@@ -148,13 +147,13 @@ public class HUDView {
         p2PowerBg.setHeight(currentPowerHeight);
         p2PowerFill.setHeight(currentPowerHeight);
 
-        // 4. Aggiorniamo Larghezze Sfondi
+        // Aggiorniamo Larghezze Sfondi
         p1HealthBg.setWidth(currentBarWidth);
         p1PowerBg.setWidth(currentBarWidth * 0.7);
         p2HealthBg.setWidth(currentBarWidth);
         p2PowerBg.setWidth(currentBarWidth * 0.7);
 
-        // 5. Aggiorniamo le Y
+        // Aggiorniamo le Y
         double healthY = currentTopMargin + (10 * scaleFactor);
         double powerY = healthY + currentHealthHeight + (5 * scaleFactor);
 
@@ -172,7 +171,7 @@ public class HUDView {
         p2PowerBg.setY(powerY);
         p2PowerFill.setY(powerY);
 
-        // 6. Aggiorniamo le X
+        // Aggiorniamo le X
         p1Label.setX(currentSideMargin);
         p1HealthBg.setX(currentSideMargin);
         p1HealthFill.setX(currentSideMargin);
@@ -199,13 +198,13 @@ public class HUDView {
     public void update(IReadOnlyPlayer p1, IReadOnlyPlayer p2) {
         // --- Aggiorna P1 ---
         double p1HpRatio = Math.max(0, (double) p1.getHealth() / p1MaxHealth);
-        p1HealthFill.setWidth(currentBarWidth * p1HpRatio); // Usiamo currentBarWidth!
+        p1HealthFill.setWidth(currentBarWidth * p1HpRatio); // Usiamo currentBarWidth
         
         p1PowerFill.setWidth(0); 
 
         // --- Aggiorna P2 ---
         double p2HpRatio = Math.max(0, (double) p2.getHealth() / p2MaxHealth);
-        double newWidthP2 = currentBarWidth * p2HpRatio; // Usiamo currentBarWidth!
+        double newWidthP2 = currentBarWidth * p2HpRatio; // Usiamo currentBarWidth
         
         p2HealthFill.setWidth(newWidthP2);
         p2HealthFill.setX(p2HealthBg.getX() + (currentBarWidth - newWidthP2));

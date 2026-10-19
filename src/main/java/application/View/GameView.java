@@ -88,8 +88,7 @@ public class GameView {
     	// Spostiamo l'intero SFONDO all'indietro rispetto alla telecamera
     	this.backgroundContainer.setLayoutX(-camX);
     	
-    	// --- LA MAGIA CHE MANCAVA ---
-    	// Chiamiamo finalmente i renderer per fargli ricalcolare vita, pugni e difese!
+    	// Chiamiamo finalmente i renderer per fargli ricalcolare vita, pugni e difese
     	rendererP1.render(model.getPlayer1());
     	rendererP2.render(model.getPlayer2());
     	
@@ -121,7 +120,7 @@ public class GameView {
         // I personaggi e l'HUD devono scalare sempre in modo coerente rispetto al 1080p, e non in base alla dimensione dello sfondo
         this.gameScale = newHeight / 768.0;
 
-        // Calcoliamo le nuove dimensioni "Zoommate" dell'arena
+        // Calcoliamo le nuove dimensioni zoommate dell'arena
         this.bgWidth = this.originalBgWidth * currentScale;
         this.bgHeight = this.originalBgHeight * currentScale;
 
@@ -172,7 +171,7 @@ public class GameView {
             this.originalBgWidth = bgImage.getWidth();
             this.originalBgHeight = bgImage.getHeight();
             
-            // Ricalcoliamo lo zoom e la maschera con le nuove dimensioni!
+            // Ricalcoliamo lo zoom e la maschera con le nuove dimensioni
             updateWindowSize(windowWidth, windowHeight);
         } catch (Exception e) {
             System.out.println("Errore nel cambio sfondo: " + e.getMessage());
@@ -202,7 +201,7 @@ public class GameView {
     
     public void showVictoryScreen(int winner) {
         this.victoryLayer.setVisible(true);
-        this.victoryLayer.toFront(); // Si porta in primo piano sopra l'HUD e i giocatori!
+        this.victoryLayer.toFront(); // Si porta in primo piano sopra l'HUD e i giocatori
         
         String imagePath = winner == 1 ? "/SFX/p1Victory.png" : "/SFX/p2Victory.png";
         try {
