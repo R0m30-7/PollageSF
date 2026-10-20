@@ -140,12 +140,7 @@ public class GameController {
         availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.Model.Turnip::new));
         availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
 
-        //! Capire in che risoluzione sono stati trovati i groundLevelRatio
-
         // Caricamento delle mappe in memoria
-        availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));
-        availableMaps.add(new MapData("9/11", "/Arenas/twinTowers.jpeg", 0.88));
-        availableMaps.add(new MapData("Smordor", "/Arenas/smordor.jpeg", 0.77));
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
         availableMaps.add(new MapData("UniPG", "/Arenas/uni.jpeg", 0.9));
         availableMaps.add(new MapData("Koloxtol", "/Arenas/villaggioRurale.jpeg", 0.9));
@@ -183,12 +178,12 @@ public class GameController {
         mainRoot.getChildren().add(disconnectMenu);
     	
     	// Creazione dell'etichetta degli FPS in alto a destra
-        fpsLabel = new Label("FPS: 60");
+        fpsLabel = new Label("FPS:");
         fpsLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: limegreen; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 2, 1.0, 0, 0);");
         StackPane.setAlignment(fpsLabel, Pos.TOP_RIGHT);
         StackPane.setMargin(fpsLabel, new javafx.geometry.Insets(10, 20, 10, 10)); 
         
-        // Lo mostriamo solo se il giocatore ha messo la spunta!
+        // Lo mostriamo solo se il giocatore ha messo la spunta
         fpsLabel.setVisible(application.Utils.Settings.getInstance().isShowFps());
         mainRoot.getChildren().add(fpsLabel);
     	
@@ -278,7 +273,7 @@ public class GameController {
                 // Se siamo in emergenza, fermiamo tutto
                 if (isDisconnected) {
                     // Dobbiamo continuare ad aggiornare Jamepad qui, così quando 
-                    // l'utente preme un tasto sul pad appena ricollegato, viene registrato!
+                    // l'utente preme un tasto sul pad appena ricollegato, viene registrato
                     inputManager.update();
                     
                     int numP = application.Utils.Settings.getInstance().getNumberOfPlayers();
@@ -322,13 +317,13 @@ public class GameController {
                     numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
                     
                     if (inputManager.isPlayer1Connected()) {
-                        p1Label.setText("Giocatore 1: CONNESSO! 🎮");
+                        p1Label.setText("Giocatore 1: CONNESSO");
                         p1Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
                     }
                     
                     // Aggiorniamo l'etichetta 2 solo se stiamo effettivamente aspettando un secondo giocatore
                     if (numPlayers == 2 && inputManager.isPlayer2Connected()) {
-                        p2Label.setText("Giocatore 2: CONNESSO! 🎮");
+                        p2Label.setText("Giocatore 2: CONNESSO");
                         p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
                     }
 
@@ -383,12 +378,12 @@ public class GameController {
 
                         if (p1Preview != null && !p1Preview.getAvailableSkins().isEmpty()) {
                             if (isL1P1 && !wasL1P1Pressed) {
-                                System.out.println("P1: L1 premuto! Cambia colore a sinistra");
+                                System.out.println("P1: L1 premuto.");
                                 p1SkinIndex--;
                                 if (p1SkinIndex < 0) p1SkinIndex = p1Preview.getAvailableSkins().size() - 1;
                             }
                             if (isR1P1 && !wasR1P1Pressed) {
-                                System.out.println("P1: R1 premuto! Cambia colore a destra");
+                                System.out.println("P1: R1 premuto.");
                                 p1SkinIndex++;
                                 if (p1SkinIndex >= p1Preview.getAvailableSkins().size()) p1SkinIndex = 0;
                             }
@@ -577,12 +572,12 @@ public class GameController {
 
                         // Il delay (200ms) serve per permettere all'utente di scorrere un bottone alla volta
                         if (currentTimeMs - lastMenuInputTime > 200) {
-                            if (yInput < -0.5) { // Levetta verso l'ALTO
+                            if (yInput < -0.5) { // Analogico verso l'ALTO
                                 currentPauseIndex--;
                                 if (currentPauseIndex < 0) currentPauseIndex = pauseButtons.size() - 1; // Ritorna all'ultimo
                                 updatePauseMenuSelection();
                                 lastMenuInputTime = currentTimeMs;
-                            } else if (yInput > 0.5) { // Levetta verso il BASSO
+                            } else if (yInput > 0.5) { // Analogico verso il BASSO
                                 currentPauseIndex++;
                                 if (currentPauseIndex >= pauseButtons.size()) currentPauseIndex = 0; // Ritorna al primo
                                 updatePauseMenuSelection();
@@ -661,13 +656,13 @@ public class GameController {
         connectionMenu.setAlignment(Pos.CENTER);
         connectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
 
-        Label title = new Label("CONNETTI I CONTROLLER");
+        Label title = new Label("Connettere i controller");
         title.setStyle("-fx-font-size: 40px; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        p1Label = new Label("Giocatore 1: IN ATTESA (Premi un tasto)");
+        p1Label = new Label("Giocatore 1: IN ATTESA");
         p1Label.setStyle("-fx-font-size: 24px; -fx-text-fill: yellow;");
 
-        p2Label = new Label("Giocatore 2: IN ATTESA (Premi un tasto)");
+        p2Label = new Label("Giocatore 2: IN ATTESA");
         p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: yellow;");
 
         // --- LEGGIAMO LE IMPOSTAZIONI ---
@@ -713,7 +708,7 @@ public class GameController {
         view.changeBackground("/MenuBackgrounds/characterSelectionMenu.png", scene.getWidth(), scene.getHeight());
         
         // Diciamo al gioco di memorizzare che stiamo già premendo il tasto, 
-        // così aspetterà che lo rilasciamo prima di cliccare la mappa!
+        // così aspetterà che lo rilasciamo prima di cliccare la mappa
         wasConfirmP1Pressed = inputManager.isJumpButtonPressed(1);
         wasConfirmP2Pressed = inputManager.isJumpButtonPressed(2);
         
@@ -829,7 +824,7 @@ public class GameController {
         charSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); 
         charSelectionMenu.setVisible(false);
         
-        // Mettiamo il contenuto al centro e il livello dei lottatori SOPRA a tutto!
+        // Mettiamo il contenuto al centro e il livello dei lottatori SOPRA a tutto
         charSelectionMenu.getChildren().addAll(charContent, previewLayer);
     }
 
@@ -894,11 +889,11 @@ public class GameController {
         disconnectMenu.setStyle("-fx-background-color: rgba(150, 0, 0, 0.85);"); // Sfondo rosso scuro emergenza
         disconnectMenu.setVisible(false);
 
-        Label title = new Label("CONTROLLER SCOLLEGATO!");
+        Label title = new Label("Controller scollegato");
         title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
 
         // Aggiorniamo le istruzioni
-        Label subTitle = new Label("Ricollega il controller e premi [X / A] per riprendere la partita.");
+        Label subTitle = new Label("Ricollegare il controller premendo [X / A] per riprendere la partita.");
         subTitle.setStyle("-fx-font-size: 24px; -fx-text-fill: yellow;");
 
         // Mostra solo il bottone per tornare al menu
@@ -923,7 +918,7 @@ public class GameController {
         mapSelectionMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); 
         mapSelectionMenu.setVisible(false);
 
-        Label title = new Label("SELEZIONA L'ARENA");
+        Label title = new Label("SELEZIONARE L'ARENA");
         title.setStyle("-fx-font-size: 50px; -fx-text-fill: white; -fx-font-weight: bold;");
 
         // --- LA GRIGLIA ---
@@ -1094,7 +1089,7 @@ public class GameController {
         quitBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
         quitBtn.setOnAction(e -> System.exit(0));
         
-        // SVUOTIAMO E RIEMPIAMO LA LISTA (per la logica del controller)
+        // Svuotiamo e riempiamo la lista (per la logica del controller)
         pauseButtons.clear();
         pauseButtons.add(resumeBtn);
         pauseButtons.add(backToMenuBtn);
