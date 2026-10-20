@@ -45,6 +45,15 @@ public class GameController {
     // --- Menu disconnessione ---
     private boolean isDisconnected = false;
     private VBox disconnectMenu;
+
+    // Variabili del timer delle animazioni
+    private long lastTime;        
+    private double physicsAccumulator = 0.0;
+    private double renderAccumulator = 0.0;
+           
+    // Variabili per il contatore FPS a schermo
+    private long lastFpsTime = 0;
+    private int framesRendered = 0;
     
     // Scelta dei personaggi
     private boolean waitingForCharacterSelection = false;
@@ -245,15 +254,15 @@ public class GameController {
     }
 
     private void startGameLoop() {
+        lastTime = System.nanoTime();
+        physicsAccumulator = 0.0;
+        renderAccumulator = 0.0;
+        
+        // Variabili per il contatore FPS a schermo
+        lastFpsTime = 0;
+        framesRendered = 0;
+
         gameLoop = new AnimationTimer() {
-            private long lastTime = System.nanoTime();
-            
-            private double physicsAccumulator = 0.0;
-            private double renderAccumulator = 0.0;
-            
-            // Variabili per il contatore FPS a schermo
-            private long lastFpsTime = 0;
-            private int framesRendered = 0;
             
             @Override
             public void handle(long now) {
