@@ -2,6 +2,7 @@ package application.View;
 
 import application.Model.IReadOnlyGameModel;
 import application.Model.IReadOnlyPlayer;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -118,7 +119,7 @@ public class GameView {
         this.currentScale = Math.max(scaleX, scaleY);
 
         // I personaggi e l'HUD devono scalare sempre in modo coerente rispetto al 1080p, e non in base alla dimensione dello sfondo
-        this.gameScale = newHeight / 768.0;
+        this.gameScale = newHeight / 720.0;
 
         // Calcoliamo le nuove dimensioni zoommate dell'arena
         this.bgWidth = this.originalBgWidth * currentScale;
