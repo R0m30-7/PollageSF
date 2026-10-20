@@ -1,9 +1,9 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class RedTurnip extends Player {
-	public RedTurnip(Point2D spawn) {
+	public RedTurnip(Point spawn) {
 		super(spawn);
 		
 		// Dati HARDCODED

@@ -6,13 +6,13 @@
  */
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class Hitbox {
     private double x, y;
     private double width, height;	// Dimensioni per le hitbox dinamiche
 
-    public Hitbox(Point2D position, double width, double height) {
+    public Hitbox(Point position, double width, double height) {
         this.x = position.getX();
         this.y = position.getY();
         this.width = width;
@@ -25,7 +25,7 @@ public class Hitbox {
     }
 
     // Aggiorna la posizione della hitbox per farla "seguire" il giocatore
-    public void updatePosition(Point2D position) {
+    public void updatePosition(Point position) {
         this.x = position.getX();
         this.y = position.getY();
     }

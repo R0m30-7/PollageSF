@@ -1,9 +1,9 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class Turnip extends Player {
-	public Turnip(Point2D spawn) {
+	public Turnip(Point spawn) {
 		super(spawn);
 		
 		// Dati HARDCODED

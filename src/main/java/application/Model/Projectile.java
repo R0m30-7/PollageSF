@@ -1,9 +1,9 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class Projectile {
-    private Point2D position;
+    private Point position;
     private boolean movingRight;
     private double speed;
     private double damage;
@@ -11,7 +11,7 @@ public class Projectile {
     private Player owner;
     private boolean active = true; // Stato del proiettile, se è ancora in gioco o no
 
-    public Projectile(Point2D position, boolean movingRight, double speed, double damage, double width, double height, Player owner) {
+    public Projectile(Point position, boolean movingRight, double speed, double damage, double width, double height, Player owner) {
         this.position = position;
         this.movingRight = movingRight;
         this.speed = speed;
@@ -22,7 +22,7 @@ public class Projectile {
     
     public Player getOwner() { return owner; }
 
-    public Point2D getPosition() {return position; }
+    public Point getPosition() {return position; }
 
     public void update() {
         double deltaX = movingRight ? speed : -speed;

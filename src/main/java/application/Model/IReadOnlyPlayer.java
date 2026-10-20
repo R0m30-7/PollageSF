@@ -1,9 +1,9 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public interface IReadOnlyPlayer {
-    Point2D getPosition();
+    Point getPosition();
     double getRenderOffsetX();
     double getRenderOffsetY();
     double getRenderScale();

@@ -1,12 +1,13 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+
+import application.Utils.Point;
 
 public class Ryu extends Player {
     
 
-    public Ryu(Point2D spawn) {
+    public Ryu(Point spawn) {
         super(spawn);
         this.renderOffsetX = 20.0; 
         this.renderOffsetY = 0.0;

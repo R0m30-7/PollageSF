@@ -1,12 +1,12 @@
 package application.Model;
 
+import application.Utils.Point;
 
-import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 
 public class Ken extends Player {
     
-    public Ken(Point2D spawn) {
+    public Ken(Point spawn) {
         super(spawn);
         
         // Offset grafici (da ricalibrare se Ken è disegnato più a destra/sinistra nel frame)

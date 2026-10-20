@@ -1,6 +1,6 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class RangedMove extends Move {
     private AnimState animState;
@@ -59,7 +59,7 @@ public class RangedMove extends Move {
             double spawnY = user.getPosition().getY() + (user.getHeight() * 0.3);
 
             // Creiamo il proiettile passandogli anche il proprietario (user) così sapremo chi ha sparato
-            return new Projectile(new Point2D(spawnX, spawnY), user.isFacingRight(), projectileSpeed, damage, 40, 30, user);
+            return new Projectile(new Point(spawnX, spawnY), user.isFacingRight(), projectileSpeed, damage, 40, 30, user);
         }
         return null;
     }

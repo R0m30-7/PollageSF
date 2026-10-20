@@ -1,6 +1,6 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class MeleeMove extends Move {
     private AnimState animState;
@@ -40,7 +40,7 @@ public class MeleeMove extends Move {
                 
             double y = user.getPosition().getY() + (user.getHeight() * 0.2);
             
-            return new Hitbox(new Point2D(x, y), this.width, this.height);
+            return new Hitbox(new Point(x, y), this.width, this.height);
         }
         return null; // È ancora in fase di caricamento (Startup)
     }

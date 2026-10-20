@@ -6,7 +6,7 @@ import java.util.List;
 import application.Controller.CharacterFactory;
 import application.Controller.InputManager;
 import application.Utils.GameConfig;
-import javafx.geometry.Point2D;
+import application.Utils.Point;
 
 public class GameModel implements IReadOnlyGameModel{
     private Player player1;     // Cervello dei player
@@ -63,8 +63,8 @@ public class GameModel implements IReadOnlyGameModel{
     	
         // Spawn dei giocatori al centro del mondo (scelgo di base la classe Ryu)
         // Necessario per assegnare a un gamepad un giocatore spcifico
-    	player1 = new Ryu(new Point2D(worldWidth / 2 - 200, spawnY)); 
-        player2 = new Ryu(new Point2D(worldWidth / 2 + 200, spawnY));
+    	player1 = new Ryu(new Point(worldWidth / 2 - 200, spawnY)); 
+        player2 = new Ryu(new Point(worldWidth / 2 + 200, spawnY));
         
         // Impostiamo le direzioni iniziali
         player1.setFacingRight(true); 
@@ -425,11 +425,11 @@ public class GameModel implements IReadOnlyGameModel{
                 double pushDist = overlap / 2.0;
                 
                 if (p1CenterX < p2CenterX) {
-                    p1.setPosition(new Point2D(p1.getPosition().getX() - pushDist, p1.getPosition().getY()));
-                    p2.setPosition(new Point2D(p2.getPosition().getX() + pushDist, p2.getPosition().getY()));
+                    p1.setPosition(new Point(p1.getPosition().getX() - pushDist, p1.getPosition().getY()));
+                    p2.setPosition(new Point(p2.getPosition().getX() + pushDist, p2.getPosition().getY()));
                 } else {
-                    p1.setPosition(new Point2D(p1.getPosition().getX() + pushDist, p1.getPosition().getY()));
-                    p2.setPosition(new Point2D(p2.getPosition().getX() - pushDist, p2.getPosition().getY()));
+                    p1.setPosition(new Point(p1.getPosition().getX() + pushDist, p1.getPosition().getY()));
+                    p2.setPosition(new Point(p2.getPosition().getX() - pushDist, p2.getPosition().getY()));
                 }
                 
                 // Aggiorniamo le bounding box dopo lo spostamento
@@ -437,7 +437,6 @@ public class GameModel implements IReadOnlyGameModel{
                 p2.getBoundingBox().updatePosition(p2.getPosition());
             }
         }
-
     }
 
     // Metodo di supporto per i muri invisibili dell'arena
@@ -445,11 +444,11 @@ public class GameModel implements IReadOnlyGameModel{
         double currentX = p.getPosition().getX();
         // Controllo muro sinistro
         if (currentX < 0) {
-            p.setPosition(new Point2D(0, p.getPosition().getY()));
+            p.setPosition(new Point(0, p.getPosition().getY()));
         } 
         // Controllo muro destro (tenendo conto dello spessore del giocatore dalla sua bounding box)
         else if (currentX > worldWidth - p.getWidth()) {
-            p.setPosition(new Point2D(worldWidth - p.getWidth(), p.getPosition().getY()));
+            p.setPosition(new Point(worldWidth - p.getWidth(), p.getPosition().getY()));
         }
         // Aggiorniamo la bounding box logica per riflettere la posizione bloccata
         p.getBoundingBox().updatePosition(p.getPosition());
@@ -469,12 +468,12 @@ public class GameModel implements IReadOnlyGameModel{
 
         // Controllo se esce a SINISTRA dello schermo
         if (currentX < leftScreenEdge) {
-            p.setPosition(new javafx.geometry.Point2D(leftScreenEdge, p.getPosition().getY()));
+            p.setPosition(new Point(leftScreenEdge, p.getPosition().getY()));
             p.getBoundingBox().updatePosition(p.getPosition());
         } 
         // Controllo se esce a DESTRA dello schermo
         else if (currentX > rightScreenEdge) {
-            p.setPosition(new javafx.geometry.Point2D(rightScreenEdge, p.getPosition().getY()));
+            p.setPosition(new Point(rightScreenEdge, p.getPosition().getY()));
             p.getBoundingBox().updatePosition(p.getPosition());
         }
     }
@@ -525,9 +524,9 @@ public class GameModel implements IReadOnlyGameModel{
         double spawnX2 = worldWidth * 0.8;
         double spawnY = 0; // Verranno poi appoggiati al suolo da applyPhysics o setGroundLevel
 
-        this.player1 = f1.create(new Point2D(spawnX1, spawnY));
+        this.player1 = f1.create(new Point(spawnX1, spawnY));
         this.player1.setSkinIndex(skin1);
-        this.player2 = f2.create(new Point2D(spawnX2, spawnY));
+        this.player2 = f2.create(new Point(spawnX2, spawnY));
         this.player2.setSkinIndex(skin2);
 
         this.player2.setFacingRight(false); // Il P2 guarda sempre a sinistra all'inizio

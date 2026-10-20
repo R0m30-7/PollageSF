@@ -2,6 +2,7 @@
  * Contiene il game loop e chiama gli update
  */
 package application.Controller;
+import application.Utils.Point;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1159,7 +1160,7 @@ public class GameController {
         if (p1Changed || scaleChanged) {
             CharacterData data = availableCharacters.get(p1CharIndex);
             if (data.factory != null) {
-                p1Preview = data.factory.create(new javafx.geometry.Point2D(0, 0));
+                p1Preview = data.factory.create(new Point(0, 0));
                 p1Preview.updateDynamicScale(currentScale);
                 p1Preview.setFacingRight(true); 
                 p1Preview.setGrounded(true); 
@@ -1176,7 +1177,7 @@ public class GameController {
         if (p2Changed || scaleChanged) {
             CharacterData data = availableCharacters.get(p2CharIndex);
             if (data.factory != null) {
-                p2Preview = data.factory.create(new javafx.geometry.Point2D(0, 0));
+                p2Preview = data.factory.create(new Point(0, 0));
                 p2Preview.updateDynamicScale(currentScale);
                 p2Preview.setFacingRight(false); 
                 p2Preview.setGrounded(true);
@@ -1220,12 +1221,12 @@ public class GameController {
         // --- RENDERING ANIMATO (sempre attivo per far muovere i personaggi) ---
         double margin = 150 * currentScale; 
         if (p1Preview != null) {
-            p1Preview.setPosition(new javafx.geometry.Point2D(margin, screenH - p1Preview.getHeight() - margin));
+            p1Preview.setPosition(new Point(margin, screenH - p1Preview.getHeight() - margin));
             p1Preview.updateAnimationState();
             p1PreviewRenderer.render(p1Preview);
         }
         if (p2Preview != null && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2) {
-            p2Preview.setPosition(new javafx.geometry.Point2D(screenW - p2Preview.getWidth() - margin, screenH - p2Preview.getHeight() - margin));
+            p2Preview.setPosition(new Point(screenW - p2Preview.getWidth() - margin, screenH - p2Preview.getHeight() - margin));
             p2Preview.updateAnimationState();
             p2PreviewRenderer.render(p2Preview);
         }

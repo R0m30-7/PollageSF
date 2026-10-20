@@ -1,11 +1,12 @@
 package application.Model;
 
-import javafx.geometry.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
+import application.Utils.Point;
+
 public class Player implements IReadOnlyPlayer{
-	private Point2D position;
+	private Point position;
     protected double speed;
     
     // Statistiche personaggio
@@ -92,7 +93,7 @@ public class Player implements IReadOnlyPlayer{
     private boolean isTurning = false;
 
     // Costruttore per impostare la posizione iniziale
-    public Player(Point2D position) {
+    public Player(Point position) {
         
         this.position = position;
 
@@ -136,10 +137,10 @@ public class Player implements IReadOnlyPlayer{
                 if (crouching) {
                     // Si abbassa: abbassiamo la Y del pavimento aggiungendo la differenza, 
                     // così la testa scende e i piedi restano attaccati a terra
-                    position = new Point2D(position.getX(), position.getY() + heightDifference);
+                    position = new Point(position.getX(), position.getY() + heightDifference);
                 } else {
                     // Si alza: restituiamo lo spazio sottratto alla Y
-                    position = new Point2D(position.getX(), position.getY() - heightDifference);
+                    position = new Point(position.getX(), position.getY() - heightDifference);
                 }
             }
             
@@ -200,7 +201,7 @@ public class Player implements IReadOnlyPlayer{
             setFacingRight(true);
         }
         
-        position = new Point2D(newX, position.getY());
+        position = new Point(newX, position.getY());
         boundingBox.updatePosition(position);
     }
 
@@ -252,7 +253,7 @@ public class Player implements IReadOnlyPlayer{
             isGrounded = false;  
         }
         
-        position = new Point2D(newX, newY);
+        position = new Point(newX, newY);
         boundingBox.updatePosition(position);
     }
 
@@ -387,8 +388,8 @@ public class Player implements IReadOnlyPlayer{
     public AnimData getCurrentAnimData() { return animations.get(currentAnimState); }
     
     public Hitbox getBoundingBox() { return boundingBox; }
-    public void setPosition(Point2D newPosition) { position = newPosition; }
-    public Point2D getPosition() { return position; }
+    public void setPosition(Point newPosition) { position = newPosition; }
+    public Point getPosition() { return position; }
     
     public int getMaxHealth() { return maxHealth; }
     public int getHealth() { return health; }
