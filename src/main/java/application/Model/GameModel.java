@@ -42,8 +42,8 @@ public class GameModel implements IReadOnlyGameModel{
     
     // Definizione della posizione del pavimento
     private double GROUND_LEVEL;
-    private double currentGroundRatio = 0.9;    // La posizione precisa del pavimento nelle mappe, e il ratio serve per tenerlo preciso in tutte le risoluzioni
-    private double currentGroundLevel;
+    private double currentGroundRatio = 0.9;    // La posizfcollisionzzzffione precisa del pavimento nelle mappe, e il ratio serve per tenerlo preciso in tutte le risoluzioni
+    private double currentGroundLevel;  //! Non so cosa significhi il commento sopra, Paolo è l'autore
     
     // Variabili per la gestione della fine del gioco
     private boolean isGameOver = false;
@@ -387,7 +387,7 @@ public class GameModel implements IReadOnlyGameModel{
 
                     // Parry perfetto
                     if (currentBlockFrame >= totalFrames - 1) {
-                        System.out.println("⭐ PARRY PERFETTO di " + defender.getDisplayName() + "!");
+                        System.out.println("PARRY PERFETTO di " + defender.getDisplayName() + "!");
                         attacker.stun(defender.getParryStunDuration());
                         
                     } else {
@@ -397,12 +397,12 @@ public class GameModel implements IReadOnlyGameModel{
                         
                         double finalDamage = baseDamage * damageMultiplier;
                         
-                        System.out.println("🛡️ Parata parziale (frame " + (currentBlockFrame + 1) + "/" + totalFrames + "). Danno subito: " + finalDamage);
+                        System.out.println("Parata parziale (frame " + (currentBlockFrame + 1) + "/" + totalFrames + "). Danno subito: " + finalDamage);
                         defender.takeDamage((int) finalDamage);
                     }
                 } else {
                     // Preso in pieno o di spalle
-                    System.out.println("💥 Colpito in pieno. Danno: " + baseDamage);
+                    System.out.println("Colpito, danno: " + baseDamage);
                     defender.takeDamage((int) baseDamage);
                     defender.setHurt(true);; // Attiva lo stato di "colpito"
                 }
