@@ -141,6 +141,9 @@ public class GameController {
         availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.Model.RedTurnip::new));
 
         // Caricamento delle mappe in memoria
+        availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));
+        availableMaps.add(new MapData("9/11", "/Arenas/twinTowers.jpeg", 0.88));
+        availableMaps.add(new MapData("Smordor", "/Arenas/smordor.jpeg", 0.77));
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
         availableMaps.add(new MapData("UniPG", "/Arenas/uni.jpeg", 0.9));
         availableMaps.add(new MapData("Koloxtol", "/Arenas/villaggioRurale.jpeg", 0.9));
