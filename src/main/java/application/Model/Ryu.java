@@ -45,10 +45,8 @@ public class Ryu extends Player {
 
         this.getBoundingBox().updateSize(this.width, this.height);
     
-        System.out.println("baserenderscale then" + this.baseRenderScale);
         // SALVI TUTTO NEI VALORI BASE (inclusi width, height e baseRenderScale)
         this.saveBaseStats();
-        System.out.println("baserenderscale after" + this.baseRenderScale);
 
         // Mappa delle animazioni basata sulle sezioni del JSON (row e col)
         animations.put(AnimState.IDLE_RIGHT, new AnimData(0, 0, 4, 100, true)); 
