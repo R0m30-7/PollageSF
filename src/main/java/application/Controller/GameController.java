@@ -45,6 +45,7 @@ public class GameController {
     // --- Menu disconnessione ---
     private boolean isDisconnected = false;
     private VBox disconnectMenu;
+    private int numPlayers;
 
     // Variabili del timer delle animazioni
     private long lastTime;        
@@ -122,6 +123,8 @@ public class GameController {
     // --- Menu pausa ---
     private boolean isPaused = false;
     private VBox pauseMenu;
+    private boolean isP1Pause;
+    private boolean isP2Pause;
     private  boolean wasP1Pause = false;
     private boolean wasP2Pause = false;
     
@@ -255,408 +258,42 @@ public class GameController {
 
     private void startGameLoop() {
         lastTime = System.nanoTime();
-        physicsAccumulator = 0.0;
-        renderAccumulator = 0.0;
+        resetAccumulators();
         
         // Variabili per il contatore FPS a schermo
         lastFpsTime = 0;
         framesRendered = 0;
 
         gameLoop = new AnimationTimer() {
-            
             @Override
             public void handle(long now) {
                 long frameTime = now - lastTime;
                 lastTime = now;
-                
-                // --- CONTROLLO EMERGENZA DISCONNESSIONE ---
-                int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
-                
-                // Attiviamo l'allarme solo se stiamo giocando (non se siamo già nel menu di connessione iniziale)
-                if (!waitingForControllers && !waitingForMapSelection) {
-                    if (inputManager.hasLostControllers(numPlayers)) {
-                        if (!isDisconnected) { 
-                            isDisconnected = true;
-                            disconnectMenu.setVisible(true);
-                            view.getRoot().setEffect(new GaussianBlur(25));
-                        }
-                    }
-                }
 
-                // Se siamo in emergenza, fermiamo tutto
-                if (isDisconnected) {
-                    // Dobbiamo continuare ad aggiornare Jamepad qui, così quando 
-                    // l'utente preme un tasto sul pad appena ricollegato, viene registrato
-                    inputManager.update();
-                    
-                    int numP = application.Utils.Settings.getInstance().getNumberOfPlayers();
-                    
-                    // Se l'InputManager ci dice che i controller sono stati ricollegati tutti...
-                    if (!inputManager.hasLostControllers(numP)) {
-                        
-                        // ... aspettiamo che il giocatore prema il tasto Salto (X / A) per confermare
-                        if (inputManager.isJumpButtonPressed(1) || (numP == 2 && inputManager.isJumpButtonPressed(2))) {
-                            isDisconnected = false;
-                            disconnectMenu.setVisible(false);
-                            
-                            // Togliamo la sfocatura solo se il gioco NON era in pausa prima del crash
-                            if (!isPaused) {
-                                view.getRoot().setEffect(null);
-                            }
-                            
-                            // Evitiamo che il personaggio salti accidentalmente appena riparte il gioco
-                            wasConfirmPressed = true; 
-                        }
-                    }
-                    
+                if(handleControllerDisconnection()){
                     // Resettiamo gli accumulatori di fisica e render per "congelare" l'arena
-                    physicsAccumulator = 0;
-                    renderAccumulator = 0;
+                    resetAccumulators();
                     return; // Interrompe l'esecuzione del frame qui. Il gioco è in pausa (fa ripartire l'handle da capo)
                 }
                 
                 // --- Contatore FPS a schermo ---
-                if (now - lastFpsTime >= 1_000_000_000) { // È passato 1 secondo
-                    fpsLabel.setText("FPS: " + framesRendered);
-                    framesRendered = 0;
-                    lastFpsTime = now;
-                }
+                updateFpsCounter(now);
                 
+                // Logica di aggiornamento
                 if (waitingForControllers) {
-                    // --- MODALITÀ MENU IN PAUSA ---
-                    inputManager.update(); 
-                    
-                    // Leggiamo quanti giocatori devono giocare
-                    numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
-                    
-                    if (inputManager.isPlayer1Connected()) {
-                        p1Label.setText("Giocatore 1: CONNESSO");
-                        p1Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
-                    }
-                    
-                    // Aggiorniamo l'etichetta 2 solo se stiamo effettivamente aspettando un secondo giocatore
-                    if (numPlayers == 2 && inputManager.isPlayer2Connected()) {
-                        p2Label.setText("Giocatore 2: CONNESSO");
-                        p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
-                    }
+                    handleWaitingForControllersState();
+                    resetAccumulators();
 
-                    // --- LOGICA DI AVVIO INTELLIGENTE ---
-                    boolean canStartGame = false;
-                    
-                    if (numPlayers == 1 && inputManager.isPlayer1Connected()) {
-                        canStartGame = true; // Basta un controller
-                    } else if (numPlayers == 2 && inputManager.isPlayer1Connected() && inputManager.isPlayer2Connected()) {
-                        canStartGame = true; // Servono entrambi i controller
-                    }
-
-                    // Se i requisiti sono soddisfatti si fa partire il gioco
-                    if (canStartGame) {
-                        closeConnectionMenu();
-                    }
-                    
-                    physicsAccumulator = 0;
-                    renderAccumulator = 0;
                 } else if (waitingForCharacterSelection) {
-                    inputManager.update();
-                    long currentTimeMs = System.currentTimeMillis();
-                    numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
-                    int cols = 4; // Colonne fisse della griglia
+                    handleCharacterSelectionState();
+                    resetAccumulators();
 
-                    // --- GIOCATORE 1 ---
-                    if (!p1Confirmed) {
-                        double x1 = inputManager.getLeftStickX(1);
-                        double y1 = inputManager.getLeftStickY(1);
-
-                        // Memorizziamo il vecchio personaggio per capire se è cambiato
-                        int oldCharIndex = p1CharIndex;
-                        
-                        if (currentTimeMs - lastCharInputTimeP1 > 200) { 
-                            if (x1 < -0.5) { p1CharIndex--; lastCharInputTimeP1 = currentTimeMs; }
-                            else if (x1 > 0.5) { p1CharIndex++; lastCharInputTimeP1 = currentTimeMs; }
-                            else if (y1 < -0.5) { p1CharIndex -= cols; lastCharInputTimeP1 = currentTimeMs; }
-                            else if (y1 > 0.5) { p1CharIndex += cols; lastCharInputTimeP1 = currentTimeMs; }
-                            // Ciclo infinito (se esci dai bordi torni all'inizio)
-                            if (p1CharIndex < 0) p1CharIndex = availableCharacters.size() - 1;
-                            if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
-                        }
-
-                        // Se cambia personaggio, resetta il colore al default
-                        if (p1CharIndex != oldCharIndex) {
-                            p1SkinIndex = 0;
-                        }
-
-                        // Cambio Colore P1
-                        boolean isL1P1 = inputManager.isL1ButtonPressed(1);
-                        boolean isR1P1 = inputManager.isR1ButtonPressed(1);
-
-                        if (p1Preview != null && !p1Preview.getAvailableSkins().isEmpty()) {
-                            if (isL1P1 && !wasL1P1Pressed) {
-                                System.out.println("P1: L1 premuto.");
-                                p1SkinIndex--;
-                                if (p1SkinIndex < 0) p1SkinIndex = p1Preview.getAvailableSkins().size() - 1;
-                            }
-                            if (isR1P1 && !wasR1P1Pressed) {
-                                System.out.println("P1: R1 premuto.");
-                                p1SkinIndex++;
-                                if (p1SkinIndex >= p1Preview.getAvailableSkins().size()) p1SkinIndex = 0;
-                            }
-                        }
-                        wasL1P1Pressed = isL1P1;
-                        wasR1P1Pressed = isR1P1;
-                    }
-
-                    // --- GESTIONE DEI TASTI DI CONFERMA E CANCELLAZIONE ---
-                    boolean p1ConfirmBtn = inputManager.isJumpButtonPressed(1);
-                    if (p1ConfirmBtn && !wasConfirmP1Pressed) p1Confirmed = true;
-                    wasConfirmP1Pressed = p1ConfirmBtn;
-
-                    boolean p1CancelBtn = inputManager.isDefendButtonPressed(1); // Tasto "Cerchio"
-                    if (p1CancelBtn && !wasCancelP1Pressed) p1Confirmed = false;
-                    wasCancelP1Pressed = p1CancelBtn;
-
-                    // --- GIOCATORE 2 ---
-                    if (numPlayers == 2) {
-                        if (!p2Confirmed) {
-                            double x2 = inputManager.getLeftStickX(2);
-                            double y2 = inputManager.getLeftStickY(2);
-
-                            // Memorizziamo il vecchio personaggio per capire se è cambiato
-                            int oldCharIndex2 = p2CharIndex;
-                            
-                            if (currentTimeMs - lastCharInputTimeP2 > 200) { 
-                                if (x2 < -0.5) { p2CharIndex--; lastCharInputTimeP2 = currentTimeMs; }
-                                else if (x2 > 0.5) { p2CharIndex++; lastCharInputTimeP2 = currentTimeMs; }
-                                else if (y2 < -0.5) { p2CharIndex -= cols; lastCharInputTimeP2 = currentTimeMs; }
-                                else if (y2 > 0.5) { p2CharIndex += cols; lastCharInputTimeP2 = currentTimeMs; }
-
-                                if (p2CharIndex < 0) p2CharIndex = availableCharacters.size() - 1;
-                                if (p2CharIndex >= availableCharacters.size()) p2CharIndex = 0;
-                            }
-
-                            if (p2CharIndex != oldCharIndex2) {
-                                p2SkinIndex = 0;
-                            }
-
-                            // Cambio Colore P2
-                            boolean isL1P2 = inputManager.isL1ButtonPressed(2);
-                            boolean isR1P2 = inputManager.isR1ButtonPressed(2);
-                            
-                            if (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty()) {
-                                if (isL1P2 && !wasL1P2Pressed) {
-                                    p2SkinIndex--;
-                                    if (p2SkinIndex < 0) p2SkinIndex = p2Preview.getAvailableSkins().size() - 1;
-                                }
-                                if (isR1P2 && !wasR1P2Pressed) {
-                                    p2SkinIndex++;
-                                    if (p2SkinIndex >= p2Preview.getAvailableSkins().size()) p2SkinIndex = 0;
-                                }
-                            }
-                            wasL1P2Pressed = isL1P2;
-                            wasR1P2Pressed = isR1P2;
-                        }
-
-                        boolean p2ConfirmBtn = inputManager.isJumpButtonPressed(2);
-                        if (p2ConfirmBtn && !wasConfirmP2Pressed) p2Confirmed = true;
-                        wasConfirmP2Pressed = p2ConfirmBtn;
-
-                        boolean p2CancelBtn = inputManager.isDefendButtonPressed(2);
-                        if (p2CancelBtn && !wasCancelP2Pressed) p2Confirmed = false;
-                        wasCancelP2Pressed = p2CancelBtn;
-                    } else {
-                        // Se c'è solo un giocatore, il P2 è auto-confermato (CPU)
-                        p2Confirmed = true; 
-                    }
-
-                    // Se ENTRAMBI hanno confermato, passiamo alla selezione delle mappe
-                    if (p1Confirmed && p2Confirmed) {
-                        closeCharacterSelectionMenu();
-                    }
-
-                    updateCharacterSelectionUI(); // Disegna i movimenti
-                    
-                    // Renderizza i personaggi animati scelti
-                    updatePreviews();
-                    
-                    physicsAccumulator = 0;
-                    renderAccumulator = 0;
                 } else if (waitingForMapSelection) {
-                    inputManager.update();
-                    
-                    long currentTimeMs = System.currentTimeMillis();
-                    double xInput = inputManager.getLeftStickX(1); 
-                    double yInput = inputManager.getLeftStickY(1); // Leggiamo anche l'asse Y
-                    
-                    if (currentTimeMs - lastMenuInputTime > 250) {
-                        // Calcoliamo quante colonne ci sono fisicamente a schermo in questo momento
-                        // (300 di larghezza immagine + 40 di gap = 340)
-                        int cols = Math.max(1, (int) (mapsContainer.getWidth() / 340));
-
-                        if (xInput < -0.5) { // SINISTRA
-                            currentMapIndex--;
-                            if (currentMapIndex < 0) currentMapIndex = availableMaps.size() - 1;
-                            updateMapSelectionUI();
-                            updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
-                            lastMenuInputTime = currentTimeMs;
-
-                        } else if (xInput > 0.5) { // DESTRA
-                            currentMapIndex++;
-                            if (currentMapIndex >= availableMaps.size()) currentMapIndex = 0;
-                            updateMapSelectionUI();
-                            updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
-                            lastMenuInputTime = currentTimeMs;
-
-                        } else if (yInput < -0.5) { // SU (salta alla riga sopra)
-                            if (currentMapIndex - cols >= 0) {
-                                currentMapIndex -= cols;
-                                updateMapSelectionUI();
-                                updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
-                                lastMenuInputTime = currentTimeMs;
-                            }
-
-                        } else if (yInput > 0.5) { // GIÙ (salta alla riga sotto)
-                            int maxIndex = availableMaps.size() - 1;
-
-                            // Calcoliamo in quale riga ci troviamo e qual è l'ultima riga disponibile
-                            int currentRow = currentMapIndex / cols;
-                            int maxRow = maxIndex / cols;
-
-                            // Se non siamo già all'ultima riga, possiamo scendere
-                            if (currentRow < maxRow) {
-                                currentMapIndex += cols;
-
-                                // Se scendendo finiamo in un "buco vuoto" (perché l'ultima riga 
-                                // ha meno colonne), calamitiamo il cursore all'ultima mappa
-                                if (currentMapIndex > maxIndex) {
-                                    currentMapIndex = maxIndex;
-                                }
-
-                                updateMapSelectionUI();
-                                updateBackgroundPreview();  // Aggiorna la preview della mappa nello sfondo
-                                lastMenuInputTime = currentTimeMs;
-                            }
-                        }
-                    }
-
-                    boolean isConfirm = inputManager.isJumpButtonPressed(1);
-                    if (isConfirm && !wasConfirmPressed) {
-                        confirmMapSelection(); 
-                    }
-                    wasConfirmPressed = isConfirm;
-
-                    physicsAccumulator = 0;
-                    renderAccumulator = 0;
+                    handleMapSelectionState();
+                    resetAccumulators();
 
                 } else {
-                	// ==========================================
-                    //         FASE DI GIOCO E COMBATTIMENTO
-                    // ==========================================
-                	// --- LETTURA TASTO PAUSA ---
-                    // Aggiorniamo i controller per leggere il tasto Pause
-                    inputManager.update(); 
-                    
-                    boolean isP1Pause = inputManager.isPauseButtonPressed(1);
-                    boolean isP2Pause = inputManager.isPauseButtonPressed(2);
-
-                    // Se il tasto viene premuto in questo preciso frame (e non lo era prima)
-                    if ((isP1Pause && !wasP1Pause) || (isP2Pause && !wasP2Pause)) {
-                        togglePause();
-                    }
-                    // Salviamo in memoria lo stato per il prossimo frame
-                    wasP1Pause = isP1Pause;
-                    wasP2Pause = isP2Pause;
-
-                    // --- GESTIONE DELLA FISICA ---
-                    if (isPaused) {
-                        // Se siamo in pausa, azzeriamo l'accumulatore fisico.
-                        // Questo evita che, togliendo la pausa, il gioco cerchi di "recuperare"
-                        // tutti i secondi persi muovendo i giocatori in un frame unico
-                        physicsAccumulator = 0; 
-                        
-                        // ==========================================
-                        //  NAVIGAZIONE MENU DI PAUSA CON CONTROLLER
-                        // ==========================================
-                        long currentTimeMs = System.currentTimeMillis();
-                        double yInput;
-                        if(isP1Pause){
-                            yInput = inputManager.getLeftStickY(1); // Usiamo il P1 per scorrere
-                        } else {
-                            yInput = inputManager.getLeftStickY(2); // Usiamo il P2 per scorrere
-                        }
-
-                        // Il delay (200ms) serve per permettere all'utente di scorrere un bottone alla volta
-                        if (currentTimeMs - lastMenuInputTime > 200) {
-                            if (yInput < -0.5) { // Analogico verso l'ALTO
-                                currentPauseIndex--;
-                                if (currentPauseIndex < 0) currentPauseIndex = pauseButtons.size() - 1; // Ritorna all'ultimo
-                                updatePauseMenuSelection();
-                                lastMenuInputTime = currentTimeMs;
-                            } else if (yInput > 0.5) { // Analogico verso il BASSO
-                                currentPauseIndex++;
-                                if (currentPauseIndex >= pauseButtons.size()) currentPauseIndex = 0; // Ritorna al primo
-                                updatePauseMenuSelection();
-                                lastMenuInputTime = currentTimeMs;
-                            }
-                        }
-
-                        // Selezione con il tasto del Salto (X / A)
-                        boolean isConfirm = inputManager.isJumpButtonPressed(1);
-                        if (isConfirm && !wasConfirmPressed) {
-                            // .fire() simula il click sul pulsante selezionato
-                            pauseButtons.get(currentPauseIndex).fire();
-                        }
-                        wasConfirmPressed = isConfirm;
-
-                    } else {
-                        // Gioco non in pausa, i giocatori possono muoversi
-
-                    	physicsAccumulator += frameTime;
-
-                        // --- CONTROLLO SE IL GIOCO È FINITO ---
-                        if (model.getIsGameOver()) {
-                            // Il gioco è finito (la fisica viene saltata)
-                            physicsAccumulator = 0; // Svuotiamo l'accumulatore per congelare il tempo
-
-                            if (!isVictoryScreenActive) {
-                                isVictoryScreenActive = true;
-                                victoryStartTime = System.currentTimeMillis();
-                                view.showVictoryScreen(model.getWinner()); // Mostra l'immagine di vittoria
-                            } else {
-                                // Controlliamo se sono passati 2 secondi (2000 millisecondi)
-                                if (!canSkipVictory && (System.currentTimeMillis() - victoryStartTime > 2000)) {
-                                    canSkipVictory = true;
-                                    view.showContinueText(); // Appare la scritta in basso a destra
-                                }
-
-                                // Se si può saltare e viene premuto un tasto (salto o pugno di uno dei due)
-                                if (canSkipVictory && (inputManager.isJumpButtonPressed(1) || inputManager.isPunchButtonPressed(1) || 
-                                                       inputManager.isJumpButtonPressed(2) || inputManager.isPunchButtonPressed(2))) {
-                                    returnToMainMenu();
-                                }
-                            }
-                        } else {
-                            // IL GIOCO NON È FINITO (calcolo normale della fisica)
-                            // Aggiorniamo la fisica finchè l'accumulatore è maggiore del tempo per tick
-                            // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
-                            //es: se il gioco va a 100 TPS, ogni frame dura 10ms, quindi l'accumulatore accumula 10ms per frame.
-                            // Quando l'accumulatore supera 5ms (1 tick), viene eseguito un update della fisica, e l'accumulatore viene ridotto di 5ms.
-                            // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
-                            while (physicsAccumulator >= application.Utils.GameConfig.TIME_PER_TICK) {
-                                inputManager.update(); // Mantiene fluido il movimento     
-                                model.update(inputManager); 
-                                physicsAccumulator -= application.Utils.GameConfig.TIME_PER_TICK;
-                            }
-                        }
-                    }
-
-                    // --- RENDER GRAFICO (gira sempre, sia in gioco che in pausa) ---
-                    renderAccumulator += frameTime;
-                    double targetFrameTime = 1_000_000_000.0 / application.Utils.Settings.getInstance().getTargetFps();
-
-                    if (renderAccumulator >= targetFrameTime) {
-                        view.render(model);
-                        framesRendered++;
-                        renderAccumulator %= targetFrameTime;
-                    }
+                	handleGameplayState(frameTime);
 	            }
             }
         };
@@ -1247,5 +884,408 @@ public class GameController {
         // Ricreiamo la scena del menu principale
         application.Scenes.MainMenuScene menu = new application.Scenes.MainMenuScene();
         stage.setScene(menu.getScenaMenu(stage));
+    }
+
+    // --- TUTTI I METODI HELPER SONO LISTATI QUI SOTTO ---
+    private void resetAccumulators(){
+        physicsAccumulator = 0.0;
+        renderAccumulator = 0.0;
+    }
+
+    private void updateFpsCounter(long now) {
+        if (now - lastFpsTime >= 1_000_000_000) {
+            fpsLabel.setText("FPS: " + framesRendered);
+            framesRendered = 0;
+            lastFpsTime = now;
+        }
+    }
+
+    private boolean handleControllerDisconnection(){
+        // --- CONTROLLO EMERGENZA DISCONNESSIONE ---
+        numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+        
+        // Attiviamo l'allarme solo se stiamo giocando (non se siamo già nel menu di connessione iniziale)
+        if (!waitingForControllers && !waitingForMapSelection) {
+            if (inputManager.hasLostControllers(numPlayers)) {
+                if (!isDisconnected) { 
+                    isDisconnected = true;
+                    disconnectMenu.setVisible(true);
+                    view.getRoot().setEffect(new GaussianBlur(25));
+                }
+            }
+        }
+
+        // Se siamo in emergenza, fermiamo tutto
+        if (isDisconnected) {
+            // Dobbiamo continuare ad aggiornare Jamepad qui, così quando 
+            // l'utente preme un tasto sul pad appena ricollegato, viene registrato
+            inputManager.update();
+            
+            int numP = application.Utils.Settings.getInstance().getNumberOfPlayers();
+            
+            // Se l'InputManager ci dice che i controller sono stati ricollegati tutti...
+            if (!inputManager.hasLostControllers(numP)) {
+                
+                // ... aspettiamo che il giocatore prema il tasto Salto (X / A) per confermare
+                if (inputManager.isJumpButtonPressed(1) || (numP == 2 && inputManager.isJumpButtonPressed(2))) {
+                    isDisconnected = false;
+                    disconnectMenu.setVisible(false);
+                    
+                    // Togliamo la sfocatura solo se il gioco NON era in pausa prima del crash
+                    if (!isPaused) {
+                        view.getRoot().setEffect(null);
+                    }
+                    
+                    // Evitiamo che il personaggio salti accidentalmente appena riparte il gioco
+                    wasConfirmPressed = true; 
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void handleWaitingForControllersState(){
+        // --- MODALITÀ MENU IN PAUSA ---
+        inputManager.update(); 
+        
+        // Leggiamo quanti giocatori devono giocare
+        numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+        
+        if (inputManager.isPlayer1Connected()) {
+            p1Label.setText("Giocatore 1: CONNESSO");
+            p1Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
+        }
+        
+        // Aggiorniamo l'etichetta 2 solo se stiamo effettivamente aspettando un secondo giocatore
+        if (numPlayers == 2 && inputManager.isPlayer2Connected()) {
+            p2Label.setText("Giocatore 2: CONNESSO");
+            p2Label.setStyle("-fx-font-size: 24px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
+        }
+
+        // --- LOGICA DI AVVIO INTELLIGENTE ---
+        boolean canStartGame = false;
+        
+        if (numPlayers == 1 && inputManager.isPlayer1Connected()) {
+            canStartGame = true; // Basta un controller
+        } else if (numPlayers == 2 && inputManager.isPlayer1Connected() && inputManager.isPlayer2Connected()) {
+            canStartGame = true; // Servono entrambi i controller
+        }
+
+        // Se i requisiti sono soddisfatti si fa partire il gioco
+        if (canStartGame) {
+            closeConnectionMenu();
+        }
+    }
+
+    private void handleCharacterSelectionState(){
+        inputManager.update();
+        long currentTimeMs = System.currentTimeMillis();
+        numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
+        int cols = 4; // Colonne fisse della griglia
+
+        // --- GIOCATORE 1 ---
+        if (!p1Confirmed) {
+            double x1 = inputManager.getLeftStickX(1);
+            double y1 = inputManager.getLeftStickY(1);
+
+            // Memorizziamo il vecchio personaggio per capire se è cambiato
+            int oldCharIndex = p1CharIndex;
+            
+            if (currentTimeMs - lastCharInputTimeP1 > 200) { 
+                if (x1 < -0.5) { p1CharIndex--; lastCharInputTimeP1 = currentTimeMs; }
+                else if (x1 > 0.5) { p1CharIndex++; lastCharInputTimeP1 = currentTimeMs; }
+                else if (y1 < -0.5) { p1CharIndex -= cols; lastCharInputTimeP1 = currentTimeMs; }
+                else if (y1 > 0.5) { p1CharIndex += cols; lastCharInputTimeP1 = currentTimeMs; }
+                // Ciclo infinito (se esci dai bordi torni all'inizio)
+                if (p1CharIndex < 0) p1CharIndex = availableCharacters.size() - 1;
+                if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
+            }
+
+            // Se cambia personaggio, resetta il colore al default
+            if (p1CharIndex != oldCharIndex) {
+                p1SkinIndex = 0;
+            }
+
+            // Cambio Colore P1
+            boolean isL1P1 = inputManager.isL1ButtonPressed(1);
+            boolean isR1P1 = inputManager.isR1ButtonPressed(1);
+
+            if (p1Preview != null && !p1Preview.getAvailableSkins().isEmpty()) {
+                if (isL1P1 && !wasL1P1Pressed) {
+                    System.out.println("P1: L1 premuto.");
+                    p1SkinIndex--;
+                    if (p1SkinIndex < 0) p1SkinIndex = p1Preview.getAvailableSkins().size() - 1;
+                }
+                if (isR1P1 && !wasR1P1Pressed) {
+                    System.out.println("P1: R1 premuto.");
+                    p1SkinIndex++;
+                    if (p1SkinIndex >= p1Preview.getAvailableSkins().size()) p1SkinIndex = 0;
+                }
+            }
+            wasL1P1Pressed = isL1P1;
+            wasR1P1Pressed = isR1P1;
+        }
+
+        // --- GESTIONE DEI TASTI DI CONFERMA E CANCELLAZIONE ---
+        boolean p1ConfirmBtn = inputManager.isJumpButtonPressed(1);
+        if (p1ConfirmBtn && !wasConfirmP1Pressed) p1Confirmed = true;
+        wasConfirmP1Pressed = p1ConfirmBtn;
+
+        boolean p1CancelBtn = inputManager.isDefendButtonPressed(1); // Tasto "Cerchio"
+        if (p1CancelBtn && !wasCancelP1Pressed) p1Confirmed = false;
+        wasCancelP1Pressed = p1CancelBtn;
+
+        // --- GIOCATORE 2 ---
+        if (numPlayers == 2) {
+            if (!p2Confirmed) {
+                double x2 = inputManager.getLeftStickX(2);
+                double y2 = inputManager.getLeftStickY(2);
+
+                // Memorizziamo il vecchio personaggio per capire se è cambiato
+                int oldCharIndex2 = p2CharIndex;
+                
+                if (currentTimeMs - lastCharInputTimeP2 > 200) { 
+                    if (x2 < -0.5) { p2CharIndex--; lastCharInputTimeP2 = currentTimeMs; }
+                    else if (x2 > 0.5) { p2CharIndex++; lastCharInputTimeP2 = currentTimeMs; }
+                    else if (y2 < -0.5) { p2CharIndex -= cols; lastCharInputTimeP2 = currentTimeMs; }
+                    else if (y2 > 0.5) { p2CharIndex += cols; lastCharInputTimeP2 = currentTimeMs; }
+
+                    if (p2CharIndex < 0) p2CharIndex = availableCharacters.size() - 1;
+                    if (p2CharIndex >= availableCharacters.size()) p2CharIndex = 0;
+                }
+
+                if (p2CharIndex != oldCharIndex2) {
+                    p2SkinIndex = 0;
+                }
+
+                // Cambio Colore P2
+                boolean isL1P2 = inputManager.isL1ButtonPressed(2);
+                boolean isR1P2 = inputManager.isR1ButtonPressed(2);
+                
+                if (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty()) {
+                    if (isL1P2 && !wasL1P2Pressed) {
+                        p2SkinIndex--;
+                        if (p2SkinIndex < 0) p2SkinIndex = p2Preview.getAvailableSkins().size() - 1;
+                    }
+                    if (isR1P2 && !wasR1P2Pressed) {
+                        p2SkinIndex++;
+                        if (p2SkinIndex >= p2Preview.getAvailableSkins().size()) p2SkinIndex = 0;
+                    }
+                }
+                wasL1P2Pressed = isL1P2;
+                wasR1P2Pressed = isR1P2;
+            }
+
+            boolean p2ConfirmBtn = inputManager.isJumpButtonPressed(2);
+            if (p2ConfirmBtn && !wasConfirmP2Pressed) p2Confirmed = true;
+            wasConfirmP2Pressed = p2ConfirmBtn;
+
+            boolean p2CancelBtn = inputManager.isDefendButtonPressed(2);
+            if (p2CancelBtn && !wasCancelP2Pressed) p2Confirmed = false;
+            wasCancelP2Pressed = p2CancelBtn;
+        } else {
+            // Se c'è solo un giocatore, il P2 è auto-confermato (CPU)
+            p2Confirmed = true; 
+        }
+
+        // Se ENTRAMBI hanno confermato, passiamo alla selezione delle mappe
+        if (p1Confirmed && p2Confirmed) {
+            closeCharacterSelectionMenu();
+        }
+
+        updateCharacterSelectionUI(); // Disegna i movimenti
+        
+        // Renderizza i personaggi animati scelti
+        updatePreviews();
+    }
+
+    private void handleMapSelectionState(){
+        inputManager.update();
+                    
+        long currentTimeMs = System.currentTimeMillis();
+        double xInput = inputManager.getLeftStickX(1); 
+        double yInput = inputManager.getLeftStickY(1); // Leggiamo anche l'asse Y
+        
+        if (currentTimeMs - lastMenuInputTime > 250) {
+            // Calcoliamo quante colonne ci sono fisicamente a schermo in questo momento
+            // (300 di larghezza immagine + 40 di gap = 340)
+            int cols = Math.max(1, (int) (mapsContainer.getWidth() / 340));
+
+            if (xInput < -0.5) { // SINISTRA
+                currentMapIndex--;
+                if (currentMapIndex < 0) currentMapIndex = availableMaps.size() - 1;
+                selectMapAndPreview(currentMapIndex, currentTimeMs);
+
+            } else if (xInput > 0.5) { // DESTRA
+                currentMapIndex++;
+                if (currentMapIndex >= availableMaps.size()) currentMapIndex = 0;
+                selectMapAndPreview(currentMapIndex, currentTimeMs);
+
+            } else if (yInput < -0.5) { // SU (salta alla riga sopra)
+                if (currentMapIndex - cols >= 0) {
+                    currentMapIndex -= cols;
+                    selectMapAndPreview(currentMapIndex, currentTimeMs);
+                }
+
+            } else if (yInput > 0.5) { // GIÙ (salta alla riga sotto)
+                int maxIndex = availableMaps.size() - 1;
+
+                // Calcoliamo in quale riga ci troviamo e qual è l'ultima riga disponibile
+                int currentRow = currentMapIndex / cols;
+                int maxRow = maxIndex / cols;
+
+                // Se non siamo già all'ultima riga, possiamo scendere
+                if (currentRow < maxRow) {
+                    currentMapIndex += cols;
+
+                    // Se scendendo finiamo in un "buco vuoto" (perché l'ultima riga 
+                    // ha meno colonne), calamitiamo il cursore all'ultima mappa
+                    if (currentMapIndex > maxIndex) {
+                        currentMapIndex = maxIndex;
+                    }
+
+                    selectMapAndPreview(currentMapIndex, currentTimeMs);
+                }
+            }
+        }
+
+        boolean isConfirm = inputManager.isJumpButtonPressed(1);
+        if (isConfirm && !wasConfirmPressed) {
+            confirmMapSelection(); 
+        }
+        wasConfirmPressed = isConfirm;
+    }
+
+    private void selectMapAndPreview(int newIndex, long currentTimeMs){
+        updateMapSelectionUI();
+        updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
+        lastMenuInputTime = currentTimeMs;
+    }
+
+    private void handleGameplayState(long frameTime){
+        // ==========================================
+        //         FASE DI GIOCO E COMBATTIMENTO
+        // ==========================================
+
+        checkPauseInput();
+
+        // --- GESTIONE DELLA FISICA ---
+        if (isPaused) {
+            handlePauseMenuNavigation();
+
+        } else {
+            // Gioco non in pausa, i giocatori possono muoversi
+
+            physicsAccumulator += frameTime;
+
+            // --- CONTROLLO SE IL GIOCO È FINITO ---
+            if (model.getIsGameOver()) {
+                // Il gioco è finito (la fisica viene saltata)
+                physicsAccumulator = 0; // Svuotiamo l'accumulatore per congelare il tempo
+
+                handleVictoryScreen();
+            } else {
+                // IL GIOCO NON È FINITO (calcolo normale della fisica)
+                // Aggiorniamo la fisica finchè l'accumulatore è maggiore del tempo per tick
+                // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
+                //es: se il gioco va a 100 TPS, ogni frame dura 10ms, quindi l'accumulatore accumula 10ms per frame.
+                // Quando l'accumulatore supera 5ms (1 tick), viene eseguito un update della fisica, e l'accumulatore viene ridotto di 5ms.
+                // In questo modo, se il gioco va lento, la fisica "recupera" i tick persi senza saltare frame
+                while (physicsAccumulator >= application.Utils.GameConfig.TIME_PER_TICK) {
+                    inputManager.update(); // Mantiene fluido il movimento     
+                    model.update(inputManager); 
+                    physicsAccumulator -= application.Utils.GameConfig.TIME_PER_TICK;
+                }
+            }
+        }
+
+        // --- RENDER GRAFICO (gira sempre, sia in gioco che in pausa) ---
+        renderAccumulator += frameTime;
+        double targetFrameTime = 1_000_000_000.0 / application.Utils.Settings.getInstance().getTargetFps();
+
+        if (renderAccumulator >= targetFrameTime) {
+            view.render(model);
+            framesRendered++;
+            renderAccumulator %= targetFrameTime;
+        }
+    }
+
+    private void checkPauseInput(){
+        // --- LETTURA TASTO PAUSA ---
+        // Aggiorniamo i controller per leggere il tasto Pause
+        inputManager.update(); 
+        
+        isP1Pause = inputManager.isPauseButtonPressed(1);
+        isP2Pause = inputManager.isPauseButtonPressed(2);
+
+        // Se il tasto viene premuto in questo preciso frame (e non lo era prima)
+        if ((isP1Pause && !wasP1Pause) || (isP2Pause && !wasP2Pause)) {
+            togglePause();
+        }
+        // Salviamo in memoria lo stato per il prossimo frame
+        wasP1Pause = isP1Pause;
+        wasP2Pause = isP2Pause;
+    }
+
+    private void handlePauseMenuNavigation(){
+        // Se siamo in pausa, azzeriamo l'accumulatore fisico.
+        // Questo evita che, togliendo la pausa, il gioco cerchi di "recuperare"
+        // tutti i secondi persi muovendo i giocatori in un frame unico
+        physicsAccumulator = 0; 
+        
+        // ==========================================
+        //  NAVIGAZIONE MENU DI PAUSA CON CONTROLLER
+        // ==========================================
+        long currentTimeMs = System.currentTimeMillis();
+        double yInput;
+        if(isP1Pause){
+            yInput = inputManager.getLeftStickY(1); // Usiamo il P1 per scorrere
+        } else {
+            yInput = inputManager.getLeftStickY(2); // Usiamo il P2 per scorrere
+        }
+
+        // Il delay (200ms) serve per permettere all'utente di scorrere un bottone alla volta
+        if (currentTimeMs - lastMenuInputTime > 200) {
+            if (yInput < -0.5) { // Analogico verso l'ALTO
+                currentPauseIndex--;
+                if (currentPauseIndex < 0) currentPauseIndex = pauseButtons.size() - 1; // Ritorna all'ultimo
+                updatePauseMenuSelection();
+                lastMenuInputTime = currentTimeMs;
+            } else if (yInput > 0.5) { // Analogico verso il BASSO
+                currentPauseIndex++;
+                if (currentPauseIndex >= pauseButtons.size()) currentPauseIndex = 0; // Ritorna al primo
+                updatePauseMenuSelection();
+                lastMenuInputTime = currentTimeMs;
+            }
+        }
+
+        // Selezione con il tasto del Salto (X / A)
+        boolean isConfirm = inputManager.isJumpButtonPressed(1);
+        if (isConfirm && !wasConfirmPressed) {
+            // .fire() simula il click sul pulsante selezionato
+            pauseButtons.get(currentPauseIndex).fire();
+        }
+        wasConfirmPressed = isConfirm;
+    }
+
+    private void handleVictoryScreen(){
+        if (!isVictoryScreenActive) {
+            isVictoryScreenActive = true;
+            victoryStartTime = System.currentTimeMillis();
+            view.showVictoryScreen(model.getWinner()); // Mostra l'immagine di vittoria
+        } else {
+            // Controlliamo se sono passati 2 secondi (2000 millisecondi)
+            if (!canSkipVictory && (System.currentTimeMillis() - victoryStartTime > 2000)) {
+                canSkipVictory = true;
+                view.showContinueText(); // Appare la scritta in basso a destra
+            }
+
+            // Se si può saltare e viene premuto un tasto (salto o pugno di uno dei due)
+            if (canSkipVictory && (inputManager.isJumpButtonPressed(1) || inputManager.isPunchButtonPressed(1) || 
+                                    inputManager.isJumpButtonPressed(2) || inputManager.isPunchButtonPressed(2))) {
+                returnToMainMenu();
+            }
+        }
     }
 }
