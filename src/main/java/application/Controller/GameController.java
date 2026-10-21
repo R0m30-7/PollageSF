@@ -391,57 +391,9 @@ public class GameController {
         charNodes.clear(); 
 
         for (CharacterData c : availableCharacters) {
-            VBox singleCharBox = new VBox(10); 
-            singleCharBox.setAlignment(Pos.CENTER);
-
-            // Usiamo uno StackPane per poter sovrapporre i cursori P1 e P2 all'immagine
-            StackPane imageContainer = new StackPane();
-            imageContainer.setPrefSize(120, 120);
-
-            ImageView pfp = new ImageView();
-            pfp.setFitWidth(120); 
-            pfp.setFitHeight(120);
-            
-            // Diciamo all'ImageView di non applicare MAI la sfocatura
-            pfp.setSmooth(false); 
-            
-            try {
-                String imageURL = getClass().getResource(c.pfpPath).toExternalForm();
-                
-                // Carichiamo l'immagine ingrandendola già a 120x120, mantenendo le proporzioni (true) 
-                // e soprattutto DISATTIVANDO lo smooth nativo (false)
-                Image img = new Image(imageURL, 120, 120, true, false);
-                
-                if (!img.isError()) pfp.setImage(img);
-            } catch (Exception e) {
-                System.out.println("⚠️ Nessuna foto trovata al percorso: " + c.pfpPath);
-            }
-
-            // Etichette P1 e P2 (inizialmente invisibili)
-            Label p1Cursor = new Label("P1");
-            p1Cursor.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
-            StackPane.setAlignment(p1Cursor, Pos.TOP_LEFT);
-            p1Cursor.setVisible(false);
-
-            Label p2Cursor = new Label("P2");
-            p2Cursor.setStyle("-fx-background-color: blue; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
-            StackPane.setAlignment(p2Cursor, Pos.BOTTOM_RIGHT);
-            p2Cursor.setVisible(false);
-
-            // Rettangolo di selezione
-            javafx.scene.shape.Rectangle border = new javafx.scene.shape.Rectangle(128, 128);
-            border.setFill(Color.TRANSPARENT);
-            border.setStrokeWidth(4);
-            border.setStroke(Color.TRANSPARENT);
-
-            imageContainer.getChildren().addAll(border, pfp, p1Cursor, p2Cursor);
-
-            Label nameLabel = new Label(c.displayName);
-            nameLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-            singleCharBox.getChildren().addAll(imageContainer, nameLabel);
+            VBox singleCharBox = createCharacterCard(c);
             charNodes.add(singleCharBox); 
-            charsContainer.getChildren().add(singleCharBox); 
+            charsContainer.getChildren().add(singleCharBox);
         }
 
         StackPane gridCenterer = new StackPane(charsContainer);
@@ -577,44 +529,16 @@ public class GameController {
         mapsContainer.setHgap(40); 
         mapsContainer.setVgap(40); 
         mapsContainer.setPrefColumns(3); 
-        mapsContainer.setMaxWidth(1200); 
+        mapsContainer.setMaxWidth(1200);
+        // Aggiunge un po' di padding per non tagliare l'evidenziazione gialla
+        mapsContainer.setPadding(new javafx.geometry.Insets(40, 0, 30, 0));
         
         mapNodes.clear();
 
-        // Aggiunge un po' di padding per non tagliare l'evidenziazione gialla
-        mapsContainer.setPadding(new javafx.geometry.Insets(40, 0, 30, 0));
-
         for (MapData map : availableMaps) {
-            VBox singleMapBox = new VBox(15); 
-            singleMapBox.setAlignment(Pos.CENTER);
-
-            ImageView thumb = new ImageView();
-            thumb.setFitWidth(300); 
-            thumb.setFitHeight(170);
-            thumb.setPreserveRatio(false); 
-            
-            try {
-                Image img = new Image(getClass().getResourceAsStream(map.imagePath));
-                if (!img.isError()) thumb.setImage(img);
-            } catch (Exception e) {
-                System.out.println("Nessuna foto trovata: " + map.imagePath);
-            }
-
-            // Crea un rettangolo grande quanto l'anteprima di una mappa
-            javafx.scene.shape.Rectangle clipRect = new javafx.scene.shape.Rectangle(300, 170);
-            // Smussa gli angoli di questo rettangolo (per smussare anche quelli dell'anteprima della mappa)
-            clipRect.setArcWidth(20);
-            clipRect.setArcHeight(20);
-            // Applica il rettangolo come maschera di ritaglio all'immagine
-            thumb.setClip(clipRect);
-
-            Label nameLabel = new Label(map.displayName);
-            nameLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-            singleMapBox.getChildren().addAll(thumb, nameLabel);
-            
+            VBox singleMapBox = createMapCard(map);
             mapNodes.add(singleMapBox); 
-            mapsContainer.getChildren().add(singleMapBox); 
+            mapsContainer.getChildren().add(singleMapBox);
         }
         
         // Creiamo un contenitore elastico che centra automaticamente la griglia al suo interno
@@ -796,6 +720,7 @@ public class GameController {
         double currentScale = scene.getHeight() / 1080.0;
         double screenW = scene.getWidth();
         double screenH = scene.getHeight();
+        int numPlayers = application.Utils.Settings.getInstance().getNumberOfPlayers();
         
         // Verifichiamo se dobbiamo aggiornare qualcosa
         boolean p1Changed = (p1CharIndex != lastP1Index) || (p1SkinIndex != lastP1SkinIndex);
@@ -804,34 +729,13 @@ public class GameController {
 
         // --- AGGIORNAMENTO LOGICO (creazione nuovi Player) ---
         if (p1Changed || scaleChanged) {
-            CharacterData data = availableCharacters.get(p1CharIndex);
-            if (data.factory != null) {
-                p1Preview = data.factory.create(new Point(0, 0));
-                p1Preview.updateDynamicScale(currentScale);
-                p1Preview.setFacingRight(true); 
-                p1Preview.setGrounded(true); 
-                p1Preview.setInMenuMode(true); // Indica che deve usare MENU_IDLE
-
-                // Applichiamo il colore scelto prima di creare il Renderer.
-                // (Così il Renderer estrarrà la pixel art dall'immagine corretta)
-                p1Preview.setSkinIndex(p1SkinIndex);
-            }
+            p1Preview = createMenuPreviewPlayer(p1CharIndex, p1SkinIndex, currentScale, true);
             p1PreviewRenderer = new application.View.PlayerRenderer(p1Preview);
             p1PreviewRenderer.setMenuMode();
         }
 
         if (p2Changed || scaleChanged) {
-            CharacterData data = availableCharacters.get(p2CharIndex);
-            if (data.factory != null) {
-                p2Preview = data.factory.create(new Point(0, 0));
-                p2Preview.updateDynamicScale(currentScale);
-                p2Preview.setFacingRight(false); 
-                p2Preview.setGrounded(true);
-                p2Preview.setInMenuMode(true);
-
-                // Applichiamo il colore scelto anche al P2
-                p2Preview.setSkinIndex(p2SkinIndex);
-            }
+            p2Preview = createMenuPreviewPlayer(p2CharIndex, p2SkinIndex, currentScale, false);
             p2PreviewRenderer = new application.View.PlayerRenderer(p2Preview);
             p2PreviewRenderer.setMenuMode();
         }
@@ -840,7 +744,7 @@ public class GameController {
         if (p1Changed || p2Changed || scaleChanged) {
             previewLayer.getChildren().clear();
             if (p1PreviewRenderer != null) previewLayer.getChildren().add(p1PreviewRenderer.getNode());
-            if (p2PreviewRenderer != null && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2) {
+            if (p2PreviewRenderer != null && numPlayers == 2) {
                 previewLayer.getChildren().add(p2PreviewRenderer.getNode());
             }
             
@@ -857,7 +761,7 @@ public class GameController {
             // Mostriamo o nascondiamo il suggerimento testuale dei colori
             // Verifichiamo se almeno uno dei due giocatori sta scegliendo un personaggio con più colori
             boolean p1HasSkins = p1Preview != null && !p1Preview.getAvailableSkins().isEmpty();
-            boolean p2HasSkins = (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty() && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2);
+            boolean p2HasSkins = (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty() && numPlayers == 2);
             
             if (skinInstructionLabel != null) {
                 skinInstructionLabel.setVisible(p1HasSkins || p2HasSkins);
@@ -867,14 +771,10 @@ public class GameController {
         // --- RENDERING ANIMATO (sempre attivo per far muovere i personaggi) ---
         double margin = 150 * currentScale; 
         if (p1Preview != null) {
-            p1Preview.setPosition(new Point(margin, screenH - p1Preview.getHeight() - margin));
-            p1Preview.updateAnimationState();
-            p1PreviewRenderer.render(p1Preview);
+            renderSinglePreview(p1Preview, p1PreviewRenderer, margin, screenH - p1Preview.getHeight() - margin);
         }
         if (p2Preview != null && application.Utils.Settings.getInstance().getNumberOfPlayers() == 2) {
-            p2Preview.setPosition(new Point(screenW - p2Preview.getWidth() - margin, screenH - p2Preview.getHeight() - margin));
-            p2Preview.updateAnimationState();
-            p2PreviewRenderer.render(p2Preview);
+            renderSinglePreview(p2Preview, p2PreviewRenderer, screenW - p2Preview.getWidth() - margin, screenH - p2Preview.getHeight() - margin);
         }
     }
     
@@ -986,43 +886,27 @@ public class GameController {
 
         // --- GIOCATORE 1 ---
         if (!p1Confirmed) {
-            double x1 = inputManager.getLeftStickX(1);
-            double y1 = inputManager.getLeftStickY(1);
-
             // Memorizziamo il vecchio personaggio per capire se è cambiato
             int oldCharIndex = p1CharIndex;
             
-            if (currentTimeMs - lastCharInputTimeP1 > 200) { 
-                if (x1 < -0.5) { p1CharIndex--; lastCharInputTimeP1 = currentTimeMs; }
-                else if (x1 > 0.5) { p1CharIndex++; lastCharInputTimeP1 = currentTimeMs; }
-                else if (y1 < -0.5) { p1CharIndex -= cols; lastCharInputTimeP1 = currentTimeMs; }
-                else if (y1 > 0.5) { p1CharIndex += cols; lastCharInputTimeP1 = currentTimeMs; }
-                // Ciclo infinito (se esci dai bordi torni all'inizio)
-                if (p1CharIndex < 0) p1CharIndex = availableCharacters.size() - 1;
-                if (p1CharIndex >= availableCharacters.size()) p1CharIndex = 0;
-            }
-
-            // Se cambia personaggio, resetta il colore al default
-            if (p1CharIndex != oldCharIndex) {
-                p1SkinIndex = 0;
+            if (currentTimeMs - lastCharInputTimeP1 > 200) {
+                double x1 = inputManager.getLeftStickX(1);
+                double y1 = inputManager.getLeftStickY(1);
+                p1CharIndex = calculateNextGridIndex(p1CharIndex, x1, y1, cols);
+                
+                // Se cambia personaggio, resetta il colore al default
+                if (p1CharIndex != oldCharIndex) {
+                    lastCharInputTimeP1 = currentTimeMs;
+                    p1SkinIndex = 0;
+                }
             }
 
             // Cambio Colore P1
             boolean isL1P1 = inputManager.isL1ButtonPressed(1);
             boolean isR1P1 = inputManager.isR1ButtonPressed(1);
-
-            if (p1Preview != null && !p1Preview.getAvailableSkins().isEmpty()) {
-                if (isL1P1 && !wasL1P1Pressed) {
-                    System.out.println("P1: L1 premuto.");
-                    p1SkinIndex--;
-                    if (p1SkinIndex < 0) p1SkinIndex = p1Preview.getAvailableSkins().size() - 1;
-                }
-                if (isR1P1 && !wasR1P1Pressed) {
-                    System.out.println("P1: R1 premuto.");
-                    p1SkinIndex++;
-                    if (p1SkinIndex >= p1Preview.getAvailableSkins().size()) p1SkinIndex = 0;
-                }
-            }
+            
+            p1SkinIndex = cycleSkinIndex(p1SkinIndex, p1Preview, isL1P1, wasL1P1Pressed, isR1P1, wasR1P1Pressed);
+            
             wasL1P1Pressed = isL1P1;
             wasR1P1Pressed = isR1P1;
         }
@@ -1039,40 +923,26 @@ public class GameController {
         // --- GIOCATORE 2 ---
         if (numPlayers == 2) {
             if (!p2Confirmed) {
-                double x2 = inputManager.getLeftStickX(2);
-                double y2 = inputManager.getLeftStickY(2);
-
                 // Memorizziamo il vecchio personaggio per capire se è cambiato
                 int oldCharIndex2 = p2CharIndex;
                 
                 if (currentTimeMs - lastCharInputTimeP2 > 200) { 
-                    if (x2 < -0.5) { p2CharIndex--; lastCharInputTimeP2 = currentTimeMs; }
-                    else if (x2 > 0.5) { p2CharIndex++; lastCharInputTimeP2 = currentTimeMs; }
-                    else if (y2 < -0.5) { p2CharIndex -= cols; lastCharInputTimeP2 = currentTimeMs; }
-                    else if (y2 > 0.5) { p2CharIndex += cols; lastCharInputTimeP2 = currentTimeMs; }
+                    double x2 = inputManager.getLeftStickX(2);
+                    double y2 = inputManager.getLeftStickY(2);
 
-                    if (p2CharIndex < 0) p2CharIndex = availableCharacters.size() - 1;
-                    if (p2CharIndex >= availableCharacters.size()) p2CharIndex = 0;
-                }
-
-                if (p2CharIndex != oldCharIndex2) {
-                    p2SkinIndex = 0;
+                    p2CharIndex = calculateNextGridIndex(p2CharIndex, x2, y2, cols);
+                    
+                    if (p2CharIndex != oldCharIndex2) {
+                        p2SkinIndex = 0;
+                    }
                 }
 
                 // Cambio Colore P2
                 boolean isL1P2 = inputManager.isL1ButtonPressed(2);
                 boolean isR1P2 = inputManager.isR1ButtonPressed(2);
                 
-                if (p2Preview != null && !p2Preview.getAvailableSkins().isEmpty()) {
-                    if (isL1P2 && !wasL1P2Pressed) {
-                        p2SkinIndex--;
-                        if (p2SkinIndex < 0) p2SkinIndex = p2Preview.getAvailableSkins().size() - 1;
-                    }
-                    if (isR1P2 && !wasR1P2Pressed) {
-                        p2SkinIndex++;
-                        if (p2SkinIndex >= p2Preview.getAvailableSkins().size()) p2SkinIndex = 0;
-                    }
-                }
+                p2SkinIndex = cycleSkinIndex(p2SkinIndex, p2Preview, isL1P2, wasL1P2Pressed, isR1P2, wasR1P2Pressed);
+                
                 wasL1P2Pressed = isL1P2;
                 wasR1P2Pressed = isR1P2;
             }
@@ -1098,6 +968,57 @@ public class GameController {
         
         // Renderizza i personaggi animati scelti
         updatePreviews();
+    }
+
+    private int calculateNextGridIndex(int currentIndex, double stickX, double stickY, int cols) {
+        int nextIndex = currentIndex;
+
+        if (stickX < -0.5) {
+            nextIndex--;
+        } else if (stickX > 0.5) {
+            nextIndex++;
+        } else if (stickY < -0.5) {
+            nextIndex -= cols;
+        } else if (stickY > 0.5) {
+            nextIndex += cols;
+        }
+
+        // Ciclo infinito (se esci dai bordi torni all'inizio/fine)
+        if (nextIndex < 0) {
+            nextIndex = availableCharacters.size() - 1;
+        } else if (nextIndex >= availableCharacters.size()) {
+            nextIndex = 0;
+        }
+
+        return nextIndex;
+    }
+
+    private int cycleSkinIndex(int currentSkin, application.Model.Player preview, boolean isL1, boolean wasL1, boolean isR1, boolean wasR1) {
+        // Se il personaggio non è ancora caricato o non ha skin, manteniamo l'indice attuale
+        if (preview == null || preview.getAvailableSkins().isEmpty()) {
+            return currentSkin;
+        }
+
+        int totalSkins = preview.getAvailableSkins().size();
+        int nextSkin = currentSkin;
+
+        // Se L1 è stato appena premuto, vai alla skin precedente
+        if (isL1 && !wasL1) {
+            nextSkin--;
+            if (nextSkin < 0) {
+                nextSkin = totalSkins - 1;
+            }
+        }
+
+        // Se R1 è stato appena premuto, vai alla skin successiva
+        if (isR1 && !wasR1) {
+            nextSkin++;
+            if (nextSkin >= totalSkins) {
+                nextSkin = 0;
+            }
+        }
+
+        return nextSkin;
     }
 
     private void handleMapSelectionState(){
@@ -1287,5 +1208,108 @@ public class GameController {
                 returnToMainMenu();
             }
         }
+    }
+
+    // --- Crea e configura il Player per l'anteprima nel menu ---
+    private application.Model.Player createMenuPreviewPlayer(int charIndex, int skinIndex, double scale, boolean facingRight) {
+        CharacterData data = availableCharacters.get(charIndex);
+        if (data.factory == null) {
+            return null;
+        }
+
+        application.Model.Player preview = data.factory.create(new Point(0, 0));
+        preview.updateDynamicScale(scale);
+        preview.setFacingRight(facingRight);
+        preview.setGrounded(true);
+        preview.setInMenuMode(true); // Indica che deve usare MENU_IDLE
+        preview.setSkinIndex(skinIndex); // Applica il colore scelto
+        return preview;
+    }
+
+    // --- Posiziona e disegna un singolo personaggio di anteprima ---
+    private void renderSinglePreview(application.Model.Player preview, application.View.PlayerRenderer renderer, double x, double y) {
+        if (preview != null && renderer != null) {
+            preview.setPosition(new Point(x, y));
+            preview.updateAnimationState();
+            renderer.render(preview);
+        }
+    }
+
+    // --- Costruisce il singolo riquadro (card) di un personaggio ---
+    private VBox createCharacterCard(CharacterData c) {
+        VBox singleCharBox = new VBox(10); 
+        singleCharBox.setAlignment(Pos.CENTER);
+
+        // StackPane per sovrapporre i cursori P1 e P2 all'immagine
+        StackPane imageContainer = new StackPane();
+        imageContainer.setPrefSize(120, 120);
+
+        ImageView pfp = new ImageView();
+        pfp.setFitWidth(120); 
+        pfp.setFitHeight(120);
+        pfp.setSmooth(false); 
+        
+        try {
+            String imageURL = getClass().getResource(c.pfpPath).toExternalForm();
+            Image img = new Image(imageURL, 120, 120, true, false);
+            if (!img.isError()) pfp.setImage(img);
+        } catch (Exception e) {
+            System.out.println("Nessuna foto trovata al percorso: " + c.pfpPath);
+        }
+
+        // Etichette P1 e P2 (inizialmente invisibili)
+        Label p1Cursor = new Label("P1");
+        p1Cursor.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
+        StackPane.setAlignment(p1Cursor, Pos.TOP_LEFT);
+        p1Cursor.setVisible(false);
+
+        Label p2Cursor = new Label("P2");
+        p2Cursor.setStyle("-fx-background-color: blue; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 5;");
+        StackPane.setAlignment(p2Cursor, Pos.BOTTOM_RIGHT);
+        p2Cursor.setVisible(false);
+
+        // Rettangolo di selezione
+        javafx.scene.shape.Rectangle border = new javafx.scene.shape.Rectangle(128, 128);
+        border.setFill(Color.TRANSPARENT);
+        border.setStrokeWidth(4);
+        border.setStroke(Color.TRANSPARENT);
+
+        imageContainer.getChildren().addAll(border, pfp, p1Cursor, p2Cursor);
+
+        Label nameLabel = new Label(c.displayName);
+        nameLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        singleCharBox.getChildren().addAll(imageContainer, nameLabel);
+        return singleCharBox;
+    }
+
+    // --- Costruisce il singolo riquadro (card) di una mappa ---
+    private VBox createMapCard(MapData map) {
+        VBox singleMapBox = new VBox(15); 
+        singleMapBox.setAlignment(Pos.CENTER);
+
+        ImageView thumb = new ImageView();
+        thumb.setFitWidth(300); 
+        thumb.setFitHeight(170);
+        thumb.setPreserveRatio(false); 
+        
+        try {
+            Image img = new Image(getClass().getResourceAsStream(map.imagePath));
+            if (!img.isError()) thumb.setImage(img);
+        } catch (Exception e) {
+            System.out.println("Nessuna foto trovata: " + map.imagePath);
+        }
+
+        // Rettangolo con angoli smussati usato come maschera di ritaglio
+        javafx.scene.shape.Rectangle clipRect = new javafx.scene.shape.Rectangle(300, 170);
+        clipRect.setArcWidth(20);
+        clipRect.setArcHeight(20);
+        thumb.setClip(clipRect);
+
+        Label nameLabel = new Label(map.displayName);
+        nameLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        singleMapBox.getChildren().addAll(thumb, nameLabel);
+        return singleMapBox;
     }
 }
