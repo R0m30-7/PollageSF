@@ -1,0 +1,408 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\setlist[itemize]{label=-}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    pdftitle={Tesina Finale - PollageSF},
+    pdfauthor={Romeo Miscio, Paolo Ferrari}
+}
+
+\begin{document}
+
+% ==========================================================
+% FRONTESPIZIO
+% ==========================================================
+\begin{titlepage}
+\centering
+\vspace*{0.5cm}
+
+% Se il file unipg_logo.png non è presente, viene visualizzato un riquadro segnaposto
+\IfFileExists{figures/unipg_logo.png}{%
+    \includegraphics[width=0.35\textwidth]{figures/unipg_logo.png}%
+}{%
+    \framebox[0.35\textwidth]{\rule{0pt}{3cm}Logo UniPG}%
+}
+
+\vspace{0.4cm}
+{\scshape\Large Università degli Studi di Perugia \par}
+\vspace{0.2cm}
+{\scshape\large Dipartimento di Ingegneria \par}
+\vspace{1.2cm}
+
+{\Large Tesina Finale di\par}
+\vspace{0.2cm}
+{\large\textbf{Programmazione di Interfacce Grafiche e Dispositivi Mobili}\par}
+\vspace{0.2cm}
+{\normalsize Corso di Laurea in Ingegneria Informatica ed Elettronica -- A.A. 2025-2026\par}
+
+\vspace{1.8cm}
+{\Huge\bfseries PollageSF\par}
+\vspace{0.3cm}
+{\Large applicazione desktop JAVAFX\par}
+\vspace{2.2cm}
+
+\begin{minipage}[t]{0.48\textwidth}
+\begin{flushleft} \large
+\emph{Docente:}\\
+Prof. Luca \textsc{Grilli}
+\end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{flushright} \large
+\emph{Studenti:}\\
+364672 Romeo \textsc{Miscio}\\
+{\small \texttt{romeo.miscio@studenti.unipg.it}}\\[0.3cm]
+367169 Paolo \textsc{Ferrari}\\
+{\small \texttt{paolo.ferrari@studenti.unipg.it}}
+\end{flushright}
+\end{minipage}
+
+\vfill
+{\normalsize Data ultimo aggiornamento: \today\par}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ==========================================================
+% CAPITOLO 1: DESCRIZIONE DEL PROBLEMA
+% ==========================================================
+\section{Descrizione del Problema}
+L'obiettivo di questo lavoro è lo sviluppo di un'applicazione desktop, denominata \textbf{PollageSF}, che realizza una versione semplificata ma ingegneristicamente rigorosa del celebre videogioco picchiaduro \emph{Street Fighter} [1]. L'applicazione è stata interamente progettata e implementata utilizzando il linguaggio Java e la tecnologia \textbf{JavaFX} [2], scelta per favorire un'ampia compatibilità su diversi sistemi operativi e per garantire una gestione strutturata del grafo di scena (\emph{Scene Graph}), del rendering grafico hardware-accelerato e delle animazioni in tempo reale.
+
+Di seguito viene presentata una sintetica panoramica del videogioco arcade originale \emph{Street Fighter}, seguita da una descrizione dettagliata delle caratteristiche funzionali e di gameplay della versione \textbf{PollageSF} realizzata.
+
+\subsection{Il Videogioco Street Fighter}
+\emph{Street Fighter} è un celebre videogioco arcade di combattimento a incontri in tempo reale sviluppato da Capcom, strutturato su duelli uno contro uno all'interno di un'arena bidimensionale a scorrimento orizzontale [1]. Ciascun giocatore seleziona un lottatore dal roster disponibile, ognuno caratterizzato da attributi fisici specifici, un set unico di attacchi normali corpo a corpo (pugni rapidi, ganci pesanti, calci alti e bassi), mosse speciali a distanza (come il celebre proiettile energetico \emph{Hadouken}) e tecniche difensive.
+
+L'obiettivo primario di ogni incontro consiste nell'azzerare la barra della salute (\emph{Health Bar}) dell'avversario prima dello scadere del tempo regolamentare. La profondità strategica e competitiva del titolo risiede in tre fattori fondamentali:
+\begin{itemize}
+    \item La gestione accurata delle distanze (\emph{footsies} e \emph{spacing}) e la previsione delle intenzioni dell'avversario;
+    \item La conoscenza delle finestre temporali delle mosse (\emph{Startup}, \emph{Active} e \emph{Recovery frames}) per punire gli attacchi andati a vuoto;
+    \item Il controllo dello spazio dell'arena per chiudere l'avversario all'angolo (\emph{corner pressure}) o neutralizzare l'offensiva nemica tramite parate tempestive (\emph{Parry}).
+\end{itemize}
+
+\subsection{L'applicazione PollageSF}
+\textbf{PollageSF} riproduce le meccaniche fondamentali del picchiaduro bidimensionale all'interno di un'applicazione desktop progettata secondo il pattern architetturale \textbf{Model-View-Controller (MVC)} [3]. Il sistema è pensato per offrire un'esperienza multigiocatore locale immediata e reattiva tramite l'utilizzo simultaneo di gamepad esterni gestiti a basso livello mediante la libreria \emph{Jamepad} (basata su SDL2) [4].
+
+Il flusso operativo dell'applicazione accompagna gli utenti attraverso una sequenza strutturata di menu interattivi prima di avviare lo scontro:
+\begin{enumerate}
+    \item \textbf{Menu di Connessione Controller (\emph{Drop-in}):} L'applicazione rileva in tempo reale i gamepad collegati via USB o Bluetooth. I giocatori si uniscono alla sessione premendo un tasto d'azione, con supporto sia per la modalità a due giocatori umani sia per la configurazione a giocatore singolo.
+    \item \textbf{Menu di Selezione del Lottatore e delle Skin:} Una griglia interattiva consente ai giocatori di muovere indipendentemente i propri cursori (\texttt{P1} rosso e \texttt{P2} blu) tra i personaggi del roster (\emph{Ryu}, \emph{Ken}). Durante la selezione, vengono mostrate in tempo reale le anteprime animate dei lottatori scelti, potendo decidere il colore della skin (\emph{skin}) tramite i tasti dorsali \texttt{L1} e \texttt{R1}.
+    \item \textbf{Menu di Selezione dell'Arena:} I giocatori scelgono lo scenario di combattimento tra dieci mappe differenti (tra cui \emph{UniPG}, \emph{Fight Club}, \emph{Paradise \& Hell}, \emph{Villaggio incantato}), ciascuna dotata di una propria immagine panoramica ad alta risoluzione e di una specifica altezza prospettica del piano di calpestio (\texttt{groundLevelRatio}).
+\end{enumerate}
+
+Una volta avviato il match, i due contendenti si affrontano in un'arena più ampia della singola schermata visibile. Una telecamera virtuale dinamica segue l'azione calcolando il punto medio tra i lottatori e applicando una zona morta centrale (\emph{deadzone}) combinata con un'interpolazione lineare (\emph{LERP}) per garantire movimenti di inquadratura fluidi. Il sistema di combattimento integra attacchi in piedi e accovacciati (\emph{crouch}), proiettili energetici e una meccanica avanzata di difesa che distingue tra parata parziale (con riduzione progressiva del danno) e \emph{Parry perfetto} (che azzera il danno subito e stordisce temporaneamente l'attaccante).
+
+\newpage
+
+% ==========================================================
+% CAPITOLO 2: SPECIFICA DEI REQUISITI
+% ==========================================================
+\section{Specifica dei Requisiti}
+L'applicazione \textbf{PollageSF} è stata progettata e realizzata per soddisfare i seguenti requisiti funzionali e non funzionali, espressi in forma puntuale secondo lo standard di progetto:
+
+\begin{enumerate}
+    \item \textbf{Separazione Architetturale MVC:} L'intero sistema software deve rispettare rigorosamente il pattern \emph{Model-View-Controller}, disaccoppiando la logica di simulazione fisica (\texttt{application.Model}) dalla rappresentazione grafica JavaFX (\texttt{application.View}) attraverso interfacce a sola lettura (\texttt{IReadOnlyGameModel} e \texttt{IReadOnlyPlayer}).
+    \item \textbf{Game Loop a Passo Fisso con Accumulatore:} L'aggiornamento del motore fisico deve essere governato da un ciclo basato su \texttt{AnimationTimer} che utilizza un accumulatore temporale (\texttt{physicsAccumulator}) e un passo costante (\texttt{TIME\_PER\_TICK}), garantendo una simulazione deterministica indipendente dalla frequenza di rendering (\texttt{targetFps}).
+    \item \textbf{Gestione Multi-Gamepad e Drop-in Dinamico:} Il sistema deve supportare l'input simultaneo e privo di latenza da due controller tramite la libreria SDL2/Jamepad, offrendo un menu iniziale di accoppiamento alla pressione di un tasto.
+    \item \textbf{Sistema di Sicurezza per Disconnessione Controller:} Durante il combattimento, l'applicazione deve monitorare costantemente lo stato fisico dei gamepad e, in caso di scollegamento accidentale, congelare immediatamente la fisica di gioco mostrando un overlay di emergenza con sfocatura gaussiana (\texttt{GaussianBlur}) fino alla riconnessione del dispositivo.
+    \item \textbf{Selezione Personaggi con Anteprima Animata e Skin:} Il menu di scelta del lottatore deve consentire la selezione indipendente per Giocatore 1 e Giocatore 2, visualizzando lo sprite animato in tempo reale e permettendo la personalizzazione della palette cromatica (\emph{skin}) tramite i tasti dorsali \texttt{L1} e \texttt{R1}.
+    \item \textbf{Selezione Arena con Telecamera UI Scorrevole:} Il menu di selezione della mappa deve presentare una griglia di anteprime con bordi arrotondati, inseguimento automatico dello scroll verticale (\texttt{ScrollPane}) sul nodo selezionato e aggiornamento dinamico dello sfondo in anteprima.
+    \item \textbf{Gestione della fisica e collisioni:} Il motore fisico deve gestire salti e forza di gravità, applicando un moltiplicatore di gravità maggiorato ($2.5\times$) qualora il giocatore rilasci anticipatamente il pulsante di salto durante la fase di salita. Devono essere rilevate le intersezioni tra Hitbox d'attacco e Hurtbox corporea per validare il danno, impedendo inoltre la compenetrazione dei corpi tra i due giocatori mediante una forza di reazione repulsiva.
+    \item \textbf{Sistema di Difesa Dinamico e Parry Perfetto:} La parata frontale deve ridurre il danno in proporzione al fotogramma di parata raggiunto; se l'impatto avviene sull'ultimo frame dell'animazione di blocco, deve attivarsi un \emph{Parry perfetto} che annulla il danno e infligge uno stato di stordimento (\texttt{stun}) all'attaccante.
+    \item \textbf{Telecamera Dinamica con Deadzone e LERP:} L'inquadratura dell'arena deve seguire il punto medio tra i due lottatori, attivando lo scorrimento solo al superamento delle soglie del $25\%$ e $75\%$ dello schermo e applicando un'interpolazione lineare morbida ($\text{cameraSpeed} = 0.08$).
+    \item \textbf{Scaling Nearest-Neighbor e Caching delle Texture:} Per preservare la nitidezza della pixel art a qualsiasi risoluzione dello schermo, il renderer deve ingrandire i fotogrammi tramite campionamento \emph{Nearest-Neighbor} via software, salvando le immagini risultanti in una struttura di cache (\texttt{HashMap}) indicizzata anche per palette di colore.
+    \item \textbf{Interfaccia HUD e Risoluzione Indipendente:} L'interfaccia utente in partita (\texttt{HUDView}) deve mostrare barre della salute reattive (con riduzione speculare verso il centro dello schermo) e il timer di gioco, scalando proporzionalmente tutti gli elementi rispetto all'altezza della finestra.
+    \item \textbf{Gestione Pausa e Fine Partita:} Il gioco deve consentire la messa in pausa tramite controller con navigazione dei pulsanti via levetta analogica e gestire la schermata di vittoria finale al raggiungimento di 0 punti vita da parte di uno dei contendenti.
+\end{enumerate}
+
+\newpage
+
+% ==========================================================
+% CAPITOLO 3: PROGETTO
+% ==========================================================
+\section{Progetto}
+Nel presente capitolo viene descritta nel dettaglio la progettazione del gioco \textbf{PollageSF}, analizzando l'architettura complessiva, le responsabilità dei singoli package (\texttt{Model}, \texttt{View}, \texttt{Controller}) e le soluzioni adottate per risolvere le principali problematiche tecniche emerse durante lo sviluppo.
+
+\subsection{Architettura del Sistema Software}
+Il sistema software è stato progettato adottando rigorosamente il pattern architetturale \textbf{Model-View-Controller (MVC)} [3], al fine di garantire un elevato grado di modularità, manutenibilità ed estendibilità del codice sorgente. La separazione delle responsabilità è così definita:
+
+\begin{itemize}
+    \item \textbf{Modulo Model (\texttt{application.Model}):} Contiene la logica di tutto il gioco, lo stato della partita, la cinematica dei corpi, la gestione delle animazioni a livello logico e il motore delle collisioni. Il Model non importa né utilizza alcun nodo grafico della libreria JavaFX (come \texttt{Pane}, \texttt{ImageView} o \texttt{Scene}), risultando completamente indipendente dalla tecnologia di visualizzazione.
+    \item \textbf{Modulo View (\texttt{application.View}):} Si occupa esclusivamente della rappresentazione visiva su schermo. Riceve in ingresso dal Controller un riferimento al Model tipizzato attraverso le interfacce di sola lettura \texttt{IReadOnlyGameModel} e \texttt{IReadOnlyPlayer}. In questo modo, la View può interrogare lo stato del mondo (posizioni, punti vita, stato dell'animazione corrente, posizione della telecamera) per disegnare i fotogrammi, ma le è impedito a livello di compilazione invocare metodi mutatori (come \texttt{takeDamage}, \texttt{moveHorizontal} o \texttt{spawnPlayers}).
+    \item \textbf{Modulo Controller (\texttt{application.Controller}):} Costituisce il coordinatore dell'applicazione. Gestisce il ciclo di vita della finestra (\texttt{Stage} e \texttt{Scene}), mantiene attivo il \emph{Game Loop} principale, interroga le periferiche hardware (gamepad) tramite \texttt{InputManager}, gestisce i menu sovrapposti alla scena e invoca ad ogni tick prima l'aggiornamento logico (\texttt{model.update(inputManager)}) e successivamente quello grafico (\texttt{view.render(model)}).
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\framebox[0.7\textwidth]{\rule{0pt}{3cm}Diagramma Architetturale MVC}
+\caption{Architettura Model-View-Controller del sistema PollageSF con interfacce di disaccoppiamento.}
+\label{fig:mvc_arch}
+\end{figure}
+
+\subsection{Model}
+Il package \texttt{application.Model} racchiude il cuore computazionale e fisico del picchiaduro. Di seguito vengono analizzate le classi fondamentali che lo compongono.
+
+\subsubsection{Coordinamento del Mondo e Telecamera (\texttt{GameModel})}
+La classe \texttt{GameModel} (che implementa \texttt{IReadOnlyGameModel}) mantiene i riferimenti ai due contendenti (\texttt{player1} e \texttt{player2}), alla lista dinamica dei proiettili attivi (\texttt{List<Projectile> projectiles}) e alle dimensioni logiche dell'arena (\texttt{worldWidth} e \texttt{currentGroundLevel}). Tutte le entità vivono in un sistema di coordinate assolute espresso tramite la classe \texttt{Point(x, y)}.
+
+Ad ogni invocazione del metodo \texttt{update(InputManager input)}, il modello esegue in sequenza:
+\begin{enumerate}
+    \item L'aggiornamento dei contatori temporali delle mosse attive (\texttt{updateTicks()});
+    \item L'integrazione della fisica verticale e della gravità (\texttt{applyPhysics()}) per entrambi i giocatori;
+    \item La lettura degli input di movimento, salto, postura accovacciata (\texttt{crouch}), parata e attacco (solo se il giocatore non si trova nello stato di stordimento \texttt{isStunned()}), rilevando i fronti di salita dei pulsanti tramite flag di memoria (\texttt{wasP1PunchHeld}, \texttt{wasP1JumpHeld}, ecc.) per evitare ripetizioni involontarie tenendo premuto il tasto;
+    \item L'avanzamento dei proiettili in volo e la verifica dell'impatto con il bersaglio;
+    \item La risoluzione del combattimento corpo a corpo (\texttt{handleCombat}) in entrambe le direzioni;
+    \item L'applicazione dei vincoli spaziali (\texttt{keepPlayerInBounds} e \texttt{collisionDetection});
+    \item Il calcolo della posizione della telecamera (\texttt{cameraX}) e la chiusura dei giocatori all'interno dell'inquadratura visibile (\texttt{keepPlayerOnScreen}).
+\end{enumerate}
+
+Particolarmente significativa è la logica matematica che governa la telecamera orizzontale. Dato il punto medio assoluto tra i due lottatori:
+\begin{equation}
+    X_{\text{mid}} = \frac{X_{P1} + X_{P2}}{2}
+\end{equation}
+viene calcolata la sua proiezione rispetto all'inquadratura corrente ($X_{\text{screen}} = X_{\text{mid}} - \text{cameraX}$). Definiti i margini della \emph{Deadzone} centrale al $25\%$ ($T_L = 0.25 \cdot W_{\text{win}}$) e al $75\%$ ($T_R = 0.75 \cdot W_{\text{win}}$) della larghezza della finestra, la posizione target della telecamera $\text{targetCameraX}$ viene modificata solo quando il fulcro oltrepassa tali soglie, venendo poi limitata (\emph{clamping}) nell'intervallo $[0, \text{worldWidth} - W_{\text{win}}]$. Infine, per evitare scatti bruschi, viene applicata un'interpolazione lineare (\emph{LERP}) ad ogni tick:
+\begin{equation}
+    \text{cameraX}_{k+1} = \text{cameraX}_{k} + \left(\text{targetCameraX} - \text{cameraX}_{k}\right) \cdot \alpha \quad \text{con } \alpha = 0.08
+\end{equation}
+
+\subsubsection{Gerarchia dei Lottatori (\texttt{Player}, \texttt{Ryu}, \texttt{Ken})}
+La classe \texttt{Player} modella un generico combattente implementando l'interfaccia \texttt{IReadOnlyPlayer}. Essa gestisce:
+\begin{itemize}
+    \item \textbf{Cinematica e Salto Adattivo:} Nel metodo \texttt{applyPhysics(double groundLevelY, boolean isJumpHeld)}, la velocità verticale \texttt{velocityY} viene incrementata ad ogni tick del valore \texttt{gravity}. Se tuttavia il personaggio sta salendo ($\text{velocityY} < 0$) ma l'utente ha già rilasciato il tasto di salto (\texttt{!isJumpHeld}), il sistema applica una gravità amplificata ($\text{velocityY} \mathrel{+}= \text{gravity} \cdot 2.5$), permettendo di eseguire salti bassi tattici (\emph{short hop}) o salti completi in base alla durata della pressione.
+    \item \textbf{Accovacciamento e Ricalcolo Hurtbox:} Il metodo \texttt{setCrouching(boolean)} riduce l'altezza del personaggio al $60\%$ dell'altezza normale ($\text{targetHeight} = 0.6 \cdot \text{normalHeight}$) e trasla simultaneamente la coordinata $Y$ verso il basso della differenza $\Delta H = \text{normalHeight} - \text{targetHeight}$, garantendo che i piedi rimangano saldamente ancorati al pavimento mentre la testa scende per schivare colpi alti.
+    \item \textbf{Macchina a Stati delle Animazioni:} Il metodo \texttt{updateAnimationState()} determina a ogni tick quale valore dell'enumerazione \texttt{AnimState} assegnare al giocatore, seguendo una rigorosa gerarchia di priorità:
+    \begin{enumerate}
+        \item \emph{Stordimento (\texttt{isStunned()}):} priorità assoluta; congela il lottatore nel fotogramma corrente;
+        \item \emph{Danno subito (\texttt{isHurt}):} blocca il personaggio nell'animazione \texttt{HURT\_RIGHT/LEFT} (o \texttt{HURT\_CROUCH}) per l'intera durata temporale prevista dai frame (\texttt{frameCount * speedNs});
+        \item \emph{Cambio di direzione (\texttt{isTurning}):} esegue l'animazione \texttt{TURN} per $150\text{ ms}$ quando il giocatore inverte l'orientamento a terra;
+        \item \emph{Mossa d'attacco attiva (\texttt{activeMove != null}):} imposta lo stato dettato dalla mossa in corso (\texttt{PUNCH}, \texttt{HOOK}, \texttt{KICK}, \texttt{HADOUKEN}, \texttt{PUNCH\_CROUCH});
+        \item \emph{Difesa (\texttt{isDefending}):} seleziona \texttt{BLOCK} o \texttt{CROUCH\_BLOCK};
+        \item \emph{Postura e Movimento (\texttt{isCrouching}, \texttt{!isGrounded}, \texttt{isMoving}):} seleziona rispettivamente \texttt{CROUCH}, \texttt{JUMP} o \texttt{WALK};
+        \item \emph{Stato di riposo:} imposta \texttt{MENU\_IDLE} (se nel menu di selezione) oppure \texttt{IDLE\_RIGHT/LEFT}.
+    \end{enumerate}
+    \item \textbf{Scaling Dinamico Universale:} Attraverso i metodi \texttt{saveBaseStats()} e \texttt{updateDynamicScale(double windowScale)}, il giocatore conserva le statistiche fisiche di base (velocità, gravità, forza di salto, dimensioni logiche della hitbox e portata dei colpi) e le moltiplica dinamicamente per il fattore di scala della finestra, garantendo che la fisica si comporti in modo identico a qualsiasi risoluzione video.
+\end{itemize}
+
+Le sottoclassi concrete, come \texttt{Ryu} e \texttt{Ken}, estendono \texttt{Player} definendo nel proprio costruttore le statistiche specifiche (ad esempio \texttt{Ryu} ha $\text{punchDamage} = 10.0$, mentre \texttt{Ken} ha un attacco rapido da $9.0$), il percorso al manifesto JSON delle texture (\texttt{TextureAtlas}), la larghezza calibrata della hurtbox ($\text{width} = \text{defaultFrame.getWidth()} \cdot 0.70 \cdot \text{renderScale}$), la mappa completa \texttt{Map<AnimState, AnimData> animations} e la lista delle 7 palette cromatiche disponibili (\texttt{availableSkins}).
+
+\subsubsection{Sistema Polimorfo delle Mosse (\texttt{Move}, \texttt{MeleeMove}, \texttt{RangedMove})}
+Per evitare la proliferazione di variabili booleane all'interno della classe \texttt{Player}, le azioni offensive sono state modellate mediante polimorfismo:
+\begin{itemize}
+    \item \textbf{\texttt{Move} (Classe Astratta):} Memorizza il riferimento al lottatore che esegue l'azione (\texttt{Player user}), l'istante di avvio in nanosecondi (\texttt{startTimeNs}) e il flag di sicurezza \texttt{hasHit} (che impedisce a un singolo attacco di infliggere danno in più tick consecutivi). Espone i metodi astratti \texttt{isFinished()}, \texttt{getActiveHitbox()}, \texttt{getDamage()} e \texttt{getAnimState()}.
+    \item \textbf{\texttt{MeleeMove} (Attacchi Corpo a Corpo):} Implementa pugni, ganci, calci e colpi accovacciati. La durata complessiva della mossa è calcolata confrontando il tempo trascorso $\Delta t = \text{System.nanoTime()} - \text{startTimeNs}$ con il prodotto $\text{frameCount} \cdot \text{speedNs}$ estratto da \texttt{AnimData}. Il metodo \texttt{getActiveHitbox()} restituisce \texttt{null} durante i fotogrammi di caricamento (\emph{Startup}) e genera dinamicamente l'oggetto \texttt{Hitbox} davanti al giocatore solo quando viene raggiunto l'ultimo fotogramma dell'animazione:
+    \begin{equation}
+        \Delta t \ge (\text{frameCount} - 1) \cdot \text{speedNs}
+    \end{equation}
+    \item \textbf{\texttt{RangedMove} (Attacchi a Distanza):} Gestisce mosse come l'\emph{Hadouken}, sincronizzando l'istanziazione dell'entità \texttt{Projectile} con il fotogramma esatto in cui il personaggio estende le mani in avanti, assicurando tramite un flag interno (\texttt{hasFired}) che venga generato un solo proiettile per ogni esecuzione.
+\end{itemize}
+
+\subsubsection{Collisioni AABB e Meccanica del Parry (\texttt{Hitbox})}
+La classe \texttt{Hitbox} incapsula un rettangolo orientato agli assi $(x, y, \text{width}, \text{height})$ e implementa il test di intersezione geometrica \textbf{AABB (\emph{Axis-Aligned Bounding Box})} nel metodo \texttt{intersects(Hitbox other)}:
+\begin{equation}
+    \text{intersects} = (x_1 + w_1 \ge x_2) \land (x_1 \le x_2 + w_2) \land (y_1 + h_1 \ge y_2) \land (y_1 \le y_2 + h_2)
+\end{equation}
+Tale primitiva geometrica viene impiegata in due contesti distinti:
+\begin{enumerate}
+    \item \textbf{Anti-compenetrazione tra corpi (\texttt{collisionDetection}):} Se le hurtbox di \texttt{player1} e \texttt{player2} si sovrappongono lungo l'asse orizzontale, viene calcolata la profondità di compenetrazione:
+    \begin{equation}
+        \text{overlap} = \left(\frac{w_1}{2} + \frac{w_2}{2}\right) - \left|C_{x1} - C_{x2}\right|
+    \end{equation}
+    Se $\text{overlap} > 0$, entrambi i giocatori vengono respinti simmetricamente verso l'esterno di una distanza pari a $\text{overlap} / 2$.
+    \item \textbf{Risoluzione degli Attacchi e Parry (\texttt{handleCombat}):} Quando la \texttt{Hitbox} attiva di una mossa interseca la \texttt{boundingBox} del difensore, il modello verifica se il difensore sta parando (\texttt{isDefending()}) ed è rivolto verso l'attaccante (\texttt{isFacingAttacker}). In caso affermativo, viene calcolato il fotogramma teorico di parata in cui si trova il difensore a partire dall'istante di inizio blocco $t_{\text{block}}$:
+    \begin{equation}
+        F_{\text{block}} = \left\lfloor \frac{t_{\text{now}} - t_{\text{block}}}{\text{speedMs}_{\text{block}}} \right\rfloor
+    \end{equation}
+    Se $F_{\text{block}} \ge N_{\text{frames}} - 1$ (ossia l'impatto coincide con il completamento dell'animazione di parata), si attiva il \textbf{Parry Perfetto}: il difensore subisce $0$ danni e l'attaccante viene stordito per $\text{parryStunDuration} = 1200\text{ ms}$. In caso contrario, si verifica una \textbf{Parata Parziale} con danno ridotto secondo la legge:
+    \begin{equation}
+        \text{Danno Finale} = \text{Danno Base} \cdot \left(1 - \frac{F_{\text{block}} + 1}{N_{\text{frames}}}\right)
+    \end{equation}
+\end{enumerate}
+
+\subsection{View}
+Il package \texttt{application.View} traduce lo stato logico del Model in elementi visivi JavaFX, occupandosi della telecamera, degli sprite e dell'interfaccia utente.
+
+\subsubsection{Gestione della Scena e Proiezione della Telecamera (\texttt{GameView})}
+La classe \texttt{GameView} gestisce il contenitore radice (\texttt{Pane root}) sul quale vengono impilati i diversi livelli visivi: lo sfondo (\texttt{backgroundContainer} dotato di maschera di ritaglio \texttt{Rectangle clip}), i nodi grafici dei due lottatori (\texttt{PlayerRenderer}) e, in primo piano, l'interfaccia \texttt{HUDView} e l'overlay di fine partita (\texttt{victoryLayer}).
+
+Nel metodo \texttt{render(IReadOnlyGameModel model)}, la trasformazione dalle coordinate assolute del mondo alle coordinate relative dello schermo viene realizzata traslando orizzontalmente i contenitori della quantità $-\text{cameraX}$:
+\begin{verbatim}
+this.backgroundContainer.setLayoutX(-camX);
+rendererP1.getNode().setLayoutX(-camX);
+rendererP2.getNode().setLayoutX(-camX);
+\end{verbatim}
+
+Inoltre, il metodo \texttt{updateWindowSize(double newWidth, double newHeight)} risolve il problema dell'adattamento a diverse risoluzioni separando lo scaling dello sfondo da quello degli elementi di gioco:
+\begin{itemize}
+    \item Lo \textbf{sfondo} viene scalato mediante il fattore $\text{currentScale} = \max(W_{\text{new}}/W_{\text{orig}}, H_{\text{new}}/H_{\text{orig}})$, assicurando la copertura integrale della finestra senza bande vuote e ancorando l'immagine al bordo inferiore ($\text{offsetY} = H_{\text{new}} - H_{\text{bg}}$);
+    \item I \textbf{personaggi e l'HUD} utilizzano invece un fattore di scala normalizzato dipendente esclusivamente dall'altezza della finestra ($\text{gameScale} = H_{\text{new}} / 720.0$), garantendo proporzioni costanti indipendentemente dal formato dell'immagine dell'arena scelta.
+\end{itemize}
+
+\subsubsection{Rendering Pixel Art e Frame Caching (\texttt{PlayerRenderer})}
+La classe \texttt{PlayerRenderer} gestisce l'animazione e il disegno del singolo lottatore a partire dal suo sprite sheet (\texttt{atlasImage}). Ad ogni chiamata di \texttt{render(IReadOnlyPlayer player)}, la classe verifica se lo stato \texttt{AnimState} è cambiato (azzerando in tal caso l'indice \texttt{currentFrame}), fa avanzare il fotogramma quando il tempo trascorso supera \texttt{currentData.speedNs} (gestendo sia le animazioni cicliche \texttt{loop = true} tramite operatore modulo, sia quelle singole tramite \texttt{Math.min}) e recupera dal \texttt{TextureAtlas} il rettangolo di ritaglio \texttt{Rectangle2D frameRect}.
+
+Poiché il ridimensionamento nativo delle immagini in JavaFX può introdurre artefatti di interpolazione bilineare che sfocano la pixel art, è stato implementato nel metodo \texttt{getCroppedFrame(Rectangle2D rect, double scale)} un algoritmo di \textbf{campionamento Nearest-Neighbor via software} basato su \texttt{PixelReader} e \texttt{PixelWriter}. Per ogni coordinata $(x, y)$ dell'immagine di destinazione di dimensioni $(W_{\text{dst}}, H_{\text{dst}}) = (\text{round}(W_{\text{src}} \cdot s), \text{round}(H_{\text{src}} \cdot s))$, il colore ARGB viene prelevato dalla coordinata sorgente sull'atlante:
+\begin{equation}
+    X_{\text{src}} = \left\lfloor X_{\min} + \frac{x}{s} \right\rfloor, \qquad Y_{\text{src}} = \left\lfloor Y_{\min} + \frac{y}{s} \right\rfloor
+\end{equation}
+Per azzerare l'overhead computazionale che deriverebbe dal ricalcolo matriciale dei pixel a 60 FPS, ogni \texttt{WritableImage} generata viene memorizzata in una mappa di cache \texttt{Map<String, Image> frameCache} tramite il metodo \texttt{computeIfAbsent}, utilizzando una chiave univoca composta da \texttt{"minX\_minY\_width\_height\_scale"}. In questo modo il ritaglio viene calcolato una sola volta al primo utilizzo del fotogramma e restituito in tempo costante $O(1)$ per tutto il resto della partita.
+
+\subsubsection{Interfaccia Utente in Partita (\texttt{HUDView})}
+La classe \texttt{HUDView} disegna nella parte superiore dello schermo i nomi dei giocatori, le barre della salute (\texttt{p1HealthFill}, \texttt{p2HealthFill} sovrapposte ai rispettivi sfondi rosso scuro), le barre secondarie del potere speciale e il contatore centrale del tempo. Nel metodo \texttt{update(IReadOnlyPlayer p1, IReadOnlyPlayer p2)}, mentre la barra della vita del Giocatore 1 si riduce semplicemente accorciando la propria larghezza da destra verso sinistra, per il Giocatore 2 viene applicata una traslazione compensativa sulla coordinata $X$:
+\begin{equation}
+    W_{P2} = W_{\text{bar}} \cdot \frac{\text{HP}_{P2}}{\text{HP}_{\max, P2}}, \qquad X_{P2} = X_{\text{bg}, P2} + \left(W_{\text{bar}} - W_{P2}\right)
+\end{equation}
+ottenendo l'effetto classico dei picchiaduro arcade in cui entrambe le barre della salute si svuotano simmetricamente verso il timer centrale.
+
+\subsection{Controller}
+Il package \texttt{application.Controller} coordina l'esecuzione temporale, le periferiche di input e la navigazione tra gli stati dell'applicazione.
+
+\subsubsection{Game Loop a Passo Fisso e Macchina a Stati (\texttt{GameController})}
+La classe \texttt{GameController} costruisce nel metodo \texttt{startGame()} uno \texttt{StackPane} stratificato (\texttt{mainRoot}) che impila sopra la \texttt{GameView} cinque menu sovrapposti (inizialmente nascosti o attivati in sequenza): \texttt{connectionMenu}, \texttt{charSelectionMenu}, \texttt{mapSelectionMenu}, \texttt{pauseMenu} e \texttt{disconnectMenu}, oltre all'etichetta diagnostica \texttt{fpsLabel}.
+
+Il ciclo di vita dell'applicazione è scandito da un'istanza di \texttt{AnimationTimer} il cui metodo \texttt{handle(long now)} calcola il delta time reale $\Delta t_{\text{frame}} = \text{now} - \text{lastTime}$ e governa la macchina a stati principale:
+\begin{enumerate}
+    \item \textbf{Controllo Emergenza Disconnessione (\texttt{handleControllerDisconnection}):} Ad ogni frame verifica tramite \texttt{inputManager.hasLostControllers(numPlayers)} che i pad richiesti siano ancora attivi. Se un pad si scollega durante la partita, attiva il flag \texttt{isDisconnected}, applica un filtro \texttt{GaussianBlur(25)} alla visuale di gioco, mostra il \texttt{disconnectMenu} rosso di emergenza e azzera gli accumulatori congelando istantaneamente il match fino alla riconnessione e conferma tramite tasto \texttt{X/A}.
+    \item \textbf{Stato Connessione Controller (\texttt{waitingForControllers}):} Attende che i giocatori premano un pulsante sui rispettivi gamepad per passare alla selezione dei lottatori.
+    \item \textbf{Stato Selezione Personaggi (\texttt{waitingForCharacterSelection}):} Permette ai due giocatori di muoversi sulla griglia \texttt{TilePane} con un tempo di debounce di $200\text{ ms}$, cambiare la skin con i tasti \texttt{L1}/\texttt{R1}, confermare con \texttt{X} o annullare la scelta con \texttt{O}. Contemporaneamente, il metodo \texttt{updatePreviews()} istanzia due oggetti \texttt{Player} in modalità menu (\texttt{inMenuMode = true}) associati a due \texttt{PlayerRenderer} dedicati sul livello trasparente \texttt{previewLayer}, riproducendo in tempo reale l'animazione "MENU IDLE" con la skin selezionata.
+    \item \textbf{Stato Selezione Mappa (\texttt{waitingForMapSelection}):} Consente di scorrere le 10 arene in orizzontale e verticale, calcolando dinamicamente la posizione di scroll verticale \texttt{mapScrollPane.setVvalue(...)} per mantenere sempre centrata la miniatura selezionata e aggiornando lo sfondo reale della \texttt{GameView} in anteprima. Alla conferma (\texttt{confirmMapSelection()}), il controller estrae le due \texttt{CharacterFactory} scelte, ordina al Model di generare i lottatori (\texttt{model.spawnPlayers(...)}) iniettando anche gli indici di skin scelti (\texttt{skin1}, \texttt{skin2}), inizializza i renderer nella View e imposta il \texttt{groundLevelRatio} specifico della mappa.
+    \item \textbf{Stato di Gameplay e Combattimento (\texttt{handleGameplayState}):} Quando tutti i menu iniziali sono chiusi e il gioco non è in pausa, entra in funzione il **Game Loop con Accumulatore**. Il tempo trascorso $\Delta t_{\text{frame}}$ viene sommato a \texttt{physicsAccumulator} e \texttt{renderAccumulator}:
+\begin{verbatim}
+while (physicsAccumulator >= GameConfig.TIME_PER_TICK) {
+    inputManager.update();
+    model.update(inputManager);
+    physicsAccumulator -= GameConfig.TIME_PER_TICK;
+}
+\end{verbatim}
+    Questo ciclo \texttt{while} garantisce che, se il computer subisce un rallentamento temporaneo, il motore fisico esegua più passi discreti consecutivi di durata fissa \texttt{TIME\_PER\_TICK} per recuperare il tempo reale trascorso senza alterare la velocità percepita del gioco e senza causare tunnel geometrici nelle collisioni. Il rendering grafico viene invece eseguito solo quando \texttt{renderAccumulator} raggiunge la soglia $\text{targetFrameTime} = 10^9 / \text{targetFps}$.
+\end{enumerate}
+
+\subsubsection{Gestione Periferiche Hardware (\texttt{InputManager})}
+La classe \texttt{InputManager} è implementata secondo il pattern creazionale **Singleton** (\texttt{InputManager.getInstance()}) per garantire un unico punto di accesso centralizzato al sottosistema nativo \texttt{ControllerManager} della libreria \emph{Jamepad} (SDL2) [4]. La classe mantiene gli indici fisici dei controller assegnati ai due giocatori (\texttt{p1Index} e \texttt{p2Index}, inizializzati a $-1$), gestisce l'accoppiamento automatico alla pressione dei tasti principali, applica una zona morta hardware del $15\%$ (\texttt{Math.abs(stick) > 0.15}) sugli assi analogici per eliminare il fenomeno dello \emph{stick drift} e fornisce metodi semantici ad alto livello per le azioni di combattimento:
+\begin{itemize}
+    \item \textbf{Pugno standard (\texttt{isPunchButtonPressed}):} pressione del tasto \texttt{X} (Quadrato su layout PlayStation);
+    \item \textbf{Gancio pesante (\texttt{isHookButtonPressed}):} combinazione del grilletto destro ($\text{rightTrigger} > 0.5$, tasto \texttt{R2}) + tasto \texttt{X};
+    \item \textbf{Mossa speciale Hadouken (\texttt{isHadoukenButtonPressed}):} combinazione del grilletto sinistro ($\text{leftTrigger} > 0.5$, tasto \texttt{L2}) + tasto \texttt{X}.
+\end{itemize}
+
+\subsection{Problemi Riscontrati}
+Durante le fasi di sviluppo e integrazione dei moduli, sono emerse alcune problematiche architetturali e grafiche di rilievo, risolte mediante interventi mirati:
+
+\begin{itemize}
+    \item \textbf{Gestione del Palette Swap e Iniezione delle Skin:} La personalizzazione cromatica dei lottatori ha richiesto di superare due criticità:
+    \begin{enumerate}
+        \item \emph{Disallineamento tra Selezione e Spawn effettivo:} Inizialmente, la classe \texttt{CharacterFactory} istanziava il personaggio con la palette predefinita, ignorando le scelte effettuate nel menu di selezione. Il problema è stato risolto estendendo il metodo \texttt{spawnPlayers(f1, f2, skin1, skin2)} all'interno del \texttt{GameModel}, consentendo al \texttt{GameController} di iniettare gli indici selezionati (\texttt{setSkinIndex}) prima della generazione dei renderer visivi.
+        \item \emph{Invalidazione della Cache delle Texture nel Renderer:} La classe \texttt{PlayerRenderer} utilizza una tabella hash (\texttt{frameCache}) per memorizzare i ritagli Nearest-Neighbor già calcolati. Durante la fase di anteprima nel menu, al cambio di skin tramite i dorsali \texttt{L1/R1}, il renderer rischiava di ripescare i fotogrammi già indicizzati della palette precedente. Si è quindi reso necessario forzare l'istanziazione di un nuovo \texttt{PlayerRenderer} dedicato ad ogni variazione di skin (\texttt{p1Changed || p2Changed}), garantendo il caricamento corretto del rispettivo file PNG con trasparenza cromatica (chromakey).
+    \end{enumerate}
+    \item \textbf{Disaccoppiamento della Nascita dei Proiettili (\emph{Deferred Spawning}):} La generazione dell'\emph{Hadouken} rischiava di produrre il proiettile all'istante di pressione del tasto anziché in corrispondenza del fotogramma in cui il lottatore estende le braccia. L'adozione della classe \texttt{RangedMove} dotata del flag \texttt{hasFired} ha consentito al loop di interrogare il metodo \texttt{createProjectile()} ad ogni tick e istanziare l'entità esattamente al completamento della finestra di \emph{Startup}.
+    \item \textbf{Sfarfallio e Compenetrazione dei Corpi al Pavimento:} Durante la postura accovacciata (\texttt{crouch}), la riduzione dell'altezza della hurtbox provocava una sospensione aerea del modello visivo. La traslazione compensativa della coordinata $Y$ ha consentito di mantenere i piedi dei combattenti ancorati al pavimento in qualsiasi transizione posturale.
+\end{itemize}
+
+\newpage
+
+% ==========================================================
+% CAPITOLO 4: CONCLUSIONI E SVILUPPI FUTURI
+% ==========================================================
+\section{Conclusioni e Sviluppi Futuri}
+L'adozione rigorosa del pattern \textbf{Model-View-Controller} e di interfacce di sola lettura (\texttt{IReadOnlyGameModel} e \texttt{IReadOnlyPlayer}) ha permesso di ottenere una base di codice modulare ed estendibile: l'integrazione di un nuovo lottatore o di una nuova arena richiede l'aggiunta di poche righe descrittive senza alterare il motore fisico o il sottosistema di rendering.
+
+Tra i principali sviluppi futuri pianificati figurano:
+\begin{itemize}
+    \item \textbf{Intelligenza Artificiale per Modalità Giocatore Singolo (CPU):} Implementazione di una macchina a stati decisionali (FSM) o di un albero di comportamento per consentire alla CPU di gestire reattivamente lo spacing, le parate su colpi in arrivo e le sequenze offensive di contrattacco;
+    \item \textbf{Utilizzo della Barra del Potere Speciale (\emph{Super Meter}):} Attivazione dinamica della barra energetica secondaria (già predisposta graficamente in \texttt{HUDView}) caricabile mediante parate riuscite o colpi a segno, utile per abilitare tecniche speciali avanzate;
+    \item \textbf{Comparto Audio ed Effetti Particellari:} Integrazione di un gestore di campioni sonori dedicati (musiche di sottofondo, campioni vocali e impatti fisici) e di un generatore particellare per enfatizzare l'impatto dei colpi e l'esplosione dei proiettili.
+\end{itemize}
+
+\newpage
+
+% ==========================================================
+% CAPITOLO 5: BIBLIOGRAFIA
+% ==========================================================
+\section{Bibliografia}
+\begin{enumerate}[label={[\arabic*]}]
+    \item Wikipedia. \emph{Street Fighter (serie) -- Wikipedia, l'enciclopedia libera}, 2026. [Online \url{https://it.wikipedia.org/wiki/Street_Fighter_(serie)}].
+    \item OpenJFX Documentation. \emph{JavaFX 17 / 21 Official API Documentation and Scene Graph Reference}, 2026. [Online \url{https://openjfx.io/}].
+    \item Gamma, E., Helm, R., Johnson, R., Vlissides, J. \emph{Design Patterns: Elements of Reusable Object-Oriented Software}. Addison-Wesley Professional, 1994.
+    \item Hartman, W. \emph{Jamepad: A library for using gamepads in Java based on SDL2 GameController API}, GitHub Repository. [Online \url{https://github.com/williamahartman/Jamepad}].
+    \item Nystrom, R. \emph{Game Programming Patterns} (Capitolo \emph{Game Loop -- Fixed Time Step with Accumulator}). Genever Benning, 2014. [Online \url{https://gameprogrammingpatterns.com/game-loop.html}].
+\end{enumerate}
+
+\newpage
+
+% ==========================================================
+% CAPITOLO 6: APPENDICE
+% ==========================================================
+\section{Appendice}
+In questa appendice vengono riportate le tabelle tecniche di riferimento relative alla mappatura dei comandi sui controller di gioco (\texttt{InputManager}), ai parametri delle arene (\texttt{MapData}) e alla configurazione dei fotogrammi di animazione (\texttt{AnimData}) dei lottatori.
+
+\subsection{Mappatura dei Comandi Controller (Gamepad)}
+La Tabella \ref{tab:controls} riassume l'assegnazione dei comandi di gioco ed esplorazione dei menu implementata nella classe \texttt{InputManager} tramite le API SDL2 di Jamepad.
+
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Input Hardware (PS / Xbox)} & \textbf{Metodo \texttt{InputManager}} & \textbf{Azione nel Menu / In Partita} \\
+\midrule
+Levetta Sinistra (Asse X/Y) & \texttt{getLeftStickX/Y()} & Navigazione griglie menu; Movimento orizzontale (\texttt{WALK}) e postura accovacciata (\texttt{CROUCH} per $Y > 0.5$). \\
+Tasto Croce / A & \texttt{isJumpButtonPressed()} & Conferma selezione nei menu; Salto verticale (\texttt{JUMP}) con supporto \emph{short hop}. \\
+Tasto Cerchio / B & \texttt{isDefendButtonPressed()} & Annulla selezione personaggio; Parata in piedi (\texttt{BLOCK}), parata bassa (\texttt{CROUCH\_BLOCK}) e \emph{Parry}. \\
+Tasto Quadrato / X & \texttt{isPunchButtonPressed()} & Pugno rapido (\texttt{PUNCH\_RIGHT/LEFT}) o pugno basso (\texttt{PUNCH\_CROUCH}). \\
+Tasto Triangolo / Y & \texttt{isKickButtonPressed()} & Calcio (\texttt{KICK\_RIGHT/LEFT}). \\
+Grilletto R2/RT + Quadrato/X & \texttt{isHookButtonPressed()} & Gancio pesante (\texttt{HOOK\_RIGHT/LEFT}). \\
+Grilletto L2/LT + Quadrato/X & \texttt{isHadoukenButtonPressed()} & Attacco energetico a distanza (\texttt{HADOUKEN}). \\
+Dorsali L1 / R1 (LB / RB) & \texttt{isL1/R1ButtonPressed()} & Scorrimento ciclico delle palette cromatiche (\emph{skin}) nel menu personaggi. \\
+Tasto Options / Start & \texttt{isPauseButtonPressed()} & Apertura e chiusura del menu di pausa in partita con filtro \texttt{GaussianBlur}. \\
+\bottomrule
+\end{tabularx}
+\caption{Mappatura completa degli input da controller gestita dalla classe \texttt{InputManager}.}
+\label{tab:controls}
+\end{table}
+
+\subsection{Tabella dei Frame Data e Statistiche dei Lottatori}
+La Tabella \ref{tab:framedata} illustra la configurazione delle animazioni (\texttt{AnimData}) e dei parametri di combattimento definiti per i personaggi \texttt{Ryu} e \texttt{Ken}.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{l c c c c c}
+\toprule
+\textbf{Stato Animazione (\texttt{AnimState})} & \textbf{Riga Atlas} & \textbf{Colonna Iniziale} & \textbf{Frame Totali} & \textbf{Durata Frame (ms)} & \textbf{Loop} \\
+\midrule
+\texttt{IDLE\_RIGHT / LEFT} & 0 & 0 & 4 & 100 & Sì \\
+\texttt{MENU\_IDLE} & 0 & 0 & 4 & 150 & Sì \\
+\texttt{WALK\_RIGHT / LEFT} & 0 & 1 & 5 & 75 & Sì \\
+\texttt{JUMP\_RIGHT / LEFT} & 0 & 2 / 3 & 7 & 80 & No \\
+\texttt{CROUCH\_RIGHT / LEFT} & 0 & 4 & 2 & 400 & No \\
+\texttt{BLOCK\_RIGHT / LEFT} & 0 & 5 & 1 & 50 & No \\
+\texttt{PUNCH\_RIGHT} (Ryu / Ken) & 1 & 0 & 3 & 40 / 80 & No \\
+\texttt{PUNCH\_LEFT} & 1 & 1 & 5 & 80 & No \\
+\texttt{HOOK\_RIGHT / LEFT} & 1 & 2 / 3 & 3 / 7 & 80 & No \\
+\texttt{KICK\_LEFT / RIGHT} (Ryu) & 2 & 0 / 1 & 3 / 5 & 40 & No \\
+\texttt{KICK\_LEFT / RIGHT} (Ken) & 2 & 0 / 1 & 3 / 5 & 80 / 75 & No \\
+\texttt{PUNCH\_CROUCH} & 3 & 0 & 3 & 40 & No \\
+\texttt{HADOUKEN} (Ryu / Ken) & 5 / 4 & 0 / 5 & 5 / 4 & 80 & No \\
+\texttt{HURT\_RIGHT / LEFT} & 6 & 1 & 3 & 100 & No \\
+\texttt{HURT\_CROUCH} & 6 & 2 & 1 & 100 & No \\
+\bottomrule
+\end{tabular}
+\caption{Riepilogo dei parametri \texttt{AnimData} configurati nelle classi \texttt{Ryu} e \texttt{Ken}.}
+\label{tab:framedata}
+\end{table}
+
+\end{document}
