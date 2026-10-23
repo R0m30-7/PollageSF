@@ -36,6 +36,10 @@ public class GameModel implements IReadOnlyGameModel{
 
     private boolean wasP1HadoukenHeld = false;
     private boolean wasP2HadoukenHeld = false;
+
+    // Variabili per gestire la fine dell'animazione per lo spawn del proiettile
+    private boolean bulletCreationDelay = false;
+    private long startProjectileCountdown = 0;
     
     // Memorizzazione dimensioni per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
@@ -43,7 +47,7 @@ public class GameModel implements IReadOnlyGameModel{
     
     // Definizione della posizione del pavimento
     private double GROUND_LEVEL;
-    private double currentGroundRatio = 0.9;    // La posizfcollisionzzzffione precisa del pavimento nelle mappe, e il ratio serve per tenerlo preciso in tutte le risoluzioni
+    private double currentGroundRatio = 0.9;    // La posizione precisa del pavimento nelle mappe, e il ratio serve per tenerlo preciso in tutte le risoluzioni
     private double currentGroundLevel;  //! Non so cosa significhi il commento sopra, Paolo è l'autore
     
     // Variabili per la gestione della fine del gioco
@@ -51,6 +55,7 @@ public class GameModel implements IReadOnlyGameModel{
     private int winner = 0;
 
     private List<Projectile> projectiles;
+    
     
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
@@ -141,15 +146,7 @@ public class GameModel implements IReadOnlyGameModel{
                 }
                 player1.setDefending(input.isDefendButtonPressed(1));
 
-                // --- GESTIONE PROIETTILI PLAYER 1 ---
-                if (player1.getActiveMove() instanceof RangedMove) {
-                    RangedMove ranged = (RangedMove) player1.getActiveMove();
-                    Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta grazie a hasFired
-                    if (p != null) {
-                        projectiles.add(p);
-                    }
-                }
-
+                checkForProjectileSpawn();
             }else {
             // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
             // Controllo per il pugno basso
@@ -543,7 +540,35 @@ public class GameModel implements IReadOnlyGameModel{
         // Se nel GameModel gestisci anche le posizioni di spawn, 
         // puoi riposizionarli qui (es: p1.setPosition(...))
     }
+    @Override
+    public List<? extends IReadOnlyProjectile> getProjectiles() {
+            return projectiles;
+    }
     
     public boolean getIsGameOver() { return isGameOver; }
     public int getWinner() { return winner; }
+
+    // --- Metodi helper ---
+    private void checkForProjectileSpawn() {
+        // --- GESTIONE PROIETTILI PLAYER 1 ---
+        // bulletCreationDelay = true significa che non è il primo frame della mossa
+        if(player1.getActiveMove() instanceof RangedMove){
+            if(!bulletCreationDelay){
+                bulletCreationDelay = true;
+                startProjectileCountdown = System.nanoTime();
+                //! System.out.println("Inizio countdown proiettile");
+            }
+        }
+        // 4 sta per il numero di frame mentre 1_000_000 serve per convertire da millisecondi a nanosecondi
+        if (System.nanoTime() - startProjectileCountdown >= player1.projectileAnimFrameDuration * 4 * 1_000_000  && bulletCreationDelay) {
+            //! System.out.println(System.nanoTime() - startProjectileCountdown);
+            bulletCreationDelay = false;
+
+            RangedMove ranged = (RangedMove) player1.getActiveMove();
+            Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta grazie a hasFired
+            if (p != null) {
+                projectiles.add(p);
+            }
+        }
+    }
 }

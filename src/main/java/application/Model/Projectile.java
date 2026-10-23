@@ -2,7 +2,7 @@ package application.Model;
 
 import application.Utils.Point;
 
-public class Projectile {
+public class Projectile implements IReadOnlyProjectile{
     private Point position;
     private boolean movingRight;
     private double speed;
@@ -43,4 +43,10 @@ public class Projectile {
     }
 
     public boolean isActive() {return active; } // Placeholder, implementa la logica per determinare se il proiettile è ancora attivo
+
+    @Override
+    public boolean isMovingRight() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isMovingRight'");
+    }
 }

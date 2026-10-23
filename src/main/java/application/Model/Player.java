@@ -42,6 +42,10 @@ public class Player implements IReadOnlyPlayer{
 
     protected double hadoukenDamage = 15.0; // Danno del proiettile Hadouken
     protected double hadoukenSpeed = 5.0; // Velocità del proiettile Hadouken
+
+    // Durata di un frame dell'animazione di lancio del proiettile, serve per il calcolo
+    // del delay dopo il quale spawnare l'oggetto proiettile
+    protected int projectileAnimFrameDuration;
     
     // --- Variabili per il Menu di Selezione ---
     protected String displayName;

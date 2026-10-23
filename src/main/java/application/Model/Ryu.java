@@ -28,6 +28,8 @@ public class Ryu extends Player {
         this.kickDamage = 12.0; // Danno del calcio
         this.kickWidth = 30.0; // Larghezza della hitbox del calcio
         this.kickHeight = 20.0; // Altezza della hitbox del calcio
+
+        this.projectileAnimFrameDuration = 80;
         
         this.atlasPath = "/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png";
         this.atlas = new TextureAtlas("/Sprites/ryuAtlasManifest.json");
@@ -82,8 +84,8 @@ public class Ryu extends Player {
         animations.put(AnimState.HURT_LEFT, new AnimData(6, 1, 3, 100, false));
         animations.put(AnimState.HURT_CROUCH_RIGHT, new AnimData(6, 2, 1, 100, false));
         animations.put(AnimState.HURT_CROUCH_LEFT, new AnimData(6, 2, 1, 100, false));
-        animations.put(AnimState.HADOUKEN_RIGHT, new AnimData(5, 0, 5, 80, false));
-        animations.put(AnimState.HADOUKEN_LEFT, new AnimData(5, 0, 5, 80, false));
+        animations.put(AnimState.HADOUKEN_RIGHT, new AnimData(5, 0, 5, this.projectileAnimFrameDuration, false));
+        animations.put(AnimState.HADOUKEN_LEFT, new AnimData(5, 0, 5, this.projectileAnimFrameDuration, false));
         
         // --- INIZIO CODICE COLORI DELLE SKIN ---
         this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png"); // 0: Dark green

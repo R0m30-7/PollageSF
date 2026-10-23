@@ -32,6 +32,9 @@ public class GameView {
     private ImageView victoryImageView;
     private javafx.scene.text.Text continueText;
     
+    // Mappa dei proiettili e dei loro renderer
+    private java.util.Map<application.Model.IReadOnlyProjectile, ProjectileRenderer> projectileRenderers = new java.util.HashMap<>();
+   
     // HUD
     private HUDView hud;
     
@@ -103,6 +106,36 @@ public class GameView {
     	rendererP2.getNode().setLayoutX(-camX);
     	rendererP2.getNode().setLayoutY(0);
     	
+        // --- SINCRONIZZAZIONE E RENDERING PROIETTILI ---
+        java.util.List<? extends application.Model.IReadOnlyProjectile> activeProjectiles = model.getProjectiles();
+
+        // A. Rimuove dal grafo di scena (root) i renderer dei proiettili esplosi o usciti dai bordi
+        projectileRenderers.entrySet().removeIf(entry -> {
+            if (!activeProjectiles.contains(entry.getKey())) {
+                this.root.getChildren().remove(entry.getValue().getNode());
+                return true;
+            }
+            return false;
+        });
+
+        // B. Crea il renderer per i nuovi proiettili e aggiorna la posizione di tutti quelli in volo
+        for (application.Model.IReadOnlyProjectile p : activeProjectiles) {
+            ProjectileRenderer pRenderer = projectileRenderers.computeIfAbsent(p, proj -> {
+                ProjectileRenderer newRenderer = new ProjectileRenderer(proj);
+                // Inserisce il nodo direttamente in root, prima dell'HUD per non coprire le barre vita
+                int hudIndex = this.root.getChildren().indexOf(this.hud.getNode());
+                if (hudIndex != -1) {
+                    this.root.getChildren().add(hudIndex, newRenderer.getNode());
+                } else {
+                    this.root.getChildren().add(newRenderer.getNode());
+                }
+                return newRenderer;
+            });
+
+            pRenderer.render(p, camX);
+        }
+
+
     	// Aggiorniamo le barre della vita dei giocatori
     	this.hud.update(model.getPlayer1(), model.getPlayer2());
     }
