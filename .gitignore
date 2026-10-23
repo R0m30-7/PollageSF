@@ -1,2 +1,9 @@
 target/
 config.properties
+
+# Ignora tutto il contenuto della cartella
+Relazione/*
+# Fai eccezione per i file .pdf
+!Relazione/*.pdf
+# Fai eccezione per i file .tex
+!Relazione/*.tex
