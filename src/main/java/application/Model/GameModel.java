@@ -552,20 +552,24 @@ public class GameModel implements IReadOnlyGameModel{
     private void checkForProjectileSpawn() {
         // --- GESTIONE PROIETTILI PLAYER 1 ---
         // bulletCreationDelay = true significa che non è il primo frame della mossa
-        if(player1.getActiveMove() instanceof RangedMove){
-            if(!bulletCreationDelay){
-                bulletCreationDelay = true;
-                startProjectileCountdown = System.nanoTime();
-                //! System.out.println("Inizio countdown proiettile");
-            }
+        if(!(player1.getActiveMove() instanceof RangedMove)){
+            bulletCreationDelay = false;
+            return;
         }
+
+        // Se è il primo frame della RangedMove, avviamo il timer
+        if (!bulletCreationDelay) {
+            bulletCreationDelay = true;
+            startProjectileCountdown = System.nanoTime();
+        }
+
         // 4 sta per il numero di frame mentre 1_000_000 serve per convertire da millisecondi a nanosecondi
-        if (System.nanoTime() - startProjectileCountdown >= player1.projectileAnimFrameDuration * 4 * 1_000_000  && bulletCreationDelay) {
-            //! System.out.println(System.nanoTime() - startProjectileCountdown);
+        // Controlla se sono passati i 4 frame mentre la mossa è ancora attiva
+        if (bulletCreationDelay && System.nanoTime() - startProjectileCountdown >= player1.projectileAnimFrameDuration * 4 * 1_000_000L) {
             bulletCreationDelay = false;
 
             RangedMove ranged = (RangedMove) player1.getActiveMove();
-            Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta grazie a hasFired
+            Projectile p = ranged.createProjectile();
             if (p != null) {
                 projectiles.add(p);
             }
