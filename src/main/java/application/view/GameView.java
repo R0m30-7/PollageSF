@@ -1,0 +1,255 @@
+package application.view;
+
+import application.model.IReadOnlyGameModel;
+import application.model.IReadOnlyPlayer;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
+
+public class GameView {
+    
+    private Pane root;
+    private PlayerRenderer rendererP1;
+    private PlayerRenderer rendererP2;
+    
+    // Variabili per lo sfondo
+    private ImageView backgroundView;
+    private Pane backgroundContainer; // Contenitore che ci permette di tagliare l'immagine
+    private Rectangle clip;           // La maschera "invisibile" che taglia l'eccesso
+    
+    // Dimensioni dell'immagine di sfondo
+    private double bgWidth;
+    private double bgHeight;
+    private double originalBgWidth;
+    private double originalBgHeight;
+    private double currentScale = 1.0;
+    private double gameScale = 1.0;
+    
+    // Variabili per la schermata di vittoria
+    private javafx.scene.layout.StackPane victoryLayer;
+    private ImageView victoryImageView;
+    private javafx.scene.text.Text continueText;
+    
+    // Mappa dei proiettili e dei loro renderer
+    private java.util.Map<application.model.IReadOnlyProjectile, ProjectileRenderer> projectileRenderers = new java.util.HashMap<>();
+   
+    // HUD
+    private HUDView hud;
+    
+    public GameView() {
+        this.root = new Pane();
+        
+        // Creiamo l'ImageView vuoto, l'immagine verrà caricata dal menu in seguito
+        this.backgroundView = new ImageView();
+        this.backgroundView.setPreserveRatio(false);
+        this.backgroundContainer = new Pane(this.backgroundView);
+        
+        // Valori di emergenza/default finché non scegliamo la mappa
+        this.originalBgWidth = 1920;
+        this.originalBgHeight = 1080;
+        this.bgWidth = 1920;
+        this.bgHeight = 1080;
+        
+        this.clip = new Rectangle(this.originalBgWidth, 720);
+        this.backgroundContainer.setClip(this.clip);
+        
+        // Offset temporaneo
+        this.backgroundView.setY(0);
+        
+        this.root.getChildren().addAll(this.backgroundContainer);
+        
+        // --- PREPARAZIONE LIVELLO VITTORIA ---
+        this.victoryLayer = new javafx.scene.layout.StackPane();
+        this.victoryLayer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);"); // Scurisce il gioco dietro
+        this.victoryLayer.setVisible(false); // Nascosto di default
+        
+        this.victoryImageView = new ImageView();
+        this.victoryImageView.setPreserveRatio(true);
+        this.victoryImageView.setFitHeight(400); // Grandezza base
+        
+        this.continueText = new javafx.scene.text.Text("Premere un tasto per tornare al menu");
+        this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30));
+        this.continueText.setFill(javafx.scene.paint.Color.WHITE);
+        this.continueText.setVisible(false); 
+        
+        // Posizioniamo il testo in basso a destra
+        javafx.scene.layout.StackPane.setAlignment(continueText, javafx.geometry.Pos.BOTTOM_RIGHT);
+        javafx.scene.layout.StackPane.setMargin(continueText, new javafx.geometry.Insets(0, 50, 50, 0));
+        
+        this.victoryLayer.getChildren().addAll(victoryImageView, continueText);
+        this.root.getChildren().add(victoryLayer); // Aggiunto al gioco
+    }
+
+    public Pane getRoot() { return root; }
+    public double getBgWidth() { return bgWidth; }
+    public double getBgHeight() { return bgHeight; }
+
+    public void render(IReadOnlyGameModel model) {
+        double camX = model.getCameraX();
+    	
+    	// Spostiamo l'intero SFONDO all'indietro rispetto alla telecamera
+    	this.backgroundContainer.setLayoutX(-camX);
+    	
+    	// Chiamiamo finalmente i renderer per fargli ricalcolare vita, pugni e difese
+    	rendererP1.render(model.getPlayer1());
+    	rendererP2.render(model.getPlayer2());
+    	
+    	// --- SPOSTAMENTO TELECAMERA SUI GIOCATORI ---
+    	// Visto che PlayerRenderer posiziona già il corpo e i pugni alle coordinate 
+        // assolute (px, py), qui dobbiamo solo far scorrere il loro "livello" all'indietro 
+        // in base a dove si trova la telecamera.
+    	rendererP1.getNode().setLayoutX(-camX);
+    	rendererP1.getNode().setLayoutY(0); // La Y è gestita dal PlayerRenderer
+    	
+    	rendererP2.getNode().setLayoutX(-camX);
+    	rendererP2.getNode().setLayoutY(0);
+    	
+        // --- SINCRONIZZAZIONE E RENDERING PROIETTILI ---
+        java.util.List<? extends application.model.IReadOnlyProjectile> activeProjectiles = model.getProjectiles();
+
+        // A. Rimuove dal grafo di scena (root) i renderer dei proiettili esplosi o usciti dai bordi
+        projectileRenderers.entrySet().removeIf(entry -> {
+            if (!activeProjectiles.contains(entry.getKey())) {
+                this.root.getChildren().remove(entry.getValue().getNode());
+                return true;
+            }
+            return false;
+        });
+
+        // B. Crea il renderer per i nuovi proiettili e aggiorna la posizione di tutti quelli in volo
+        for (application.model.IReadOnlyProjectile p : activeProjectiles) {
+            ProjectileRenderer pRenderer = projectileRenderers.computeIfAbsent(p, proj -> {
+                ProjectileRenderer newRenderer = new ProjectileRenderer(proj);
+                // Inserisce il nodo direttamente in root, prima dell'HUD per non coprire le barre vita
+                int hudIndex = this.root.getChildren().indexOf(this.hud.getNode());
+                if (hudIndex != -1) {
+                    this.root.getChildren().add(hudIndex, newRenderer.getNode());
+                } else {
+                    this.root.getChildren().add(newRenderer.getNode());
+                }
+                return newRenderer;
+            });
+
+            pRenderer.render(p, camX);
+        }
+
+
+    	// Aggiorniamo le barre della vita dei giocatori
+    	this.hud.update(model.getPlayer1(), model.getPlayer2());
+    }
+
+    // ==========================================
+    // METODO CHIAMATO DAL CONTROLLER QUANDO VIENE RIDIMENSIONATA LA FINESTRA
+    // ==========================================
+    public void updateWindowSize(double newWidth, double newHeight) {
+    	// Calcoliamo di quanto dovremmo zoomMare l'immagine per coprire la finestra
+        double scaleX = newWidth / this.originalBgWidth;
+        double scaleY = newHeight / this.originalBgHeight;
+        
+        // Prendiamo la scala MAGGIORE. Così siamo sicuri al 100% che non ci siano spazi bianchi
+        this.currentScale = Math.max(scaleX, scaleY);
+
+        // I personaggi e l'HUD devono scalare sempre in modo coerente rispetto al 1080p, e non in base alla dimensione dello sfondo
+        this.gameScale = newHeight / 720.0;
+
+        // Calcoliamo le nuove dimensioni zoommate dell'arena
+        this.bgWidth = this.originalBgWidth * currentScale;
+        this.bgHeight = this.originalBgHeight * currentScale;
+
+        // Applichiamo le nuove dimensioni all'immagine grafica
+        if (this.backgroundView != null) {
+            this.backgroundView.setFitWidth(this.bgWidth);
+            this.backgroundView.setFitHeight(this.bgHeight);
+            
+            // L'ancoraggio in basso a sinistra
+            double offsetY = newHeight - this.bgHeight;
+            this.backgroundView.setY(offsetY);
+        }
+
+        // Aggiorniamo la maschera che taglia lo schermo
+        if (this.clip != null) {
+            this.clip.setWidth(this.bgWidth);
+            this.clip.setHeight(newHeight);
+        }
+        
+        // Aggiorniamo il contenitore
+        if (this.backgroundContainer != null) {
+            this.backgroundContainer.setPrefSize(this.bgWidth, newHeight);
+        }
+        
+        // Passiamo gameScale al posto di currentScale
+        if(this.hud != null) {
+        	this.hud.updateLayout(newWidth, this.gameScale);
+        }
+        
+        // Schermata di vittoria indipendente dalla mappa
+        if (this.victoryLayer != null) {
+            this.victoryLayer.setPrefSize(newWidth, newHeight);
+            
+            this.victoryImageView.setFitHeight(400 * this.gameScale);
+            this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * this.gameScale));
+        }
+    }
+    
+    // --- METODO PER CAMBIARE SFONDO DINAMICAMENTE ---
+    public void changeBackground(String imagePath, double windowWidth, double windowHeight) {
+        try {
+            Image bgImage = new Image(getClass().getResourceAsStream(imagePath));
+            if (bgImage.isError()) {
+                System.out.println("Immagine non trovata: " + imagePath);
+                return;
+            }
+            this.backgroundView.setImage(bgImage);
+            this.originalBgWidth = bgImage.getWidth();
+            this.originalBgHeight = bgImage.getHeight();
+            
+            // Ricalcoliamo lo zoom e la maschera con le nuove dimensioni
+            updateWindowSize(windowWidth, windowHeight);
+        } catch (Exception e) {
+            System.out.println("Errore nel cambio sfondo: " + e.getMessage());
+        }
+    }
+    
+    // --- Mostra o nascondi gli elementi di gioco ---
+    public void setGameElementsVisible(boolean visible) {
+    	if (rendererP1 != null) rendererP1.getNode().setVisible(visible);
+        if (rendererP2 != null) rendererP2.getNode().setVisible(visible);
+        if (hud != null) hud.getNode().setVisible(visible);
+    }
+    
+    // Serve a costruire la grafica del giocatore DOPO che i giocatori sono stati creati dal Model
+    public void initPlayers(IReadOnlyPlayer p1, IReadOnlyPlayer p2) {
+        this.rendererP1 = new PlayerRenderer(p1);
+        this.rendererP2 = new PlayerRenderer(p2);
+        
+        // --- HUD ---
+        this.hud = new HUDView(p1.getMaxHealth(), p2.getMaxHealth());
+        
+        // Inseriamo i giocatori nel Pane (dietro l'HUD, quindi agli indici 1 e 2 dopo lo sfondo)
+        this.root.getChildren().add(1, rendererP1.getNode());
+        this.root.getChildren().add(2, rendererP2.getNode());
+        this.root.getChildren().add(hud.getNode()); // L'HUD va sopra i giocatori
+    }
+    
+    public void showVictoryScreen(int winner) {
+        this.victoryLayer.setVisible(true);
+        this.victoryLayer.toFront(); // Si porta in primo piano sopra l'HUD e i giocatori
+        
+        String imagePath = winner == 1 ? "/SFX/p1Victory.png" : "/SFX/p2Victory.png";
+        try {
+            Image img = new Image(getClass().getResource(imagePath).toExternalForm());
+            this.victoryImageView.setImage(img);
+        } catch (Exception e) {
+            System.out.println("Immagine vittoria non trovata al percorso: " + imagePath);
+        }
+    }
+    
+    public void showContinueText() {
+        this.continueText.setVisible(true);
+    }
+
+    public double getScale() {
+        return this.gameScale;
+    }
+}
