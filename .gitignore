@@ -7,3 +7,5 @@ Relazione/*
 !Relazione/*.pdf
 # Fai eccezione per i file .tex
 !Relazione/*.tex
+# Eccezione anche per la cartella delle immagini
+!Relazione/figures
