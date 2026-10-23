@@ -89,172 +89,11 @@ public class GameModel implements IReadOnlyGameModel{
     	player1.updateTicks();
     	player2.updateTicks();
 
-        // Leggiamo lo stato dei tasti X di entrambi i giocatori
-        boolean isP1JumpHeld = input.isJumpButtonPressed(1);
-        boolean isP2JumpHeld = input.isJumpButtonPressed(2);
+        updatePlayersInput(input);
+
+        updateProjectiles();
         
-        // Leggiamo lo stato dei pugni
-        boolean isP1PunchHeld = input.isPunchButtonPressed(1);
-        boolean isP2PunchHeld = input.isPunchButtonPressed(2);
-
-        boolean isP1KickHeld = input.isKickButtonPressed(1);
-        boolean isP2KickHeld = input.isKickButtonPressed(2);
-
-        boolean isP1HookHeld = input.isHookButtonPressed(1);
-        boolean isP2HookHeld = input.isHookButtonPressed(2);
-
-        boolean isP1HadoukenHeld = input.isHadoukenButtonPressed(1);
-        boolean isP2HadoukenHeld = input.isHadoukenButtonPressed(2);
-
-        // Applichiamo la fisica passando lo stato del tasto (salto)
-        player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
-        player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
-        
-        // Movimento (con limiti dell'arena)
-        // --- GIOCATORE 1 ---
-        if (!player1.isStunned()) {
-            double p1X = input.getLeftStickX(1);
-            double p1Y = input.getLeftStickY(1);
-
-            // Se la levetta è spinta decisamente verso il basso, attiva il crouch
-            if (p1Y > 0.5 && player1.isGrounded()) {
-                player1.setCrouching(true);
-            } else {
-                player1.setCrouching(false);
-            }
-
-            AnimState state;
-            if (!player1.isCrouching()) {
-
-                if (Math.abs(p1X) > 0.0) {
-                    player1.moveHorizontal(p1X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
-                }
-                if (isP1JumpHeld && !wasP1JumpHeld) player1.jump();
-
-                if (isP1HadoukenHeld && !wasP1HadoukenHeld) {
-                    state = player1.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
-                    player1.executeMove(new RangedMove(player1, state, player1.getHadoukenDamage(), player1.getHadoukenSpeed()));
-                }
-                if (isP1HookHeld && !wasP1HookHeld) {
-                    state = player1.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
-                    player1.executeMove(new MeleeMove(player1, state, player1.getHookDamage(), player1.getHookWidth(), player1.getHookHeight()));
-                } else if (isP1PunchHeld && !wasP1PunchHeld) {
-                    state = player1.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
-                    player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
-                }
-                if (isP1KickHeld && !wasP1KickHeld) {
-                    state = player1.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
-                    player1.executeMove(new MeleeMove(player1, state, player1.getKickDamage(), player1.getKickWidth(), player1.getKickHeight()));
-                }
-                player1.setDefending(input.isDefendButtonPressed(1));
-
-            }else {
-            // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
-            // Controllo per il pugno basso
-                if (isP1PunchHeld && !wasP1PunchHeld) {
-                    state = player1.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
-                    player1.executeMove(new MeleeMove(player1, state, player1.getPunchDamage(), player1.getPunchWidth(), player1.getPunchHeight()));
-                }
-                
-                // Permettere la parata bassa
-                player1.setDefending(input.isDefendButtonPressed(1));
-            }
-        } else {
-            // Se è stordito, non può difendersi e resta fermo
-            player1.setDefending(false);
-            //! Aggiungere animazione stordito
-        }
-
-        // --- GIOCATORE 2 ---
-        if (!player2.isStunned()) {
-            double p2X = input.getLeftStickX(2);
-            double p2Y = input.getLeftStickY(2);
-
-            if (p2Y > .5 && player2.isGrounded()){
-                player2.setCrouching(true);
-            }else{
-                player2.setCrouching(false);
-            }
-            
-            if(!player2.isCrouching()){
-                if (Math.abs(p2X) > 0.0) {
-                    player2.moveHorizontal(p2X > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
-                }
-                if (isP2JumpHeld && !wasP2JumpHeld) player2.jump();
-                if (isP2HadoukenHeld && !wasP2HadoukenHeld) {
-                    AnimState state = player2.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
-                    player2.executeMove(new RangedMove(player2, state, player2.getHadoukenDamage(), player2.getHadoukenSpeed()));
-                }
-                if (isP2HookHeld && !wasP2HookHeld) {
-                    AnimState state = player2.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
-                    player2.executeMove(new MeleeMove(player2, state, player2.getHookDamage(), player2.getHookWidth(), player2.getHookHeight()));
-                }else if (isP2PunchHeld && !wasP2PunchHeld) {
-                    AnimState state = player2.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
-                    player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
-                }
-                if (isP2KickHeld && !wasP2KickHeld) {
-                    AnimState state = player2.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
-                    player2.executeMove(new MeleeMove(player2, state, player2.getKickDamage(), player2.getKickWidth(), player2.getKickHeight()));
-                }
-                player2.setDefending(input.isDefendButtonPressed(2));
-            }
-            else {
-
-            // --- GIOCATORE ACCOVACCIATO (CROUCHING) ---
-            // Controllo per il pugno basso
-                if (isP2PunchHeld && !wasP2PunchHeld) {
-                    AnimState state = player2.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
-                    player2.executeMove(new MeleeMove(player2, state, player2.getPunchDamage(), player2.getPunchWidth(), player2.getPunchHeight()));
-                }
-                
-                // Permettere la parata bassa
-                player2.setDefending(input.isDefendButtonPressed(2));
-            }
-
-        }else {
-            // Se è stordito, non può difendersi e resta fermo
-            player2.setDefending(false);
-        }
-
-        checkForProjectileSpawn(1);
-        checkForProjectileSpawn(2);
-        
-        for (Projectile p : projectiles) {
-            p.update();
-            
-            // Controllo uscita dai muri
-            if (p.getPosition().getX() < 0 || p.getPosition().getX() > worldWidth) {
-                p.setActive(false);
-            }
-            
-            // Controllo collisione (se il proiettile appartiene a P1, colpisce P2 e viceversa)
-            Player target = (p.getOwner() == player1) ? player2 : player1;
-            
-            if (p.getBoundingBox().intersects(target.getBoundingBox())) {
-                // Verifichiamo da quale lato arriva il proiettile rispetto al bersaglio
-                boolean isProjectileOnRight = p.getPosition().getX() > target.getPosition().getX();
-                boolean isFacingProjectile = (isProjectileOnRight && target.isFacingRight()) 
-                                        || (!isProjectileOnRight && !target.isFacingRight());
-
-                // Se il bersaglio sta parando ed è rivolto verso il proiettile, dimezza il danno
-                if (target.isDefending() && isFacingProjectile) {
-                    int halvedDamage = (int) (p.getDamage() * 0.5);
-                    target.takeDamage(halvedDamage);
-                    // Non attiviamo setHurt(true) per mantenere la posa di parata
-                } else {
-                    // Colpito in pieno o di spalle
-                    target.takeDamage((int) p.getDamage());
-                    target.setHurt(true);
-                }
-
-                p.setActive(false); // Il proiettile si distrugge all'impatto
-            }
-        }
-
-        // Rimuove i proiettili non più attivi
-        projectiles.removeIf(p -> !p.isActive());
-        
-        // --- LOGICA DI COMBATTIMENTO ---
+        // --- LOGICA DI COMBATTIMENTO (attacker, defender) ---
         handleCombat(player1, player2);
         handleCombat(player2, player1);
 
@@ -266,153 +105,57 @@ public class GameModel implements IReadOnlyGameModel{
         // Controllo collisione tra i due giocatori
         collisionDetection(player1, player2);
 
+        updateCamera();
 
-        // ==========================================
-        //         LOGICA DELLA TELECAMERA
-        // ==========================================
-        // Calcoliamo il fulcro (punto centrale) tra i due giocatori nel mondo assoluto
-        double midpointX = (player1.getPosition().getX() + player2.getPosition().getX()) / 2.0;
-        
-        // Definiamo i limiti della "Deadzone" (25% a sinistra, 25% a destra)
-        double leftThreshold = currentWindowWidth * 0.25;
-        double rightThreshold = currentWindowWidth * 0.75;
-        
-        // Calcoliamo dove si trova il fulcro RISPETTO all'inquadratura attuale
-        double screenMidpointX = midpointX - cameraX;
-        
-        // Calcolo della posizione target della telecamera (per la morbidezza del movimento)
-        double targetCameraX = cameraX;
-        
-        // Muoviamo la telecamera SOLO se il fulcro esce dalla zona morta centrale
-        if (screenMidpointX < leftThreshold) {
-            // Il fulcro spinge troppo a sinistra, la telecamera arretra
-            targetCameraX = midpointX - leftThreshold;
-        } else if (screenMidpointX > rightThreshold) {
-            // Il fulcro spinge troppo a destra, la telecamera avanza
-            targetCameraX = midpointX - rightThreshold;
-        }
-        
-        // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
-        if (targetCameraX < 0) {
-        	targetCameraX = 0; // Blocco al muro sinistro del mondo
-        } else if (targetCameraX > (worldWidth - currentWindowWidth)) {
-        	targetCameraX = worldWidth - currentWindowWidth; // Blocco al muro destro del mondo
-        }
-        
-        // LERP (INTERPOLAZIONE LINEARE) - Movimento morbido della telecamera
-        // Questo valore decide la morbidezza: 
-        // 0.01 è lentissima, 0.1 è fluida ma reattiva, 1.0 è istantanea come prima.
-        double cameraSpeed = 0.08;
-        
-        // La telecamera percorre solo una frazione della distanza verso il bersaglio
-        cameraX += (targetCameraX - cameraX) * cameraSpeed;
-        
-        // Aggiorna lo stato delle animazioni in base a ciò che è successo in questo frame
-        player1.updateAnimationState();
-        player2.updateAnimationState();
-        
-        // Resetta il movimento: se nel prossimo frame non premono le levette, saranno fermi
-        player1.isMoving = false;
-        player2.isMoving = false;
-        
-        // ==========================================
-        //           LIMITI DELLO SCHERMO
-        // ==========================================
-        // Ora che la telecamera si è mossa, chiudiamo i giocatori dentro la finestra visibile
-        keepPlayerOnScreen(player1);
-        keepPlayerOnScreen(player2);
-        
-        // Aggiornamento dello stato attuale per il salto
-        wasP1JumpHeld = isP1JumpHeld;
-        wasP2JumpHeld = isP2JumpHeld;
-        
-        wasP1PunchHeld = isP1PunchHeld;
-        wasP2PunchHeld = isP2PunchHeld;
-        
-        wasP1KickHeld = isP1KickHeld;
-        wasP2KickHeld = isP2KickHeld;
+        finalizePlayerFrame(player1);
+        finalizePlayerFrame(player2);
 
-        wasP1HookHeld = isP1HookHeld;
-        wasP2HookHeld = isP2HookHeld;
-
-        wasP1HadoukenHeld = isP1HadoukenHeld;
-        wasP2HadoukenHeld = isP2HadoukenHeld;
-        
-        // ==========================================
-        //         CONTROLLO FINE PARTITA
-        // ==========================================
-        if (!isGameOver) {
-            if (player1.getHealth() <= 0) {
-                isGameOver = true;
-                winner = 2; // Vince P2
-            } else if (player2.getHealth() <= 0) {
-                isGameOver = true;
-                winner = 1; // Vince P1
-            }
-        }
+        checkGameOver();
     }
     // ==========================================
     //      IL MOTORE DEI DANNI E COLLISIONI
     // ==========================================
     private void handleCombat(Player attacker, Player defender) {
-        if (attacker == defender) return;   // Controllo di sicurezza
+        if (attacker == defender) return;
 
-        // Verifichiamo se il giocatore ha una mossa in esecuzione
         Move currentAttack = attacker.getActiveMove();
+        if (currentAttack == null) return;
 
-        if (currentAttack != null) {
-            // Chiediamo alla mossa di fornirci la sua Hitbox in questo preciso frame.
-            // La mossa restituirà "null" se si sta ancora caricando (Startup) o se ha già colpito
-            Hitbox attackHitbox = currentAttack.getActiveHitbox();
+        Hitbox attackHitbox = currentAttack.getActiveHitbox();
+        if (attackHitbox != null && attackHitbox.intersects(defender.getBoundingBox())) {
+            currentAttack.setHasHit(true);
+            double baseDamage = currentAttack.getDamage();
 
-            // Se la Hitbox esiste e tocca l'avversario... colpito
-            if (attackHitbox != null && attackHitbox.intersects(defender.getBoundingBox())) {
-                // Mettiamo sibuto la sicura alla mossa per non fare doppi danni
-                currentAttack.setHasHit(true); 
-                
-                // Il danno viene letto direttamente dall'oggetto Move (player di conseguenza)
-                double baseDamage = currentAttack.getDamage();
-
-                // ========================================================
-                //        LOGICA DI DIFESA E PARRY
-                // ========================================================
-                boolean isAttackerOnRight = attacker.getPosition().getX() > defender.getPosition().getX();
-                boolean isFacingAttacker = (isAttackerOnRight && defender.isFacingRight()) || (!isAttackerOnRight && !defender.isFacingRight());
-
-                if (defender.isDefending() && isFacingAttacker) {
-                    // Percentuale di parata in base al tempo
-                    long blockDuration = System.currentTimeMillis() - defender.getBlockStartTime();
-                    
-                    // Otteniamo dinamicamente i dati dell'animazione di parata del difensore!
-                    AnimData blockData = defender.getBlockAnimData(); 
-                    long timePerFrameMs = blockData.speedNs / 1_000_000L; 
-                    int totalFrames = blockData.frameCount;
-                    
-                    // Calcoliamo in quale "frame teorico" della parata si trova il difensore
-                    int currentBlockFrame = (int) (blockDuration / timePerFrameMs);
-
-                    // Parry perfetto
-                    if (currentBlockFrame >= totalFrames - 1) {
-                        System.out.println("PARRY PERFETTO di " + defender.getDisplayName() + "!");
-                        attacker.stun(defender.getParryStunDuration());
-                        
-                    } else {
-                        // Parry parziale
-                        double blockPercentage = (double) (currentBlockFrame + 1) / totalFrames;
-                        double damageMultiplier = 1.0 - blockPercentage;
-                        
-                        double finalDamage = baseDamage * damageMultiplier;
-                        
-                        System.out.println("Parata parziale (frame " + (currentBlockFrame + 1) + "/" + totalFrames + "). Danno subito: " + finalDamage);
-                        defender.takeDamage((int) finalDamage);
-                    }
-                } else {
-                    // Preso in pieno o di spalle
-                    System.out.println("Colpito, danno: " + baseDamage);
-                    defender.takeDamage((int) baseDamage);
-                    defender.setHurt(true);; // Attiva lo stato di "colpito"
-                }
+            if (defender.isDefending() && isDefenderFacingThreat(defender, attacker.getPosition().getX())) {
+                resolveMeleeBlockOrParry(attacker, defender, baseDamage);
+            } else {
+                System.out.println("Colpito, danno: " + baseDamage);
+                defender.takeDamage((int) baseDamage);
+                defender.setHurt(true);
             }
+        }
+    }
+
+    // Gestisce il calcolo dei frame per distinguere tra Parry perfetto e parata parziale
+    private void resolveMeleeBlockOrParry(Player attacker, Player defender, double baseDamage) {
+        long blockDuration = System.currentTimeMillis() - defender.getBlockStartTime();
+
+        AnimData blockData = defender.getBlockAnimData();
+        long timePerFrameMs = blockData.speedNs / 1_000_000L;
+        int totalFrames = blockData.frameCount;
+
+        int currentBlockFrame = (int) (blockDuration / timePerFrameMs);
+
+        if (currentBlockFrame >= totalFrames - 1) {
+            System.out.println("PARRY PERFETTO di " + defender.getDisplayName() + "!");
+            attacker.stun(defender.getParryStunDuration());
+        } else {
+            double blockPercentage = (double) (currentBlockFrame + 1) / totalFrames;
+            double damageMultiplier = 1.0 - blockPercentage;
+            double finalDamage = baseDamage * damageMultiplier;
+
+            System.out.println("Parata parziale (frame " + (currentBlockFrame + 1) + "/" + totalFrames + "). Danno subito: " + finalDamage);
+            defender.takeDamage((int) finalDamage);
         }
     }
     
@@ -598,6 +341,235 @@ public class GameModel implements IReadOnlyGameModel{
             Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta grazie a hasFired
             if (p != null) {
                 projectiles.add(p);
+            }
+        }
+    }
+
+    // Gestisce la lettura degli input, la fisica e l'aggiornamento dei flag per entrambi i giocatori
+    private void updatePlayersInput(InputManager input) {
+        // --- Lettura input attuali ---
+        boolean isP1JumpHeld = input.isJumpButtonPressed(1);
+        boolean isP2JumpHeld = input.isJumpButtonPressed(2);
+
+        boolean isP1PunchHeld = input.isPunchButtonPressed(1);
+        boolean isP2PunchHeld = input.isPunchButtonPressed(2);
+
+        boolean isP1KickHeld = input.isKickButtonPressed(1);
+        boolean isP2KickHeld = input.isKickButtonPressed(2);
+
+        boolean isP1HookHeld = input.isHookButtonPressed(1);
+        boolean isP2HookHeld = input.isHookButtonPressed(2);
+
+        boolean isP1HadoukenHeld = input.isHadoukenButtonPressed(1);
+        boolean isP2HadoukenHeld = input.isHadoukenButtonPressed(2);
+
+        // --- Fisica del salto ---
+        player1.applyPhysics(this.currentGroundLevel, isP1JumpHeld);
+        player2.applyPhysics(this.currentGroundLevel, isP2JumpHeld);
+
+        // --- Azioni Giocatore 1 (passiamo solo i trigger "appena premuto") ---
+        handleSinglePlayerActions(
+            player1, 1, input,
+            isP1JumpHeld && !wasP1JumpHeld,
+            isP1PunchHeld && !wasP1PunchHeld,
+            isP1HookHeld && !wasP1HookHeld,
+            isP1KickHeld && !wasP1KickHeld,
+            isP1HadoukenHeld && !wasP1HadoukenHeld
+        );
+
+        // --- Azioni Giocatore 2 ---
+        handleSinglePlayerActions(
+            player2, 2, input,
+            isP2JumpHeld && !wasP2JumpHeld,
+            isP2PunchHeld && !wasP2PunchHeld,
+            isP2HookHeld && !wasP2HookHeld,
+            isP2KickHeld && !wasP2KickHeld,
+            isP2HadoukenHeld && !wasP2HadoukenHeld
+        );
+
+        // --- Salvataggio stato input per il frame successivo ---
+        wasP1JumpHeld = isP1JumpHeld;
+        wasP2JumpHeld = isP2JumpHeld;
+        wasP1PunchHeld = isP1PunchHeld;
+        wasP2PunchHeld = isP2PunchHeld;
+        wasP1KickHeld = isP1KickHeld;
+        wasP2KickHeld = isP2KickHeld;
+        wasP1HookHeld = isP1HookHeld;
+        wasP2HookHeld = isP2HookHeld;
+        wasP1HadoukenHeld = isP1HadoukenHeld;
+        wasP2HadoukenHeld = isP2HadoukenHeld;
+    }
+
+    // Logica unificata per il singolo giocatore (vale sia per P1 che per P2)
+    private void handleSinglePlayerActions(
+            Player player, int playerNum, InputManager input,
+            boolean jumpJustPressed, boolean punchJustPressed,
+            boolean hookJustPressed, boolean kickJustPressed,
+            boolean hadoukenJustPressed) {
+
+        if (player.isStunned()) {
+            player.setDefending(false);
+            return;
+        }
+
+        double stickX = input.getLeftStickX(playerNum);
+        double stickY = input.getLeftStickY(playerNum);
+
+        // Attiva il crouch se la levetta è spinta verso il basso e il player è a terra
+        player.setCrouching(stickY > 0.5 && player.isGrounded());
+
+        if (!player.isCrouching()) {
+            handleStandingActions(player, stickX, jumpJustPressed, punchJustPressed, hookJustPressed, kickJustPressed, hadoukenJustPressed);
+        } else {
+            handleCrouchingActions(player, punchJustPressed);
+        }
+
+        // La parata è permessa sia in piedi che da accovacciati
+        player.setDefending(input.isDefendButtonPressed(playerNum));
+    }
+
+    // Mosse e movimento quando il giocatore è in piedi
+    private void handleStandingActions(
+            Player player, double stickX,
+            boolean jumpJustPressed, boolean punchJustPressed,
+            boolean hookJustPressed, boolean kickJustPressed,
+            boolean hadoukenJustPressed) {
+
+        if (Math.abs(stickX) > 0.0) {
+            player.moveHorizontal(stickX > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
+        }
+        if (jumpJustPressed) {
+            player.jump();
+        }
+        if (hadoukenJustPressed) {
+            AnimState state = player.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
+            player.executeMove(new RangedMove(player, state, player.getHadoukenDamage(), player.getHadoukenSpeed()));
+        }
+        if (hookJustPressed) {
+            AnimState state = player.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
+            player.executeMove(new MeleeMove(player, state, player.getHookDamage(), player.getHookWidth(), player.getHookHeight()));
+        } else if (punchJustPressed) {
+            AnimState state = player.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+            player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
+        }
+        if (kickJustPressed) {
+            AnimState state = player.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
+            player.executeMove(new MeleeMove(player, state, player.getKickDamage(), player.getKickWidth(), player.getKickHeight()));
+        }
+    }
+
+    // Mosse quando il giocatore è accovacciato
+    private void handleCrouchingActions(Player player, boolean punchJustPressed) {
+        if (punchJustPressed) {
+            AnimState state = player.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
+            player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
+        }
+    }
+
+    // Controlla spawn, movimento, collisioni e rimozione dei proiettili
+    private void updateProjectiles() {
+        checkForProjectileSpawn(1);
+        checkForProjectileSpawn(2);
+
+        for (Projectile p : projectiles) {
+            p.update();
+
+            // Controllo uscita dai muri
+            if (p.getPosition().getX() < 0 || p.getPosition().getX() > worldWidth) {
+                p.setActive(false);
+                continue;
+            }
+
+            // Controllo collisione (se appartiene a P1 colpisce P2 e viceversa)
+            Player target = (p.getOwner() == player1) ? player2 : player1;
+            if (p.getBoundingBox().intersects(target.getBoundingBox())) {
+                resolveProjectileHit(p, target);
+            }
+        }
+
+        // Rimuove i proiettili non più attivi
+        projectiles.removeIf(p -> !p.isActive());
+    }
+
+    // Gestisce l'applicazione del danno quando un proiettile colpisce un bersaglio
+    private void resolveProjectileHit(Projectile p, Player target) {
+        boolean isFacingProjectile = isDefenderFacingThreat(target, p.getPosition().getX());
+
+        if (target.isDefending() && isFacingProjectile) {
+            int halvedDamage = (int) (p.getDamage() * 0.5);
+            target.takeDamage(halvedDamage);
+            // Non attiviamo setHurt(true) per mantenere la posa di parata
+        } else {
+            target.takeDamage((int) p.getDamage());
+            target.setHurt(true);
+        }
+
+        p.setActive(false); // Il proiettile si distrugge all'impatto
+    }
+
+    // Riutilizzabile sia per i proiettili sia per gli attacchi corpo a corpo
+    private boolean isDefenderFacingThreat(Player defender, double threatX) {
+        boolean isThreatOnRight = threatX > defender.getPosition().getX();
+        return (isThreatOnRight && defender.isFacingRight()) 
+            || (!isThreatOnRight && !defender.isFacingRight());
+    }
+
+    // Calcola la posizione della telecamera con Deadzone e interpolazione lineare (LERP)
+    private void updateCamera() {
+        // Calcoliamo il fulcro (punto centrale) tra i due giocatori nel mondo assoluto
+        double midpointX = (player1.getPosition().getX() + player2.getPosition().getX()) / 2.0;
+
+        // Definiamo i limiti della "Deadzone" (25% a sinistra, 25% a destra)
+        double leftThreshold = currentWindowWidth * 0.25;
+        double rightThreshold = currentWindowWidth * 0.75;
+
+        // Calcoliamo dove si trova il fulcro RISPETTO all'inquadratura attuale
+        double screenMidpointX = midpointX - cameraX;
+
+        // Calcolo della posizione target della telecamera (per la morbidezza del movimento)
+        double targetCameraX = cameraX;
+
+        // Muoviamo la telecamera SOLO se il fulcro esce dalla zona morta centrale
+        if (screenMidpointX < leftThreshold) {
+            // Il fulcro spinge troppo a sinistra, la telecamera arretra
+            targetCameraX = midpointX - leftThreshold;
+        } else if (screenMidpointX > rightThreshold) {
+            // Il fulcro spinge troppo a destra, la telecamera avanza
+            targetCameraX = midpointX - rightThreshold;
+        }
+
+        // "Clamp": Impediamo alla telecamera di mostrare il vuoto fuori dall'arena
+        if (targetCameraX < 0) {
+        	targetCameraX = 0; // Blocco al muro sinistro del mondo
+        } else if (targetCameraX > (worldWidth - currentWindowWidth)) {
+        	targetCameraX = worldWidth - currentWindowWidth; // Blocco al muro destro del mondo
+        }
+
+        // LERP (INTERPOLAZIONE LINEARE) - Movimento morbido della telecamera
+        // Questo valore decide la morbidezza: 
+        // 0.01 è lentissima, 0.1 è fluida ma reattiva, 1.0 è istantanea come prima.
+        double cameraSpeed = 0.08;
+        // La telecamera percorre solo una frazione della distanza verso il bersaglio
+        cameraX += (targetCameraX - cameraX) * cameraSpeed;
+    }
+
+    // Aggiorna le animazioni, resetta il flag di movimento e blocca il giocatore nello schermo visibile
+    private void finalizePlayerFrame(Player p) {
+        p.updateAnimationState();
+        // Reset del movimento
+        p.isMoving = false;
+        keepPlayerOnScreen(p);
+    }
+
+    // Controlla se uno dei due giocatori ha esaurito la salute
+    private void checkGameOver() {
+        if (!isGameOver) {
+            if (player1.getHealth() <= 0) {
+                isGameOver = true;
+                winner = 2; // Vince P2
+            } else if (player2.getHealth() <= 0) {
+                isGameOver = true;
+                winner = 1; // Vince P1
             }
         }
     }
