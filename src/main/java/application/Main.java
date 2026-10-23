@@ -1,8 +1,7 @@
 package application;
 
-// --- IMPORT ESPLICITI ---
-import application.Scenes.MainMenuScene;
-import application.Utils.Settings;
+import application.scenes.MainMenuScene;
+import application.utils.Settings;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
