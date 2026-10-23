@@ -5,6 +5,7 @@ import java.util.List;
 
 import application.Controller.CharacterFactory;
 import application.Controller.InputManager;
+
 import application.Utils.GameConfig;
 import application.Utils.Point;
 

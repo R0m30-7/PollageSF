@@ -98,7 +98,7 @@ L'obiettivo primario di ogni incontro consiste nell'azzerare la barra della salu
 \end{itemize}
 
 \subsection{L'applicazione PollageSF}
-\textbf{PollageSF} riproduce le meccaniche fondamentali del picchiaduro bidimensionale all'interno di un'applicazione desktop progettata secondo il pattern architetturale \textbf{Model-View-Controller (MVC)} [3]. Il sistema è pensato per offrire un'esperienza multigiocatore locale immediata e reattiva tramite l'utilizzo simultaneo di gamepad esterni gestiti a basso livello mediante la libreria \emph{Jamepad} (basata su SDL2) [4].
+\textbf{PollageSF} riproduce le meccaniche fondamentali del picchiaduro bidimensionale all'interno di un'applicazione desktop progettata secondo il pattern architetturale \textbf{Model-View-Controller (MVC)}. Il sistema è pensato per offrire un'esperienza multigiocatore locale immediata e reattiva tramite l'utilizzo simultaneo di gamepad esterni gestiti a basso livello mediante la libreria \emph{Jamepad} (basata su SDL2) [3].
 
 Il flusso operativo dell'applicazione accompagna gli utenti attraverso una sequenza strutturata di menu interattivi prima di avviare lo scontro:
 \begin{enumerate}
@@ -141,7 +141,7 @@ L'applicazione \textbf{PollageSF} è stata progettata e realizzata per soddisfar
 Nel presente capitolo viene descritta nel dettaglio la progettazione del gioco \textbf{PollageSF}, analizzando l'architettura complessiva, le responsabilità dei singoli package (\texttt{Model}, \texttt{View}, \texttt{Controller}) e le soluzioni adottate per risolvere le principali problematiche tecniche emerse durante lo sviluppo.
 
 \subsection{Architettura del Sistema Software}
-Il sistema software è stato progettato adottando rigorosamente il pattern architetturale \textbf{Model-View-Controller (MVC)} [3], al fine di garantire un elevato grado di modularità, manutenibilità ed estendibilità del codice sorgente. La separazione delle responsabilità è così definita:
+Il sistema software è stato progettato adottando rigorosamente il pattern architetturale \textbf{Model-View-Controller (MVC)}, al fine di garantire un elevato grado di modularità, manutenibilità ed estendibilità del codice sorgente. La separazione delle responsabilità è così definita:
 
 \begin{itemize}
     \item \textbf{Modulo Model (\texttt{application.Model}):} Contiene la logica di tutto il gioco, lo stato della partita, la cinematica dei corpi, la gestione delle animazioni a livello logico e il motore delle collisioni. Il Model non importa né utilizza alcun nodo grafico della libreria JavaFX (come \texttt{Pane}, \texttt{ImageView} o \texttt{Scene}), risultando completamente indipendente dalla tecnologia di visualizzazione.
@@ -229,7 +229,7 @@ Tale primitiva geometrica viene impiegata in due contesti distinti:
     \begin{equation}
         F_{\text{block}} = \left\lfloor \frac{t_{\text{now}} - t_{\text{block}}}{\text{speedMs}_{\text{block}}} \right\rfloor
     \end{equation}
-    Se $F_{\text{block}} \ge N_{\text{frames}} - 1$ (ossia l'impatto coincide con il completamento dell'animazione di parata), si attiva il \textbf{Parry Perfetto}: il difensore subisce $0$ danni e l'attaccante viene stordito per $\text{parryStunDuration} = 1200\text{ ms}$. In caso contrario, si verifica una \textbf{Parata Parziale} con danno ridotto secondo la legge:
+    Se $F_{\text{block}} \ge N_{\text{frames}} - 1$ (ossia l'impatto coincide con il completamento dell'animazione di parata), si attiva il \textbf{Parry Perfetto}: il difensore subisce $0$ danni e l'attaccante viene stordito per $\text{parryStunDuration }(\text{ms})$. In caso contrario, si verifica una \textbf{Parata Parziale} con danno ridotto secondo la legge:
     \begin{equation}
         \text{Danno Finale} = \text{Danno Base} \cdot \left(1 - \frac{F_{\text{block}} + 1}{N_{\text{frames}}}\right)
     \end{equation}
@@ -294,7 +294,7 @@ while (physicsAccumulator >= GameConfig.TIME_PER_TICK) {
 \end{enumerate}
 
 \subsubsection{Gestione Periferiche Hardware (\texttt{InputManager})}
-La classe \texttt{InputManager} è implementata secondo il pattern creazionale **Singleton** (\texttt{InputManager.getInstance()}) per garantire un unico punto di accesso centralizzato al sottosistema nativo \texttt{ControllerManager} della libreria \emph{Jamepad} (SDL2) [4]. La classe mantiene gli indici fisici dei controller assegnati ai due giocatori (\texttt{p1Index} e \texttt{p2Index}, inizializzati a $-1$), gestisce l'accoppiamento automatico alla pressione dei tasti principali, applica una zona morta hardware del $15\%$ (\texttt{Math.abs(stick) > 0.15}) sugli assi analogici per eliminare il fenomeno dello \emph{stick drift} e fornisce metodi semantici ad alto livello per le azioni di combattimento:
+La classe \texttt{InputManager} è implementata secondo il pattern creazionale **Singleton** (\texttt{InputManager.getInstance()}) per garantire un unico punto di accesso centralizzato al sottosistema nativo \texttt{ControllerManager} della libreria \emph{Jamepad} (SDL2) [3]. La classe mantiene gli indici fisici dei controller assegnati ai due giocatori (\texttt{p1Index} e \texttt{p2Index}, inizializzati a $-1$), gestisce l'accoppiamento automatico alla pressione dei tasti principali, applica una zona morta hardware del $15\%$ (\texttt{Math.abs(stick) > 0.15}) sugli assi analogici per eliminare il fenomeno dello \emph{stick drift} e fornisce metodi semantici ad alto livello per le azioni di combattimento:
 \begin{itemize}
     \item \textbf{Pugno standard (\texttt{isPunchButtonPressed}):} pressione del tasto \texttt{X} (Quadrato su layout PlayStation);
     \item \textbf{Gancio pesante (\texttt{isHookButtonPressed}):} combinazione del grilletto destro ($\text{rightTrigger} > 0.5$, tasto \texttt{R2}) + tasto \texttt{X};
@@ -304,14 +304,21 @@ La classe \texttt{InputManager} è implementata secondo il pattern creazionale *
 \subsection{Problemi Riscontrati}
 Durante le fasi di sviluppo e integrazione dei moduli, sono emerse alcune problematiche architetturali e grafiche di rilievo, risolte mediante interventi mirati:
 
+\subsubsection{Rendering dello sprite sheet}
+L'implementazione del rendering di Ryu e Ken aveva due problemi principali: l'allineamento dei frame e l'efficienza del rendering di diverse immagini (una per frame). Tali criticità sono state risolte organizzando i frame in un'unica immagine (atlas) e associando un dizionario in cui ogni chiave univoca contiene le coordinate assolute nell'\textit{atlas}, nonché l'altezza e la larghezza del singolo frame.
+
+La classe \texttt{AnimData} fornisce i parametri logici dell'animazione (riga, colonna di partenza, numero totale di frame e velocità di transizione). Attraverso questi dati, il sistema individua istantaneamente la chiave corretta senza calcoli geometrici complessi a runtime; un esempio di chiave è \texttt{"row00\_col00\_frame00"}. 
+
+Con la mappa pre-caricata in memoria (\texttt{HashMap<String, Rectangle2D>}) all'avvio dell'applicazione, il recupero del singolo frame avviene in tempo costante, azzerando i rallentamenti nel game loop.
 \begin{itemize}
     \item \textbf{Gestione del Palette Swap e Iniezione delle Skin:} La personalizzazione cromatica dei lottatori ha richiesto di superare due criticità:
     \begin{enumerate}
-        \item \emph{Disallineamento tra Selezione e Spawn effettivo:} Inizialmente, la classe \texttt{CharacterFactory} istanziava il personaggio con la palette predefinita, ignorando le scelte effettuate nel menu di selezione. Il problema è stato risolto estendendo il metodo \texttt{spawnPlayers(f1, f2, skin1, skin2)} all'interno del \texttt{GameModel}, consentendo al \texttt{GameController} di iniettare gli indici selezionati (\texttt{setSkinIndex}) prima della generazione dei renderer visivi.
-        \item \emph{Invalidazione della Cache delle Texture nel Renderer:} La classe \texttt{PlayerRenderer} utilizza una tabella hash (\texttt{frameCache}) per memorizzare i ritagli Nearest-Neighbor già calcolati. Durante la fase di anteprima nel menu, al cambio di skin tramite i dorsali \texttt{L1/R1}, il renderer rischiava di ripescare i fotogrammi già indicizzati della palette precedente. Si è quindi reso necessario forzare l'istanziazione di un nuovo \texttt{PlayerRenderer} dedicato ad ogni variazione di skin (\texttt{p1Changed || p2Changed}), garantendo il caricamento corretto del rispettivo file PNG con trasparenza cromatica (chromakey).
+    \item \emph{Disallineamento tra Selezione e Spawn effettivo:} Inizialmente, la classe \texttt{CharacterFactory} istanziava il personaggio con la palette predefinita, ignorando le scelte effettuate nel menu di selezione. Il problema è stato risolto estendendo il metodo \texttt{spawnPlayers(f1, f2, skin1, skin2)} all'interno del \texttt{GameModel}, consentendo al \texttt{GameController} di iniettare gli indici selezionati (\texttt{setSkinIndex}) prima della generazione dei renderer visivi.
+    \item \emph{Invalidazione della Cache delle Texture nel Renderer:} La classe \texttt{PlayerRenderer} utilizza una tabella hash (\texttt{frameCache}) per memorizzare i ritagli Nearest-Neighbor già calcolati. Durante la fase di anteprima nel menu, al cambio di skin tramite i dorsali \texttt{L1/R1}, il renderer rischiava di ripescare i fotogrammi già indicizzati della palette precedente. Si è quindi reso necessario forzare l'istanziazione di un nuovo \texttt{PlayerRenderer} dedicato ad ogni variazione di skin (\texttt{p1Changed || p2Changed}), garantendo il caricamento corretto del rispettivo file PNG con trasparenza cromatica (chromakey).
     \end{enumerate}
     \item \textbf{Disaccoppiamento della Nascita dei Proiettili (\emph{Deferred Spawning}):} La generazione dell'\emph{Hadouken} rischiava di produrre il proiettile all'istante di pressione del tasto anziché in corrispondenza del fotogramma in cui il lottatore estende le braccia. L'adozione della classe \texttt{RangedMove} dotata del flag \texttt{hasFired} ha consentito al loop di interrogare il metodo \texttt{createProjectile()} ad ogni tick e istanziare l'entità esattamente al completamento della finestra di \emph{Startup}.
     \item \textbf{Sfarfallio e Compenetrazione dei Corpi al Pavimento:} Durante la postura accovacciata (\texttt{crouch}), la riduzione dell'altezza della hurtbox provocava una sospensione aerea del modello visivo. La traslazione compensativa della coordinata $Y$ ha consentito di mantenere i piedi dei combattenti ancorati al pavimento in qualsiasi transizione posturale.
+
 \end{itemize}
 
 \newpage
@@ -338,7 +345,6 @@ Tra i principali sviluppi futuri pianificati figurano:
 \begin{enumerate}[label={[\arabic*]}]
     \item Wikipedia. \emph{Street Fighter (serie) -- Wikipedia, l'enciclopedia libera}, 2026. [Online \url{https://it.wikipedia.org/wiki/Street_Fighter_(serie)}].
     \item OpenJFX Documentation. \emph{JavaFX 17 / 21 Official API Documentation and Scene Graph Reference}, 2026. [Online \url{https://openjfx.io/}].
-    \item Gamma, E., Helm, R., Johnson, R., Vlissides, J. \emph{Design Patterns: Elements of Reusable Object-Oriented Software}. Addison-Wesley Professional, 1994.
     \item Hartman, W. \emph{Jamepad: A library for using gamepads in Java based on SDL2 GameController API}, GitHub Repository. [Online \url{https://github.com/williamahartman/Jamepad}].
     \item Nystrom, R. \emph{Game Programming Patterns} (Capitolo \emph{Game Loop -- Fixed Time Step with Accumulator}). Genever Benning, 2014. [Online \url{https://gameprogrammingpatterns.com/game-loop.html}].
 \end{enumerate}
@@ -382,7 +388,7 @@ La Tabella \ref{tab:framedata} illustra la configurazione delle animazioni (\tex
 \centering
 \begin{tabular}{l c c c c c}
 \toprule
-\textbf{Stato Animazione (\texttt{AnimState})} & \textbf{Riga Atlas} & \textbf{Colonna Iniziale} & \textbf{Frame Totali} & \textbf{Durata Frame (ms)} & \textbf{Loop} \\
+\textbf{Stato Animazione } & \textbf{Riga Atlas} & \textbf{Col Iniz} & \textbf{Frame Tot} & \textbf{Durata Frame (ms)} & \textbf{Loop} \\
 \midrule
 \texttt{IDLE\_RIGHT / LEFT} & 0 & 0 & 4 & 100 & Sì \\
 \texttt{MENU\_IDLE} & 0 & 0 & 4 & 150 & Sì \\
