@@ -26,53 +26,32 @@
 % FRONTESPIZIO
 % ==========================================================
 \begin{titlepage}
-\centering
-\vspace*{0.5cm}
-
-% Se il file unipg_logo.png non è presente, viene visualizzato un riquadro segnaposto
-\IfFileExists{figures/unipg_logo.png}{%
-    \includegraphics[width=0.35\textwidth]{figures/unipg_logo.png}%
-}{%
-    \framebox[0.35\textwidth]{\rule{0pt}{3cm}Logo UniPG}%
-}
-
-\vspace{0.4cm}
-{\scshape\Large Università degli Studi di Perugia \par}
-\vspace{0.2cm}
-{\scshape\large Dipartimento di Ingegneria \par}
-\vspace{1.2cm}
-
-{\Large Tesina Finale di\par}
-\vspace{0.2cm}
-{\large\textbf{Programmazione di Interfacce Grafiche e Dispositivi Mobili}\par}
-\vspace{0.2cm}
-{\normalsize Corso di Laurea in Ingegneria Informatica ed Elettronica -- A.A. 2025-2026\par}
-
-\vspace{1.8cm}
-{\Huge\bfseries PollageSF\par}
-\vspace{0.3cm}
-{\Large applicazione desktop JAVAFX\par}
-\vspace{2.2cm}
-
-\begin{minipage}[t]{0.48\textwidth}
-\begin{flushleft} \large
-\emph{Docente:}\\
-Prof. Luca \textsc{Grilli}
-\end{flushleft}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.48\textwidth}
-\begin{flushright} \large
-\emph{Studenti:}\\
-364672 Romeo \textsc{Miscio}\\
-{\small \texttt{romeo.miscio@studenti.unipg.it}}\\[0.3cm]
-367169 Paolo \textsc{Ferrari}\\
-{\small \texttt{paolo.ferrari@studenti.unipg.it}}
-\end{flushright}
-\end{minipage}
-
-\vfill
-{\normalsize Data ultimo aggiornamento: \today\par}
+	\centering
+	\includegraphics[width=0.34\textwidth]{figures/logo-unipg.png}\par\vspace{1cm}
+	\large{Tesina Finale di}\par
+	\large{\textbf{Programmazione di Interfacce Grafiche e Dispositivi Mobili}}\par
+	\small{Corso di Laurea in Ingegneria Informatica ed Elettronica -- A.A. 2025-2026}\par
+	\textsc{\small{Dipartimento di Ingegneria}}\par
+	%\large{A.A. 2018-2019}\par
+	
+	%\vfill
+	\vspace{0.5cm}
+	docente\par
+	Prof.~Luca \textsc{Grilli}
+	
+	\vspace{2cm}
+	\includegraphics[width=0.80\textwidth]{figures/PollageSF_logo.png}\par
+	applicazione desktop \textsc{JavaFX}\par
+	\vfill
+	
+	\large{Studenti}\par
+	\vspace{0.2cm}
+	\begin{tabular}{ l l l l }
+		\large{364672} & \large{\textbf{Romeo}} & \large{\textbf{Miscio}} & \large{romeo.miscio@studenti.unipg.it}\\
+		\large{367169} & \large{\textbf{Paolo}} & \large{\textbf{Ferrari}} & \large{paolo.ferrari@studenti.unipg.it}\\
+	\end{tabular}\par
+	\vspace{1cm}
+	\small{Ultimo aggiornamento: \today}
 \end{titlepage}
 
 \newpage
@@ -87,7 +66,7 @@ L'obiettivo di questo lavoro è lo sviluppo di un'applicazione desktop, denomina
 
 Di seguito viene presentata una sintetica panoramica del videogioco arcade originale \emph{Street Fighter}, seguita da una descrizione dettagliata delle caratteristiche funzionali e di gameplay della versione \textbf{PollageSF} realizzata.
 
-\subsection{Il Videogioco Street Fighter}
+\subsection{Street Fighter - il videogioco}
 \emph{Street Fighter} è un celebre videogioco arcade di combattimento a incontri in tempo reale sviluppato da Capcom, strutturato su duelli uno contro uno all'interno di un'arena bidimensionale a scorrimento orizzontale [1]. Ciascun giocatore seleziona un lottatore dal roster disponibile, ognuno caratterizzato da attributi fisici specifici, un set unico di attacchi normali corpo a corpo (pugni rapidi, ganci pesanti, calci alti e bassi), mosse speciali a distanza (come il celebre proiettile energetico \emph{Hadouken}) e tecniche difensive.
 
 L'obiettivo primario di ogni incontro consiste nell'azzerare la barra della salute (\emph{Health Bar}) dell'avversario prima dello scadere del tempo regolamentare. La profondità strategica e competitiva del titolo risiede in tre fattori fondamentali:
@@ -310,16 +289,19 @@ L'implementazione del rendering di Ryu e Ken aveva due problemi principali: l'al
 La classe \texttt{AnimData} fornisce i parametri logici dell'animazione (riga, colonna di partenza, numero totale di frame e velocità di transizione). Attraverso questi dati, il sistema individua istantaneamente la chiave corretta senza calcoli geometrici complessi a runtime; un esempio di chiave è \texttt{"row00\_col00\_frame00"}. 
 
 Con la mappa pre-caricata in memoria (\texttt{HashMap<String, Rectangle2D>}) all'avvio dell'applicazione, il recupero del singolo frame avviene in tempo costante, azzerando i rallentamenti nel game loop.
-\begin{itemize}
-    \item \textbf{Gestione del Palette Swap e Iniezione delle Skin:} La personalizzazione cromatica dei lottatori ha richiesto di superare due criticità:
+
+\subsubsection{Gestione del Palette Swap e iniezione delle skin}
+    La personalizzazione cromatica dei lottatori ha richiesto di superare due criticità:
     \begin{enumerate}
     \item \emph{Disallineamento tra Selezione e Spawn effettivo:} Inizialmente, la classe \texttt{CharacterFactory} istanziava il personaggio con la palette predefinita, ignorando le scelte effettuate nel menu di selezione. Il problema è stato risolto estendendo il metodo \texttt{spawnPlayers(f1, f2, skin1, skin2)} all'interno del \texttt{GameModel}, consentendo al \texttt{GameController} di iniettare gli indici selezionati (\texttt{setSkinIndex}) prima della generazione dei renderer visivi.
     \item \emph{Invalidazione della Cache delle Texture nel Renderer:} La classe \texttt{PlayerRenderer} utilizza una tabella hash (\texttt{frameCache}) per memorizzare i ritagli Nearest-Neighbor già calcolati. Durante la fase di anteprima nel menu, al cambio di skin tramite i dorsali \texttt{L1/R1}, il renderer rischiava di ripescare i fotogrammi già indicizzati della palette precedente. Si è quindi reso necessario forzare l'istanziazione di un nuovo \texttt{PlayerRenderer} dedicato ad ogni variazione di skin (\texttt{p1Changed || p2Changed}), garantendo il caricamento corretto del rispettivo file PNG con trasparenza cromatica (chromakey).
     \end{enumerate}
-    \item \textbf{Disaccoppiamento della Nascita dei Proiettili (\emph{Deferred Spawning}):} La generazione dell'\emph{Hadouken} rischiava di produrre il proiettile all'istante di pressione del tasto anziché in corrispondenza del fotogramma in cui il lottatore estende le braccia. L'adozione della classe \texttt{RangedMove} dotata del flag \texttt{hasFired} ha consentito al loop di interrogare il metodo \texttt{createProjectile()} ad ogni tick e istanziare l'entità esattamente al completamento della finestra di \emph{Startup}.
-    \item \textbf{Sfarfallio e Compenetrazione dei Corpi al Pavimento:} Durante la postura accovacciata (\texttt{crouch}), la riduzione dell'altezza della hurtbox provocava una sospensione aerea del modello visivo. La traslazione compensativa della coordinata $Y$ ha consentito di mantenere i piedi dei combattenti ancorati al pavimento in qualsiasi transizione posturale.
 
-\end{itemize}
+\subsubsection{Disaccoppiamento della nascita dei proiettili (\emph{Deferred Spawning})}
+	La generazione dell'\emph{Hadouken} rischiava di produrre il proiettile all'istante di pressione del tasto anziché in corrispondenza del fotogramma in cui il lottatore estende le braccia. L'adozione della classe \texttt{RangedMove} dotata del flag \texttt{hasFired} ha consentito al loop di interrogare il metodo \texttt{createProjectile()} ad ogni tick e istanziare l'entità esattamente al completamento della finestra di \emph{Startup}.
+
+\subsubsection{Sfarfallio e compenetrazione dei corpi nel pavimento}
+	Durante la postura accovacciata (\texttt{crouch}), la riduzione dell'altezza della hurtbox provocava una sospensione aerea del modello visivo. La traslazione compensativa della coordinata $Y$ ha consentito di mantenere i piedi dei combattenti ancorati al pavimento in qualsiasi transizione posturale.
 
 \newpage
 
