@@ -228,12 +228,25 @@ public class GameModel implements IReadOnlyGameModel{
             }
             
             // Controllo collisione (se il proiettile appartiene a P1, colpisce P2 e viceversa)
-            // Puoi definire un riferimento al "proprietario" dentro la classe Projectile
             Player target = (p.getOwner() == player1) ? player2 : player1;
             
             if (p.getBoundingBox().intersects(target.getBoundingBox())) {
-                target.takeDamage((int) p.getDamage());
-                target.setHurt(true);
+                // Verifichiamo da quale lato arriva il proiettile rispetto al bersaglio
+                boolean isProjectileOnRight = p.getPosition().getX() > target.getPosition().getX();
+                boolean isFacingProjectile = (isProjectileOnRight && target.isFacingRight()) 
+                                        || (!isProjectileOnRight && !target.isFacingRight());
+
+                // Se il bersaglio sta parando ed è rivolto verso il proiettile, dimezza il danno
+                if (target.isDefending() && isFacingProjectile) {
+                    int halvedDamage = (int) (p.getDamage() * 0.5);
+                    target.takeDamage(halvedDamage);
+                    // Non attiviamo setHurt(true) per mantenere la posa di parata
+                } else {
+                    // Colpito in pieno o di spalle
+                    target.takeDamage((int) p.getDamage());
+                    target.setHurt(true);
+                }
+
                 p.setActive(false); // Il proiettile si distrugge all'impatto
             }
         }
