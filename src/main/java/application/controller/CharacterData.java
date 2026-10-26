@@ -1,5 +1,7 @@
 package application.controller;
 
+import application.model.CharacterFactory;
+
 public class CharacterData {
     public String displayName;
     public String pfpPath;

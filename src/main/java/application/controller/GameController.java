@@ -5,6 +5,7 @@ package application.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import application.model.CharacterFactory;
 import application.model.GameModel;
 import application.scenes.PlayScene;
 import application.utils.GameConfig;

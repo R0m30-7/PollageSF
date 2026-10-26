@@ -2,8 +2,9 @@ package application.controller;
 
 import com.studiohartman.jamepad.ControllerManager;
 import com.studiohartman.jamepad.ControllerState;
+import application.model.IReadOnlyInput;
 
-public class InputManager {
+public class InputManager implements IReadOnlyInput {
     private static InputManager instance;
     private ControllerManager controllerManager;
     

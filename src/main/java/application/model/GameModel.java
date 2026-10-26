@@ -3,8 +3,6 @@ package application.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.controller.CharacterFactory;
-import application.controller.InputManager;
 import application.utils.GameConfig;
 import application.utils.Point;
 
@@ -84,7 +82,7 @@ public class GameModel implements IReadOnlyGameModel{
     public Player getPlayer2() { return player2; }
     public double getCameraX() { return cameraX; }	// Serve alla View
 
-    public void update(InputManager input) {
+    public void update(IReadOnlyInput input) {
     	// Aggiornamento tick per la durata dei pugni (se l'animazione è finita, resetta lo stato)
     	player1.updateTicks();
     	player2.updateTicks();
@@ -346,7 +344,7 @@ public class GameModel implements IReadOnlyGameModel{
     }
 
     // Gestisce la lettura degli input, la fisica e l'aggiornamento dei flag per entrambi i giocatori
-    private void updatePlayersInput(InputManager input) {
+    private void updatePlayersInput(IReadOnlyInput input) {
         // --- Lettura input attuali ---
         boolean isP1JumpHeld = input.isJumpButtonPressed(1);
         boolean isP2JumpHeld = input.isJumpButtonPressed(2);
@@ -402,7 +400,7 @@ public class GameModel implements IReadOnlyGameModel{
 
     // Logica unificata per il singolo giocatore (vale sia per P1 che per P2)
     private void handleSinglePlayerActions(
-            Player player, int playerNum, InputManager input,
+            Player player, int playerNum, IReadOnlyInput input,
             boolean jumpJustPressed, boolean punchJustPressed,
             boolean hookJustPressed, boolean kickJustPressed,
             boolean hadoukenJustPressed) {
