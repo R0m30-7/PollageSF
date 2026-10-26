@@ -49,10 +49,4 @@ public class Projectile implements IReadOnlyProjectile{
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'isMovingRight'");
     }
-
-    @Override
-    public String getAtlasPath() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAtlasPath'");
-    }
 }
