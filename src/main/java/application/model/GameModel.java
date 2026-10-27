@@ -295,8 +295,8 @@ public class GameModel implements IReadOnlyGameModel{
     
     // --- INIEZIONE DEI GIOCATORI SELEZIONATI ---
     // Questo serve perché altrimenti, anche se il giocatore scegliesse il personaggio dalla mappa dei
-    // personaggi, vedrebbe comunque che il suo giocatore risulta Turnip (o quello inizializato
-    // nel costruttore del GameModel())
+    // personaggi, vedrebbe comunque che il suo giocatore risulta quello inizializato nel costruttore
+    // del GameModel()
     public void setPlayers(Player p1, Player p2) {
         this.player1 = p1;
         this.player2 = p2;

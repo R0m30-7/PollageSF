@@ -150,8 +150,6 @@ public class GameController {
         
         availableCharacters.add(new CharacterData("Ryu", "/Sprites/ryuPFP.png", application.model.Ryu::new));
         availableCharacters.add(new CharacterData("Ken", "/Sprites/kenPFP.png", application.model.Ken::new));
-        availableCharacters.add(new CharacterData("Turnip", "/Sprites/turnipPFP.png", application.model.Turnip::new));
-        availableCharacters.add(new CharacterData("Ascanio", "/Sprites/redTurnipPFP.png", application.model.RedTurnip::new));
 
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("CuloLand", "/Arenas/culoLand.jpeg", 0.85));

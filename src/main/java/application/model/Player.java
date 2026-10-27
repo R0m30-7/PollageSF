@@ -350,7 +350,7 @@ public class Player implements IReadOnlyPlayer{
     // SISTEMA DI SCALING DINAMICO UNIVERSALE
     // ==========================================
     
-    // Salva i valori "originali" scritti nella classe (es. RedTurnip)
+    // Salva i valori "originali" scritti nella classe
     public void saveBaseStats() {
         this.baseSpeed = this.speed;
         this.baseGravity = this.gravity;
