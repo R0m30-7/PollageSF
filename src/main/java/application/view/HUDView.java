@@ -101,7 +101,7 @@ public class HUDView {
         p2PowerFill.setY(BASE_TOP_MARGIN + 10 + BASE_HEALTH_HEIGHT + 5);
 
         // ================= TIMER =================
-        timerLabel = new Text("99");
+        timerLabel = new Text("120");
         timerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 50));
         timerLabel.setFill(Color.YELLOW);
         timerLabel.setEffect(shadow);
@@ -120,9 +120,7 @@ public class HUDView {
 	}
 	
 	// --- AGGIORNA LA DISPOSIZIONE E LO ZOOM ---
-	// NOTA: Abbiamo aggiunto "scaleFactor" ai parametri
     public void updateLayout(double screenWidth, double scaleFactor) {
-        
         // Ricalcoliamo tutte le dimensioni moltiplicandole per lo zoom
         currentBarWidth = BASE_BAR_WIDTH * scaleFactor;
         double currentHealthHeight = BASE_HEALTH_HEIGHT * scaleFactor;
@@ -191,11 +189,15 @@ public class HUDView {
         p2PowerBg.setX(p2PowerX);
         p2PowerFill.setX(p2PowerX);
 
-        timerLabel.setX((screenWidth / 2.0) - (25 * scaleFactor)); 
+        // Centratura del timer a prescindere dal numero di cifre che lo compongono
+        double timerBoxWidth = 140 * scaleFactor;
+        timerLabel.setWrappingWidth(timerBoxWidth);
+        timerLabel.setTextAlignment(TextAlignment.CENTER);
+        timerLabel.setX((screenWidth - timerBoxWidth) / 2.0);
     }
     
     // --- AGGIORNA LE BARRE IN TEMPO REALE ---
-    public void update(IReadOnlyPlayer p1, IReadOnlyPlayer p2) {
+    public void update(IReadOnlyPlayer p1, IReadOnlyPlayer p2, int remainingSeconds) {
         // --- Aggiorna P1 ---
         double p1HpRatio = Math.max(0, (double) p1.getHealth() / p1MaxHealth);
         p1HealthFill.setWidth(currentBarWidth * p1HpRatio); // Usiamo currentBarWidth
@@ -211,5 +213,13 @@ public class HUDView {
 
         p2PowerFill.setWidth(0);
         p2PowerFill.setX(p2PowerBg.getX() + ((currentBarWidth * 0.7) - 0));
+
+        // --- Aggiorna Timer ---
+        timerLabel.setText(String.valueOf(remainingSeconds));
+        if (remainingSeconds <= 10) {
+            timerLabel.setFill(Color.RED);
+        } else {
+            timerLabel.setFill(Color.YELLOW);
+        }
     }
 }

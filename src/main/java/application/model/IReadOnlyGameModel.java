@@ -9,4 +9,5 @@ public interface IReadOnlyGameModel {
     boolean getIsGameOver();
     int getWinner();
     List<? extends IReadOnlyProjectile> getProjectiles();
+    int getRemainingTimeSeconds();
 }

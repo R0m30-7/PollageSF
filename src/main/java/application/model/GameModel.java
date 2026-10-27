@@ -52,10 +52,11 @@ public class GameModel implements IReadOnlyGameModel{
     
     // Variabili per la gestione della fine del gioco
     private boolean isGameOver = false;
-    private int winner = 0;
+    private int winner = 0;     // 0 = pareggio, 1 = P1, 2 = P2
+    private static final long MATCH_DURATION_NS = 120L * 1_000_000_000L;
+    private long remainingTimeNs = MATCH_DURATION_NS;
 
     private List<Projectile> projectiles;
-    
     
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
@@ -83,6 +84,14 @@ public class GameModel implements IReadOnlyGameModel{
     public double getCameraX() { return cameraX; }	// Serve alla View
 
     public void update(IReadOnlyInput input) {
+        // Scaliamo il timer esattamente della durata di un tick fisico
+        if(!isGameOver && remainingTimeNs > 0){
+            remainingTimeNs -= GameConfig.TIME_PER_TICK;
+            if(remainingTimeNs < 0){
+                remainingTimeNs = 0;
+            }
+        }
+
     	// Aggiornamento tick per la durata dei pugni (se l'animazione è finita, resetta lo stato)
     	player1.updateTicks();
     	player2.updateTicks();
@@ -277,6 +286,11 @@ public class GameModel implements IReadOnlyGameModel{
         this.player2.setSkinIndex(skin2);
 
         this.player2.setFacingRight(false); // Il P2 guarda sempre a sinistra all'inizio
+
+        // Reset del timer e stato partita all'inizio dello scontro
+        this.remainingTimeNs = MATCH_DURATION_NS;
+        this.isGameOver = false;
+        this.winner = 0;
     }
     
     // --- INIEZIONE DEI GIOCATORI SELEZIONATI ---
@@ -562,13 +576,24 @@ public class GameModel implements IReadOnlyGameModel{
     // Controlla se uno dei due giocatori ha esaurito la salute
     private void checkGameOver() {
         if (!isGameOver) {
-            if (player1.getHealth() <= 0) {
+            if (player1.getHealth() <= 0 && player2.getHealth() <= 0) {
+                isGameOver = true;
+                winner = 0; // Doppio KO contemporaneo = Pareggio
+            } else if (player1.getHealth() <= 0) {
                 isGameOver = true;
                 winner = 2; // Vince P2
             } else if (player2.getHealth() <= 0) {
                 isGameOver = true;
                 winner = 1; // Vince P1
+            } else if (remainingTimeNs <= 0) {
+                isGameOver = true;
+                winner = 0; // Tempo scaduto = Pareggio
             }
         }
+    }
+
+    @Override public int getRemainingTimeSeconds(){
+        // Usiamo Math.ceil così finché resta anche 0.1s mostra "1", e diventa "0" solo a tempo scaduto
+        return (int) Math.ceil(remainingTimeNs / 1_000_000_000.0);
     }
 }

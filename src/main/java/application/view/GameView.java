@@ -29,6 +29,7 @@ public class GameView {
     // Variabili per la schermata di vittoria
     private javafx.scene.layout.StackPane victoryLayer;
     private ImageView victoryImageView;
+    private javafx.scene.text.Text drawText; // Testo per il pareggio se manca l'immagine
     private javafx.scene.text.Text continueText;
     
     // Mappa dei proiettili e dei loro renderer
@@ -77,7 +78,13 @@ public class GameView {
         javafx.scene.layout.StackPane.setAlignment(continueText, javafx.geometry.Pos.BOTTOM_RIGHT);
         javafx.scene.layout.StackPane.setMargin(continueText, new javafx.geometry.Insets(0, 50, 50, 0));
         
-        this.victoryLayer.getChildren().addAll(victoryImageView, continueText);
+        this.drawText = new javafx.scene.text.Text("PAREGGIO");
+        this.drawText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 80));
+        this.drawText.setFill(javafx.scene.paint.Color.YELLOW);
+        this.drawText.setEffect(new javafx.scene.effect.DropShadow(15, javafx.scene.paint.Color.BLACK));
+        this.drawText.setVisible(false);
+
+        this.victoryLayer.getChildren().addAll(victoryImageView, drawText, continueText);
         this.root.getChildren().add(victoryLayer); // Aggiunto al gioco
     }
 
@@ -134,9 +141,8 @@ public class GameView {
             pRenderer.render(p, camX);
         }
 
-
     	// Aggiorniamo le barre della vita dei giocatori
-    	this.hud.update(model.getPlayer1(), model.getPlayer2());
+    	this.hud.update(model.getPlayer1(), model.getPlayer2(), model.getRemainingTimeSeconds());
     }
 
     // ==========================================
@@ -188,6 +194,7 @@ public class GameView {
             this.victoryLayer.setPrefSize(newWidth, newHeight);
             
             this.victoryImageView.setFitHeight(400 * this.gameScale);
+            this.drawText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 80 * this.gameScale));
             this.continueText.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 30 * this.gameScale));
         }
     }
@@ -236,6 +243,22 @@ public class GameView {
         this.victoryLayer.setVisible(true);
         this.victoryLayer.toFront(); // Si porta in primo piano sopra l'HUD e i giocatori
         
+        if (winner == 0) {
+            // Caso PAREGGIO: prova a caricare /SFX/draw.png, altrimenti mostra la scritta "PAREGGIO!"
+            java.net.URL drawUrl = getClass().getResource("/SFX/draw.png");
+            if (drawUrl != null) {
+                this.victoryImageView.setImage(new Image(drawUrl.toExternalForm()));
+                this.victoryImageView.setVisible(true);
+                this.drawText.setVisible(false);
+            } else {
+                this.victoryImageView.setVisible(false);
+                this.drawText.setVisible(true);
+            }
+            return;
+        }
+
+        this.drawText.setVisible(false);
+        this.victoryImageView.setVisible(true);
         String imagePath = winner == 1 ? "/SFX/p1Victory.png" : "/SFX/p2Victory.png";
         try {
             Image img = new Image(getClass().getResource(imagePath).toExternalForm());
