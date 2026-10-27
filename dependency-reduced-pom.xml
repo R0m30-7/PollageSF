@@ -18,7 +18,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>application.Launcher</mainClass>
+                  <mainClass>pgsf.Launcher</mainClass>
                 </transformer>
               </transformers>
             </configuration>
