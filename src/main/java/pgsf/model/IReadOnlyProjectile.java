@@ -1,5 +1,4 @@
 package pgsf.model;
-import java.util.List;
 
 import pgsf.utils.Point;
 
