@@ -134,7 +134,7 @@ public class Player implements IReadOnlyPlayer{
             // Salviamo l'altezza normale la prima volta
             if (normalHeight == 0) normalHeight = this.height;
             
-            double targetHeight = crouching ? normalHeight * 0.6 : normalHeight; // Es: crouch è il 60% dell'altezza
+            double targetHeight = crouching ? normalHeight * 0.7 : normalHeight; // Es: crouch è il 70% dell'altezza
             double heightDifference = normalHeight - targetHeight;
             
             if(!isTurning){
