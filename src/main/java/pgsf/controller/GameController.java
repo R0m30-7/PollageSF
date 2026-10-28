@@ -701,8 +701,10 @@ public class GameController {
             currentPauseIndex = 0;
             updatePauseMenuSelection();
             
+            int numP = pgsf.utils.Settings.getInstance().getNumberOfPlayers();
             // Serve per evitare che se si mette in pausa saltando, il menu clicchi subito il primo bottone
-            wasConfirmPressed = inputManager.isJumpButtonPressed(1);
+            wasConfirmPressed = inputManager.isJumpButtonPressed(1)
+                                || (numP == 2 && inputManager.isJumpButtonPressed(2));
             
             pauseMenu.setVisible(true);
             view.getRoot().setEffect(new GaussianBlur(25)); 
@@ -1163,12 +1165,14 @@ public class GameController {
         //  NAVIGAZIONE MENU DI PAUSA CON CONTROLLER
         // ==========================================
         long currentTimeMs = System.currentTimeMillis();
-        double yInput;
-        if(isP1Pause){
-            yInput = inputManager.getLeftStickY(1); // Usiamo il P1 per scorrere
-        } else {
-            yInput = inputManager.getLeftStickY(2); // Usiamo il P2 per scorrere
-        }
+        int numP = pgsf.utils.Settings.getInstance().getNumberOfPlayers();
+
+        // Leggiamo la levetta verticale di P1 e (se in modalità 2 giocatori) di P2
+        double y1 = inputManager.getLeftStickY(1);
+        double y2 = (numP == 2) ? inputManager.getLeftStickY(2) : 0.0;
+
+        // Prendiamo l'input di chi sta effettivamente inclinando la levetta oltre la soglia
+        double yInput = (Math.abs(y1) > 0.5) ? y1 : y2;
 
         // Il delay (200ms) serve per permettere all'utente di scorrere un bottone alla volta
         if (currentTimeMs - lastMenuInputTime > 200) {
@@ -1185,8 +1189,11 @@ public class GameController {
             }
         }
 
-        // Selezione con il tasto del Salto (X / A)
-        boolean isConfirm = inputManager.isJumpButtonPressed(1);
+        // Selezione con il tasto del Salto (X / A) da parte di P1 o P2
+        boolean p1Confirm = inputManager.isJumpButtonPressed(1);
+        boolean p2Confirm = (numP == 2) && inputManager.isJumpButtonPressed(2);
+        boolean isConfirm = p1Confirm || p2Confirm;
+
         if (isConfirm && !wasConfirmPressed) {
             // .fire() simula il click sul pulsante selezionato
             pauseButtons.get(currentPauseIndex).fire();
