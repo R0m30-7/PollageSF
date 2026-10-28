@@ -8,7 +8,7 @@ public class Ryu extends Player {
 
     public Ryu(Point spawn) {
         super(spawn);
-        this.renderOffsetX = 20.0; 
+        this.renderOffsetX = 0.0; 
         this.renderOffsetY = 0.0;
         
         this.maxHealth = 100;

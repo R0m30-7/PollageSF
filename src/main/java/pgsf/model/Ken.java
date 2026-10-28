@@ -9,7 +9,7 @@ public class Ken extends Player {
         super(spawn);
         
         // Offset grafici (da ricalibrare se Ken è disegnato più a destra/sinistra nel frame)
-        this.renderOffsetX = 20.0; 
+        this.renderOffsetX = 0.0; 
         this.renderOffsetY = 0.0;
         
         this.maxHealth = 100;
