@@ -250,7 +250,7 @@ public class GameController {
         double startH = pgsf.utils.Settings.getInstance().getWindowHeight();
         // Imposto uno sfondo per la schermata di connessione dei controller
         view.changeBackground("/MenuBackgrounds/ConnectionMenu.png", startW, startH);
-
+        pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/menu_theme.mp3");
         startGameLoop();
     }
 
@@ -598,6 +598,7 @@ public class GameController {
     }
 
     private void confirmMapSelection() {
+        pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/fight_theme.mp3");
         waitingForMapSelection = false;
         mapSelectionMenu.setVisible(false);
         view.getRoot().setEffect(null);
@@ -705,9 +706,11 @@ public class GameController {
             
             pauseMenu.setVisible(true);
             view.getRoot().setEffect(new GaussianBlur(25)); 
+            pgsf.utils.SoundManager.getInstance().pauseBgm();
         } else {
             pauseMenu.setVisible(false);
             view.getRoot().setEffect(null); 
+            pgsf.utils.SoundManager.getInstance().resumeBgm();
         }
     }
     
@@ -1115,6 +1118,9 @@ public class GameController {
                     inputManager.update(); // Mantiene fluido il movimento     
                     model.update(inputManager); 
                     physicsAccumulator -= pgsf.utils.GameConfig.TIME_PER_TICK;
+                    for (pgsf.model.SoundEvent event : model.pollSoundEvents()) {
+                        pgsf.utils.SoundManager.getInstance().playSfx(event);
+                    }
                 }
             }
         }

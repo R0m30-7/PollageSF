@@ -6,6 +6,9 @@ import java.util.List;
 import pgsf.utils.GameConfig;
 import pgsf.utils.Point;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 public class GameModel implements IReadOnlyGameModel{
     private Player player1;     // Cervello dei player
     private Player player2;
@@ -57,7 +60,14 @@ public class GameModel implements IReadOnlyGameModel{
     private long remainingTimeNs = MATCH_DURATION_NS;
 
     private List<Projectile> projectiles;
-    
+    // Coda degli eventi sonori generati nel tick corrente
+    private final Queue<SoundEvent> soundQueue = new ArrayDeque<>();
+
+    public Queue<SoundEvent> pollSoundEvents() {
+        Queue<SoundEvent> currentEvents = new ArrayDeque<>(soundQueue);
+        soundQueue.clear();
+        return currentEvents;
+    }
     // Il costruttore richiede larghezza e altezza dello sfondo per il calcolo dei bordi
     public GameModel(double bgWidth, double bgHeight) {
     	// Imposto la larghezza del mondo come quella dell'immagine
@@ -136,9 +146,9 @@ public class GameModel implements IReadOnlyGameModel{
             if (defender.isDefending() && isDefenderFacingThreat(defender, attacker.getPosition().getX())) {
                 resolveMeleeBlockOrParry(attacker, defender, baseDamage);
             } else {
-                System.out.println("Colpito, danno: " + baseDamage);
                 defender.takeDamage((int) baseDamage);
                 defender.setHurt(true);
+                soundQueue.add(SoundEvent.HIT);
             }
         }
     }
@@ -154,15 +164,15 @@ public class GameModel implements IReadOnlyGameModel{
         int currentBlockFrame = (int) (blockDuration / timePerFrameMs);
 
         if (currentBlockFrame >= totalFrames - 1) {
-            System.out.println("PARRY PERFETTO di " + defender.getDisplayName() + "!");
             attacker.stun(defender.getParryStunDuration());
+            soundQueue.add(SoundEvent.PARRY);
         } else {
             double blockPercentage = (double) (currentBlockFrame + 1) / totalFrames;
             double damageMultiplier = 1.0 - blockPercentage;
             double finalDamage = baseDamage * damageMultiplier;
 
-            System.out.println("Parata parziale (frame " + (currentBlockFrame + 1) + "/" + totalFrames + "). Danno subito: " + finalDamage);
             defender.takeDamage((int) finalDamage);
+            soundQueue.add(SoundEvent.BLOCK);
         }
     }
     
@@ -440,7 +450,6 @@ public class GameModel implements IReadOnlyGameModel{
         player.setDefending(input.isDefendButtonPressed(playerNum));
     }
 
-    // Mosse e movimento quando il giocatore è in piedi
     private void handleStandingActions(
             Player player, double stickX,
             boolean jumpJustPressed, boolean punchJustPressed,
@@ -452,29 +461,34 @@ public class GameModel implements IReadOnlyGameModel{
         }
         if (jumpJustPressed) {
             player.jump();
+            soundQueue.add(SoundEvent.JUMP);
         }
         if (hadoukenJustPressed) {
             AnimState state = player.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
             player.executeMove(new RangedMove(player, state, player.getHadoukenDamage(), player.getHadoukenSpeed()));
+            soundQueue.add(SoundEvent.HADOUKEN);
         }
         if (hookJustPressed) {
             AnimState state = player.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
             player.executeMove(new MeleeMove(player, state, player.getHookDamage(), player.getHookWidth(), player.getHookHeight()));
+            soundQueue.add(SoundEvent.HOOK_SWING);
         } else if (punchJustPressed) {
             AnimState state = player.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
             player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
+            soundQueue.add(SoundEvent.PUNCH_SWING);
         }
         if (kickJustPressed) {
             AnimState state = player.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
             player.executeMove(new MeleeMove(player, state, player.getKickDamage(), player.getKickWidth(), player.getKickHeight()));
+            soundQueue.add(SoundEvent.KICK_SWING);
         }
     }
 
-    // Mosse quando il giocatore è accovacciato
     private void handleCrouchingActions(Player player, boolean punchJustPressed) {
         if (punchJustPressed) {
             AnimState state = player.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
             player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
+            soundQueue.add(SoundEvent.PUNCH_SWING);
         }
     }
 
@@ -510,13 +524,14 @@ public class GameModel implements IReadOnlyGameModel{
         if (target.isDefending() && isFacingProjectile) {
             int halvedDamage = (int) (p.getDamage() * 0.5);
             target.takeDamage(halvedDamage);
-            // Non attiviamo setHurt(true) per mantenere la posa di parata
+            soundQueue.add(SoundEvent.BLOCK);
         } else {
             target.takeDamage((int) p.getDamage());
             target.setHurt(true);
+            soundQueue.add(SoundEvent.HIT);
         }
 
-        p.setActive(false); // Il proiettile si distrugge all'impatto
+        p.setActive(false);
     }
 
     // Riutilizzabile sia per i proiettili sia per gli attacchi corpo a corpo
@@ -576,18 +591,14 @@ public class GameModel implements IReadOnlyGameModel{
     // Controlla se uno dei due giocatori ha esaurito la salute
     private void checkGameOver() {
         if (!isGameOver) {
-            if (player1.getHealth() <= 0 && player2.getHealth() <= 0) {
+            if (player1.getHealth() <= 0) {
                 isGameOver = true;
-                winner = 0; // Doppio KO contemporaneo = Pareggio
-            } else if (player1.getHealth() <= 0) {
-                isGameOver = true;
-                winner = 2; // Vince P2
+                winner = 2;
+                soundQueue.add(SoundEvent.KO);
             } else if (player2.getHealth() <= 0) {
                 isGameOver = true;
-                winner = 1; // Vince P1
-            } else if (remainingTimeNs <= 0) {
-                isGameOver = true;
-                winner = 0; // Tempo scaduto = Pareggio
+                winner = 1;
+                soundQueue.add(SoundEvent.KO);
             }
         }
     }

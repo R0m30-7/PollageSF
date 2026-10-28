@@ -1,6 +1,8 @@
 package pgsf.model;
 
 import javafx.geometry.Rectangle2D;
+import pgsf.utils.Point;
+
 import org.json.JSONObject; //libreria per leggere il JSON
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -46,5 +48,16 @@ public class TextureAtlas {
 
         String frameKey = String.format("row%02d_col%02d_frame%02d", row, col, frameIndex);
         return frames.getOrDefault(frameKey, new Rectangle2D(0, 0, 1, 1));
+    }
+
+    public Point getPivot(int row, int startCol, int currentFrame) {
+        String pivotKey = String.format("row%02d_col%02d_frame%02d_pivot", row, startCol, currentFrame);
+        Rectangle2D pivotRect = frames.get(pivotKey);
+        
+        if (pivotRect != null) {
+            return new Point(pivotRect.getMinX(), pivotRect.getMinY());
+        } else {
+            return new Point(0, 0); // Default pivot point
+        }
     }
 }
