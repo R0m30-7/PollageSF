@@ -166,6 +166,7 @@ public class PlayerRenderer {
     }
 
     // Metodo helper per renderizzare le texture in HD (Nearest-Neighbor via Software)
+    // Con AUTO-TRIM inferiore: rimuove eventuali righe vuote sotto i piedi presenti nello spritesheet
     private Image getCroppedFrame(Rectangle2D rect, double scale) {
         // Generiamo chiave univoca (dipendente da posizione di partenza, dimensione del ritaglio e la scala di
         // ingradimento/riduzione) in modo da non dover ricalcolare più volte lo stesso frame, dato che lo salviamo in cache
@@ -174,16 +175,37 @@ public class PlayerRenderer {
         
         // Se l'immagine esiste in cache viene restituita, altrimenti viene generata
         return frameCache.computeIfAbsent(key, k -> {
+            int minX = (int) rect.getMinX();
+            int minY = (int) rect.getMinY();
             // Salvataggio delle dimensioni originali
             int srcW = (int) rect.getWidth();
             int srcH = (int) rect.getHeight();
+
+            javafx.scene.image.PixelReader reader = atlasImage.getPixelReader();
             
+            // CERCHIAMO DOVE FINISCONO DAVVERO I PIEDI (Auto-Trim dal basso)
+            int effectiveSrcH = srcH;
+            for (int y = srcH - 1; y >= 0; y--){
+                boolean rowHasOpaquePixel = false;
+                for (int x = 0; x < srcW; x++){
+                    int argb = reader.getArgb(minX + x, minY + y);
+                    int alpha = (argb >> 24) & 0xFF; // Estraiamo il canale Alpha (trasparenza)
+                    if (alpha > 0){ 
+                        rowHasOpaquePixel = true;
+                        break; // Trovato almeno un pixel dei piedi!
+                    }
+                }
+                if (rowHasOpaquePixel){
+                    effectiveSrcH = y + 1; // L'altezza reale si ferma esattamente sotto le suole
+                    break;
+                }
+            }
+
             // Calcolo delle dimensioni finali utilizzando la scala e le dimensioni iniziali
             int dstW = (int) Math.round(srcW * scale);
-            int dstH = (int) Math.round(srcH * scale);
+            int dstH = (int) Math.round(effectiveSrcH * scale);
             
             WritableImage scaledImg = new WritableImage(dstW, dstH);    // Allocazione di un buffer grafico vuoto
-            javafx.scene.image.PixelReader reader = atlasImage.getPixelReader();
             javafx.scene.image.PixelWriter writer = scaledImg.getPixelWriter();
             
             // Scaliamo copiando lo stesso pixel più volte (Nearest-Neighbor). Questo itera su ogni pixel dell'immagine finale
