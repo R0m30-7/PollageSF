@@ -137,22 +137,18 @@ public class Player implements IReadOnlyPlayer{
             double targetHeight = crouching ? normalHeight * 0.7 : normalHeight; // Es: crouch è il 70% dell'altezza
             double heightDifference = normalHeight - targetHeight;
             
-            if(!isTurning){
-                if (crouching) {
-                    // Si abbassa: abbassiamo la Y del pavimento aggiungendo la differenza, 
-                    // così la testa scende e i piedi restano attaccati a terra
-                    position = new Point(position.getX(), position.getY() + heightDifference);
-                } else {
-                    // Si alza: restituiamo lo spazio sottratto alla Y
-                    position = new Point(position.getX(), position.getY() - heightDifference);
-                }
+            // Aggiorniamo sempre la Y in modo che la base (position.getY() + height) resti piantata a terra
+            if (crouching) {
+                position = new Point(position.getX(), position.getY() + heightDifference);
+            } else {
+                position = new Point(position.getX(), position.getY() - heightDifference);
             }
             
             // Aggiorniamo la dimensione della Hitbox fisica
             this.boundingBox.updateSize(this.width, targetHeight);
             this.boundingBox.updatePosition(position);
 
-            //aggiorniamo l'altezza del player per la grafica
+            // Aggiorniamo l'altezza del player per la grafica
             this.height = targetHeight;
         }
         
@@ -379,6 +375,7 @@ public class Player implements IReadOnlyPlayer{
 
         this.width = this.baseLogicalWidth * windowScale;
         this.height = this.baseLogicalHeight * windowScale;
+        this.normalHeight = this.height;    // Mantiene sincronizzata l'altezza normale con la scala
         this.boundingBox.updateSize(this.width, this.height);
         
         // Ricalcolo Hitbox degli attacchi

@@ -63,10 +63,7 @@ public class PlayerRenderer {
         return rootNode;
     }
 
-    public void render(IReadOnlyPlayer player) {    //! Modificare qui per aggiungere il PIVOT point
-        double px = player.getPosition().getX() - player.getRenderOffsetX();
-        double py = player.getPosition().getY() - player.getRenderOffsetY();
-        
+    public void render(IReadOnlyPlayer player) {       
         // ==========================================
         // ANIMAZIONE DELLO SPRITE
         // ==========================================
@@ -105,45 +102,46 @@ public class PlayerRenderer {
                     lastFrameTime = now; 
                 }
 
-                // Prendiamo dal TextureAtlas le coordinate del frame esatto
+                // Prendiamo dal TextureAtlas le coordinate del frame esatto e la scala
                 Rectangle2D frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
-                
-                // Prendiamo la scala per ingrandire il player
                 double currentScale = player.getRenderScale();
 
-                // Aggiorniamo la finestra
-                spriteView.setImage(getCroppedFrame(frameRect, currentScale));
+                // Prendiamo l'immagine scalata e ne leggiamo le dimensioni effettive in pixel
+                Image croppedFrame = getCroppedFrame(frameRect, currentScale);
+                spriteView.setImage(croppedFrame);
+
+                double spriteW = croppedFrame.getWidth();
+                double spriteH = croppedFrame.getHeight();
+
+                // ==========================================
+                // PIVOT VERTICALE (ANCORAGGIO AI PIEDI)
+                // ==========================================
+                // La posizione dei piedi nel mondo è sempre la base inferiore della hitbox (Y + Altezza).
+                // Sottraendo l'altezza del frame corrente (spriteH), i piedi restano piantati a terra
+                // e qualsiasi variazione d'altezza dello sprite muove la testa e non i piedi
+                double feetY = player.getPosition().getY() + player.getHeight();
+                double py = feetY - spriteH - (player.getRenderOffsetY() * currentScale);
                 
                 // ==========================================
-                // GESTIONE DIREZIONE (FLIP ORIZZONTALE)
+                // PIVOT ORIZZONTALE E FLIP DIREZIONALE
                 // ==========================================
-                // Poiché il JSON di Ryu contiene solo le animazioni verso destra,
-                // dobbiamo flippare l'immagine se il giocatore guarda a sinistra
-                
-                if (!player.isFacingRight()) {
-                    spriteView.setScaleX(-1);
+                // Calcoliamo la sporgenza posteriore dello sprite rispetto alla hitbox usando il frame Idle (0,0,0)
+                Rectangle2D baseFrame = player.getAtlas().getFrame(0, 0, 0);
+                double baseSpriteW = baseFrame.getWidth() * currentScale;
+                double backMargin = ((baseSpriteW - player.getWidth()) / 2.0) + (player.getRenderOffsetX() * currentScale);
 
-                    // Soluzione momentanea per ricentrare il personaggio durante il terzo frame del pugno a sinsitra,
-                    // siccome è largo
-                    //! Quando verrà inserito il pivot point, modificare questa funzione per renderla generica
-                    if(currentState == pgsf.model.AnimState.PUNCH_LEFT) {
-                        if (currentFrame == 2){
-                            double offsetCompensazione = 25.0 * currentScale; 
-                            px -= offsetCompensazione;
-                        }       
-                    
-                    }else if(currentState == pgsf.model.AnimState.PUNCH_CROUCH_LEFT){
-                        if (currentFrame == 0){
-                            double offsetCompensazione = 5.0 * currentScale; 
-                            px -= offsetCompensazione;
-                        }else if (currentFrame == 1){
-                            double offsetCompensazione = 23.0 * currentScale; 
-                            px -= offsetCompensazione;
-                        }     
-
-                    }
-                } else {
+                double px;
+                if (player.isFacingRight()) {
                     spriteView.setScaleX(1);
+
+                    // Guarda a DESTRA: la schiena (bordo sinistro) resta fissa a sinistra della hitbox,
+                    // mentre i frame più larghi (pugni/calci) si estendono in avanti verso destra.
+                    px = player.getPosition().getX() - backMargin;
+                } else {
+                    spriteView.setScaleX(-1);
+                    // Guarda a SINISTRA: la schiena (bordo destro dello sprite specchiato) resta fissa a destra della hitbox,
+                    // mentre i frame più larghi (pugni/calci) si estendono in avanti verso sinistra senza spostare il corpo
+                    px = (player.getPosition().getX() + player.getWidth() + backMargin) - spriteW;
                 }
                 // Approssimazione delle coordinate per consentire il disegno sullo schermo
                 spriteView.setLayoutX(Math.round(px));
