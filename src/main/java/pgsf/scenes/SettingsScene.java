@@ -7,6 +7,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
@@ -20,11 +21,51 @@ public class SettingsScene {
     // La UI viene scalata rispetto a queste, a prescindere dalla finestra attuale.
     private static final double BASE_WIDTH = 1280;
     private static final double BASE_HEIGHT = 720;
+    
+    private final Settings settings = Settings.getInstance();
 
     public Scene getSettingsScene(Stage stage, Scene previousScene) {
         StackPane root = new StackPane();
 
         // --- CONTENUTO: questo è il VBox che verrà scalato proporzionalmente ---
+        VBox content = createContentContainer();
+
+        Label title = new Label("IMPOSTAZIONI");
+        title.setStyle("-fx-font-size: 36px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        // --- Sezione Risoluzione e Schermo ---
+        VBox resolutionSection = createResolutionSection();
+        CheckBox fullscreenCheck = createFullscreenCheck();
+
+        // --- Sezione Audio ---
+        VBox audioSection = createAudioSection();
+
+        // --- Sezione Giocatori e FPS ---
+        VBox otherSettingsSection = createOtherSettingsSection();
+
+        // --- Pulsante di Salvataggio ---
+        Button saveBackButton = createSaveButton(stage, previousScene, 
+                (ComboBox<String>) resolutionSection.getChildren().get(1), 
+                fullscreenCheck, 
+                (ComboBox<Integer>) otherSettingsSection.getChildren().get(1), 
+                (ComboBox<Integer>) otherSettingsSection.getChildren().get(3), 
+                (CheckBox) otherSettingsSection.getChildren().get(4));
+
+        content.getChildren().addAll(title, resolutionSection, fullscreenCheck, audioSection, otherSettingsSection, saveBackButton);
+
+        Scene scene = new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());
+
+        // --- SFONDO: ImageView con scaling "cover" uniforme, sempre centrato ---
+        ImageView background = ScalableBackground.create("/MenuBackgrounds/settingsMenu.png", scene);
+        root.getChildren().add(background);
+        root.getChildren().add(content);
+
+        applyScaling(scene, content);
+
+        return scene;
+    }
+
+    private VBox createContentContainer() {
         VBox content = new VBox(20);
         content.setAlignment(Pos.CENTER);
         // Fissiamo il contenuto alla risoluzione di design: verrà "ingrandito/rimpicciolito"
@@ -32,11 +73,12 @@ public class SettingsScene {
         content.setPrefSize(BASE_WIDTH, BASE_HEIGHT);
         content.setMaxSize(BASE_WIDTH, BASE_HEIGHT);
         content.setMinSize(BASE_WIDTH, BASE_HEIGHT);
+        return content;
+    }
 
-        Label title = new Label("IMPOSTAZIONI");
-        title.setStyle("-fx-font-size: 36px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        Settings settings = Settings.getInstance();
+    private VBox createResolutionSection() {
+        VBox section = new VBox(5);
+        section.setAlignment(Pos.CENTER);
 
         // --- RISOLUZIONE ---
         Label resLabel = new Label("Risoluzione Finestra:");
@@ -90,74 +132,80 @@ public class SettingsScene {
             }
         });
 
-        resolutionBox.setValue(fitsScreen.test(currentRes) ? currentRes
+        resolutionBox.setValue(fitsScreen.test(currentRes) ? currentRes 
                 : allResolutions[0]); // fallback: la più piccola prevista, se anche quella salvata non entra più
 
+        section.getChildren().addAll(resLabel, resolutionBox);
+        return section;
+    }
+
+    private CheckBox createFullscreenCheck() {
         CheckBox fullscreenCheck = new CheckBox("Schermo Intero");
         fullscreenCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
         fullscreenCheck.setSelected(settings.isFullscreen());
+        return fullscreenCheck;
+    }
+
+    private VBox createAudioSection() {
+        VBox section = new VBox(15);
+        section.setAlignment(Pos.CENTER);
 
         // --- VOLUME MUSICA (BGM) ---
-        Label bgmLabel = new Label("Volume Musica:");
-        bgmLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
-        
-        javafx.scene.control.Slider bgmSlider = new javafx.scene.control.Slider(0, 1, settings.getBgmVolume());
-        bgmSlider.setBlockIncrement(0.1);
-        bgmSlider.setMajorTickUnit(0.1);
-        bgmSlider.setMaxWidth(250);
-        
-        javafx.scene.control.TextField bgmField = new javafx.scene.control.TextField(String.valueOf((int) Math.round(settings.getBgmVolume() * 100)));
-        bgmField.setPrefWidth(60);
-        bgmField.setAlignment(Pos.CENTER);
-        
-        // Affianchiamo slider e casella di testo
-        javafx.scene.layout.HBox bgmBox = new javafx.scene.layout.HBox(15, bgmSlider, bgmField);
-        bgmBox.setAlignment(Pos.CENTER);
-        
+        HBox bgmBox = createAudioSliderBox("Volume Musica:", settings.getBgmVolume(), true);
+        // --- VOLUME EFFETTI (SFX) ---
+        HBox sfxBox = createAudioSliderBox("Volume Effetti (SFX):", settings.getSfxVolume(), false);
+
+        section.getChildren().addAll(bgmBox, sfxBox);
+        return section;
+    }
+
+    private HBox createAudioSliderBox(String labelText, double initialVolume, boolean isBgm) {
+        VBox container = new VBox(5);
+        container.setAlignment(Pos.CENTER);
+
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+
+        javafx.scene.control.Slider slider = new javafx.scene.control.Slider(0, 1, initialVolume);
+        slider.setBlockIncrement(0.1);
+        slider.setMajorTickUnit(0.1);
+        slider.setMaxWidth(250);
+
+        javafx.scene.control.TextField field = new javafx.scene.control.TextField(String.valueOf((int) Math.round(initialVolume * 100)));
+        field.setPrefWidth(60);
+        field.setAlignment(Pos.CENTER);
+
         // Aggiorna casella e audio quando muovi lo slider
-        bgmSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            settings.setBgmVolume(newVal.doubleValue());
-            pgsf.utils.SoundManager.getInstance().setBgmVolume(newVal.doubleValue());
-            if (!bgmField.isFocused()) { // Aggiorna il testo solo se non ci stiamo scrivendo dentro
-                bgmField.setText(String.valueOf((int) Math.round(newVal.doubleValue() * 100)));
+        slider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isBgm) {
+                settings.setBgmVolume(newVal.doubleValue());
+                pgsf.utils.SoundManager.getInstance().setBgmVolume(newVal.doubleValue());
+            } else {
+                settings.setSfxVolume(newVal.doubleValue());
+                pgsf.utils.SoundManager.getInstance().setSfxVolume(newVal.doubleValue());
             }
-        });
-        
-        // Aggiorna lo slider quando scrivi nel testo (premendo Invio o cliccando altrove)
-        bgmField.setOnAction(e -> updateSliderFromText(bgmField, bgmSlider));
-        bgmField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) updateSliderFromText(bgmField, bgmSlider); 
+            if (!field.isFocused()) { // Aggiorna il testo solo se non ci stiamo scrivendo dentro
+                field.setText(String.valueOf((int) Math.round(newVal.doubleValue() * 100)));
+            }
         });
 
-        // --- VOLUME EFFETTI (SFX) ---
-        Label sfxLabel = new Label("Volume Effetti (SFX):");
-        sfxLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
-        
-        javafx.scene.control.Slider sfxSlider = new javafx.scene.control.Slider(0, 1, settings.getSfxVolume());
-        sfxSlider.setBlockIncrement(0.1);
-        sfxSlider.setMajorTickUnit(0.1);
-        sfxSlider.setMaxWidth(250);
-        
-        javafx.scene.control.TextField sfxField = new javafx.scene.control.TextField(String.valueOf((int) Math.round(settings.getSfxVolume() * 100)));
-        sfxField.setPrefWidth(60);
-        sfxField.setAlignment(Pos.CENTER);
+        // Aggiorna lo slider quando scrivi nel testo (premendo Invio o cliccando altrove)
+        field.setOnAction(e -> updateSliderFromText(field, slider));
+        field.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) updateSliderFromText(field, slider);
+        });
+
+        container.getChildren().addAll(label, slider);
         
         // Affianchiamo slider e casella di testo
-        javafx.scene.layout.HBox sfxBox = new javafx.scene.layout.HBox(15, sfxSlider, sfxField);
-        sfxBox.setAlignment(Pos.CENTER);
-        
-        sfxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            settings.setSfxVolume(newVal.doubleValue());
-            pgsf.utils.SoundManager.getInstance().setSfxVolume(newVal.doubleValue());
-            if (!sfxField.isFocused()) {
-                sfxField.setText(String.valueOf((int) Math.round(newVal.doubleValue() * 100)));
-            }
-        });
-        
-        sfxField.setOnAction(e -> updateSliderFromText(sfxField, sfxSlider));
-        sfxField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) updateSliderFromText(sfxField, sfxSlider);
-        });
+        HBox hbox = new HBox(15, container, field);
+        hbox.setAlignment(Pos.BOTTOM_CENTER);
+        return hbox;
+    }
+
+    private VBox createOtherSettingsSection() {
+        VBox section = new VBox(10);
+        section.setAlignment(Pos.CENTER);
 
         Label playersLabel = new Label("Numero Giocatori:");
         playersLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
@@ -175,6 +223,11 @@ public class SettingsScene {
         showFpsCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
         showFpsCheck.setSelected(settings.isShowFps());
 
+        section.getChildren().addAll(playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck);
+        return section;
+    }
+
+    private Button createSaveButton(Stage stage, Scene previousScene, ComboBox<String> resolutionBox, CheckBox fullscreenCheck, ComboBox<Integer> playersBox, ComboBox<Integer> fpsBox, CheckBox showFpsCheck) {
         Button saveBackButton = new Button("Salva e Torna Indietro");
         saveBackButton.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
 
@@ -193,9 +246,7 @@ public class SettingsScene {
             settings.setWindowHeight(chosenHeight);
 
             settings.setFullscreen(fullscreenCheck.isSelected());
-
             settings.setNumberOfPlayers(playersBox.getValue());
-
             settings.setTargetFps(fpsBox.getValue());
             settings.setShowFps(showFpsCheck.isSelected());
 
@@ -207,21 +258,13 @@ public class SettingsScene {
             stage.setWidth(settings.getWindowWidth());
             stage.setHeight(settings.getWindowHeight());
             stage.centerOnScreen();
-
             stage.setFullScreen(settings.isFullscreen());
         });
 
-        content.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck,
-                bgmLabel, bgmBox, sfxLabel, sfxBox,
-                playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck, saveBackButton);
+        return saveBackButton;
+    }
 
-        Scene scene = new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());
-
-        // --- SFONDO: ImageView con scaling "cover" uniforme, sempre centrato ---
-        ImageView background = ScalableBackground.create("/MenuBackgrounds/settingsMenu.png", scene);
-        root.getChildren().add(background);
-        root.getChildren().add(content);
-
+    private void applyScaling(Scene scene, VBox content) {
         // --- SCALING DEL CONTENUTO ---
         // Il contenuto viene "clippato" alla dimensione di design (BASE_WIDTH x BASE_HEIGHT)
         // e poi scalato con una Scale transform in base al rapporto tra la dimensione
@@ -245,8 +288,6 @@ public class SettingsScene {
         scene.widthProperty().addListener((obs, oldVal, newVal) -> updateScale.run());
         scene.heightProperty().addListener((obs, oldVal, newVal) -> updateScale.run());
         updateScale.run();
-
-        return scene;
     }
 
     // Metodo helper per aggiornare lo slider leggendo il testo inserito
