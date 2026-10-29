@@ -459,33 +459,35 @@ public class GameModel implements IReadOnlyGameModel{
         if (Math.abs(stickX) > 0.0) {
             player.moveHorizontal(stickX > 0 ? PlayerState.RIGHT : PlayerState.LEFT);
         }
-        if (jumpJustPressed) {
+        // Suona il salto solo se il giocatore può davvero saltare (è a terra e libero)
+        if (jumpJustPressed && player.isGrounded() && player.getActiveMove() == null && !player.isDefending() && !player.isHurt()) {
             player.jump();
             soundQueue.add(SoundEvent.JUMP);
         }
-        if (hadoukenJustPressed) {
-            AnimState state = player.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
-            player.executeMove(new RangedMove(player, state, player.getHadoukenDamage(), player.getHadoukenSpeed()));
-            soundQueue.add(SoundEvent.HADOUKEN);
-        }
-        if (hookJustPressed) {
-            AnimState state = player.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
-            player.executeMove(new MeleeMove(player, state, player.getHookDamage(), player.getHookWidth(), player.getHookHeight()));
-            soundQueue.add(SoundEvent.HOOK_SWING);
-        } else if (punchJustPressed) {
-            AnimState state = player.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
-            player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
-            soundQueue.add(SoundEvent.PUNCH_SWING);
-        }
-        if (kickJustPressed) {
-            AnimState state = player.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
-            player.executeMove(new MeleeMove(player, state, player.getKickDamage(), player.getKickWidth(), player.getKickHeight()));
-            soundQueue.add(SoundEvent.KICK_SWING);
+        // Suona l'attacco solo se il giocatore non sta già facendo un'altra mossa o parando
+        if (player.getActiveMove() == null && !player.isDefending() && !player.isStunned()) {
+            if (hadoukenJustPressed) {
+                AnimState state = player.isFacingRight() ? AnimState.HADOUKEN_RIGHT : AnimState.HADOUKEN_LEFT;
+                player.executeMove(new RangedMove(player, state, player.getHadoukenDamage(), player.getHadoukenSpeed()));
+                soundQueue.add(SoundEvent.HADOUKEN);
+            } else if (hookJustPressed) {
+                AnimState state = player.isFacingRight() ? AnimState.HOOK_RIGHT : AnimState.HOOK_LEFT;
+                player.executeMove(new MeleeMove(player, state, player.getHookDamage(), player.getHookWidth(), player.getHookHeight()));
+                soundQueue.add(SoundEvent.HOOK_SWING);
+            } else if (punchJustPressed) {
+                AnimState state = player.isFacingRight() ? AnimState.PUNCH_RIGHT : AnimState.PUNCH_LEFT;
+                player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
+                soundQueue.add(SoundEvent.PUNCH_SWING);
+            } else if (kickJustPressed) {
+                AnimState state = player.isFacingRight() ? AnimState.KICK_RIGHT : AnimState.KICK_LEFT;
+                player.executeMove(new MeleeMove(player, state, player.getKickDamage(), player.getKickWidth(), player.getKickHeight()));
+                soundQueue.add(SoundEvent.KICK_SWING);
+            }
         }
     }
 
     private void handleCrouchingActions(Player player, boolean punchJustPressed) {
-        if (punchJustPressed) {
+        if (punchJustPressed && player.getActiveMove() == null && !player.isDefending() && !player.isStunned()) {
             AnimState state = player.isFacingRight() ? AnimState.PUNCH_CROUCH_RIGHT : AnimState.PUNCH_CROUCH_LEFT;
             player.executeMove(new MeleeMove(player, state, player.getPunchDamage(), player.getPunchWidth(), player.getPunchHeight()));
             soundQueue.add(SoundEvent.PUNCH_SWING);
