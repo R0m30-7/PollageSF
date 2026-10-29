@@ -591,13 +591,21 @@ public class GameModel implements IReadOnlyGameModel{
     // Controlla se uno dei due giocatori ha esaurito la salute
     private void checkGameOver() {
         if (!isGameOver) {
-            if (player1.getHealth() <= 0) {
+            if (player1.getHealth() <= 0 && player2.getHealth() <= 0) {
                 isGameOver = true;
-                winner = 2;
+                winner = 0; // Doppio KO contemporaneo = Pareggio
+                soundQueue.add(SoundEvent.KO);
+            } else if (player1.getHealth() <= 0) {
+                isGameOver = true;
+                winner = 2; // Vince P2
                 soundQueue.add(SoundEvent.KO);
             } else if (player2.getHealth() <= 0) {
                 isGameOver = true;
-                winner = 1;
+                winner = 1; // Vince P1
+                soundQueue.add(SoundEvent.KO);
+            } else if (remainingTimeNs <= 0) {
+                isGameOver = true;
+                winner = 0; // Tempo scaduto = Pareggio
                 soundQueue.add(SoundEvent.KO);
             }
         }
