@@ -98,9 +98,33 @@ public class SettingsScene {
         fullscreenCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
         fullscreenCheck.setSelected(settings.isFullscreen());
 
-        CheckBox audioCheck = new CheckBox("Audio");
-        audioCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
-        audioCheck.setSelected(settings.isAudioOn());
+        // --- VOLUME MUSICA (BGM) ---
+        Label bgmLabel = new Label("Volume Musica:");
+        bgmLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        javafx.scene.control.Slider bgmSlider = new javafx.scene.control.Slider(0, 1, settings.getBgmVolume());
+        bgmSlider.setBlockIncrement(0.1);
+        bgmSlider.setMajorTickUnit(0.1);
+        bgmSlider.setMaxWidth(300); // Mantiene lo slider di dimensioni gestibili
+        
+        // Listener per aggiornare il volume in tempo reale quando si trascina il pallino
+        bgmSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            settings.setBgmVolume(newVal.doubleValue());
+            pgsf.utils.SoundManager.getInstance().setBgmVolume(newVal.doubleValue());
+        });
+
+        // --- VOLUME EFFETTI (SFX) ---
+        Label sfxLabel = new Label("Volume Effetti (SFX):");
+        sfxLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        javafx.scene.control.Slider sfxSlider = new javafx.scene.control.Slider(0, 1, settings.getSfxVolume());
+        sfxSlider.setBlockIncrement(0.1);
+        sfxSlider.setMajorTickUnit(0.1);
+        sfxSlider.setMaxWidth(300);
+        
+        // Listener per aggiornare il volume degli effetti
+        sfxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            settings.setSfxVolume(newVal.doubleValue());
+            pgsf.utils.SoundManager.getInstance().setSfxVolume(newVal.doubleValue());
+        });
 
         Label playersLabel = new Label("Numero Giocatori:");
         playersLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
@@ -127,7 +151,7 @@ public class SettingsScene {
             double chosenHeight = Double.parseDouble(resParts[1]);
 
             // Misura di sicurezza finale: anche se per qualche motivo arrivasse qui un
-            // valore troppo grande, non lo applichiamo mai oltre lo spazio disponibile.
+            // valore troppo grande, non viene mai applicato oltre lo spazio disponibile.
             javafx.geometry.Rectangle2D bounds = javafx.stage.Screen.getPrimary().getVisualBounds();
             chosenWidth = Math.min(chosenWidth, bounds.getWidth());
             chosenHeight = Math.min(chosenHeight, bounds.getHeight());
@@ -136,7 +160,7 @@ public class SettingsScene {
             settings.setWindowHeight(chosenHeight);
 
             settings.setFullscreen(fullscreenCheck.isSelected());
-            settings.setIsAudioOn(audioCheck.isSelected());
+
             settings.setNumberOfPlayers(playersBox.getValue());
 
             settings.setTargetFps(fpsBox.getValue());
@@ -154,7 +178,8 @@ public class SettingsScene {
             stage.setFullScreen(settings.isFullscreen());
         });
 
-        content.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck, audioCheck,
+        content.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck,
+                bgmLabel, bgmSlider, sfxLabel, sfxSlider,
                 playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck, saveBackButton);
 
         Scene scene = new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());

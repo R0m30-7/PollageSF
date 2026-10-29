@@ -22,8 +22,8 @@ public class SoundManager {
     private MediaPlayer bgmPlayer;
     private String currentBgmPath = "";    // Deve partire vuoto
     
-    private double bgmVolume = 0.8;
-    private double sfxVolume = 0.75;
+    private double bgmVolume;
+    private double sfxVolume;
 
     private SoundManager() {
         loadSfx(SoundEvent.JUMP, "/Sounds/voices/2A_claw_yodel.wav");
@@ -39,6 +39,10 @@ public class SoundManager {
         loadUiSfx("cursor", "/Sounds/UI/swipe.wav");
         loadUiSfx("confirm", "/Sounds/UI/confirm.wav");
         loadUiSfx("cancel", "/Sounds/voices/2A_claw_yodel.wav");
+
+        // Carichiamo i volumi salvati nelle impostazioni
+        this.bgmVolume = pgsf.utils.Settings.getInstance().getBgmVolume();
+        this.sfxVolume = pgsf.utils.Settings.getInstance().getSfxVolume();
     }
 
     public static SoundManager getInstance() {
@@ -115,7 +119,7 @@ public class SoundManager {
                 newPlayer.setCycleCount(MediaPlayer.INDEFINITE);
                 newPlayer.setVolume(bgmVolume);
 
-                bgmCache.put(resourcePath, nextPlayer);
+                bgmCache.put(resourcePath, newPlayer);
                 nextPlayer = newPlayer;
             }
 
@@ -161,5 +165,22 @@ public class SoundManager {
             bgmPlayer.stop();
             bgmPlayer.dispose();
         }
+    }
+
+    // Metodi chiamati direttamente dalla schermata delle impostazioni quando si muovono gli slider
+    public void setBgmVolume(double volume) {
+        this.bgmVolume = volume;
+        if (bgmPlayer != null) {
+            bgmPlayer.setVolume(volume); // Applica la modifica alla canzone in esecuzione
+        }
+        // Aggiorna anche tutti i mediaPlayer nella cache, in modo che se si cambia traccia, tutti abbiano il volume giusto
+        for (MediaPlayer player : bgmCache.values()) {
+            player.setVolume(volume);
+        }
+    }
+
+    public void setSfxVolume(double volume) {
+        this.sfxVolume = volume;
+        // Non serve aggiornare AudioClip in esecuzione, il nuovo volume verrà usato al prossimo play()
     }
 }

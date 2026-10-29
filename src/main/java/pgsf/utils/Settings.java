@@ -20,18 +20,22 @@ public class Settings {
     private int targetFps = 60;
     private boolean showFps = false;
 
+    // Variabili per suoni
+    // Valori del volume da 0.0 (muto) a 1.0 (massimo)
+    private double bgmVolume;
+    private double sfxVolume;
+
     // Costruttore privato! Si può chiamare solo da dentro questa classe
     private Settings() {
         // Valori di default
         this.isFullscreen = false;
-        this.isAudioOn = true;
         this.numberOfPlayers = 2;
+        this.bgmVolume = 1.0;
+        this.sfxVolume = 1.0;
         
         // Risoluzione di default
         this.windowWidth = 1280.0;
         this.windowHeight = 720.0;
-        
-        // Default Fps
         
         // Appena viene creato, prova a caricare i salvataggi
         load();
@@ -63,6 +67,10 @@ public class Settings {
                 // Carico le impostazioni degli FPS
                 this.targetFps = Integer.parseInt(props.getProperty("targetFps", "200"));
                 this.showFps = Boolean.parseBoolean(props.getProperty("showFps", "false"));
+
+                // Volume suoni e musica
+                this.bgmVolume = Double.parseDouble(props.getProperty("bgmVolume", "1.0"));
+                this.sfxVolume = Double.parseDouble(props.getProperty("sfxVolume", "1.0"));
             } catch (Exception e) {
                 System.out.println("Errore caricamento impostazioni: " + e.getMessage());
             }
@@ -81,6 +89,10 @@ public class Settings {
         // Salvataggio delle impostazioni degli FPS
         props.setProperty("targetFps", String.valueOf(targetFps));
         props.setProperty("showFps", String.valueOf(showFps));
+
+        // Volumi suoni e musica
+        props.setProperty("bgmVolume", String.valueOf(bgmVolume));
+        props.setProperty("sfxVolume", String.valueOf(sfxVolume));
 
         try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
             props.store(fos, "Impostazioni di Gioco");
@@ -110,4 +122,10 @@ public class Settings {
     
     public boolean isShowFps() { return showFps; }
     public void setShowFps(boolean show) { this.showFps = show; }
+
+    public double getBgmVolume() { return bgmVolume; }
+    public void setBgmVolume(double volume) { this.bgmVolume = volume; }
+
+    public double getSfxVolume() { return sfxVolume; }
+    public void setSfxVolume(double volume) { this.sfxVolume = volume; }
 }
