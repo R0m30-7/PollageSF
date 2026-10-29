@@ -17,6 +17,9 @@ public class MainMenuScene {
     private static final double BASE_WIDTH = 1280;
     private static final double BASE_HEIGHT = 720;
 
+    // Facciamo partire la musica di background
+    // pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/BG/ALGORITMI-Nodi-Rosso-Neri.wav");
+
     public Scene getScenaMenu(Stage stage) {
         StackPane root = new StackPane();
 
