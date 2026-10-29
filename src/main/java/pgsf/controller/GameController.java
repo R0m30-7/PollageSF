@@ -142,6 +142,11 @@ public class GameController {
     private AnimationTimer gameLoop;
     private Label fpsLabel;
 
+    // Eventuali variabili per suoni
+    private String menuOSTPath = "/Sounds/BG/ALGORITMI-Nodi-Rosso-Neri.wav";
+    private String cursor = "cursor";    // Suono scorrimento cursore
+    private String confirm = "confirm";  // Suono conferma bottone
+
     public GameController(Stage stage) {
         this.stage = stage;
         this.view = new GameView();
@@ -250,7 +255,7 @@ public class GameController {
         double startH = pgsf.utils.Settings.getInstance().getWindowHeight();
         // Imposto uno sfondo per la schermata di connessione dei controller
         view.changeBackground("/MenuBackgrounds/ConnectionMenu.png", startW, startH);
-        pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/menu_theme.mp3");
+        pgsf.utils.SoundManager.getInstance().playBgm(menuOSTPath);
         startGameLoop();
     }
 
@@ -501,6 +506,7 @@ public class GameController {
         backToMenuBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
         backToMenuBtn.setOnAction(e -> {
             if (gameLoop != null) gameLoop.stop();
+            pgsf.utils.SoundManager.getInstance().playBgm(menuOSTPath);
             pgsf.scenes.MainMenuScene mainMenu = new pgsf.scenes.MainMenuScene();
             stage.setTitle("Main Menu");
             stage.setScene(mainMenu.getScenaMenu(stage));
@@ -598,7 +604,7 @@ public class GameController {
     }
 
     private void confirmMapSelection() {
-        pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/fight_theme.mp3");
+        pgsf.utils.SoundManager.getInstance().playUiSfx(confirm);
         waitingForMapSelection = false;
         mapSelectionMenu.setVisible(false);
         view.getRoot().setEffect(null);
@@ -652,6 +658,7 @@ public class GameController {
         backToMenuBtn.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-color: darkred; -fx-text-fill: white;");
         backToMenuBtn.setOnAction(e -> {
             if (gameLoop != null) gameLoop.stop();
+            pgsf.utils.SoundManager.getInstance().playBgm(menuOSTPath);
             pgsf.scenes.MainMenuScene mainMenu = new pgsf.scenes.MainMenuScene();
             stage.setTitle("Main Menu");
             stage.setScene(mainMenu.getScenaMenu(stage));
@@ -708,11 +715,11 @@ public class GameController {
             
             pauseMenu.setVisible(true);
             view.getRoot().setEffect(new GaussianBlur(25)); 
-            pgsf.utils.SoundManager.getInstance().pauseBgm();
+            pgsf.utils.SoundManager.getInstance().resumeBgm();
         } else {
             pauseMenu.setVisible(false);
-            view.getRoot().setEffect(null); 
-            pgsf.utils.SoundManager.getInstance().resumeBgm();
+            view.getRoot().setEffect(null);
+            pgsf.utils.SoundManager.getInstance().pauseBgm();
         }
     }
     
@@ -783,7 +790,8 @@ public class GameController {
     
     private void returnToMainMenu() {
         gameLoop.stop(); // Fermiamo definitivamente questo loop di gioco
-        
+        pgsf.utils.SoundManager.getInstance().playBgm(menuOSTPath);
+
         // Ricreiamo la scena del menu principale
         pgsf.scenes.MainMenuScene menu = new pgsf.scenes.MainMenuScene();
         stage.setScene(menu.getScenaMenu(stage));
@@ -901,6 +909,7 @@ public class GameController {
                 if (p1CharIndex != oldCharIndex) {
                     lastCharInputTimeP1 = currentTimeMs;
                     p1SkinIndex = 0;
+                    pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
                 }
             }
 
@@ -916,7 +925,10 @@ public class GameController {
 
         // --- GESTIONE DEI TASTI DI CONFERMA E CANCELLAZIONE ---
         boolean p1ConfirmBtn = inputManager.isJumpButtonPressed(1);
-        if (p1ConfirmBtn && !wasConfirmP1Pressed) p1Confirmed = true;
+        if (p1ConfirmBtn && !wasConfirmP1Pressed){
+            p1Confirmed = true;
+            pgsf.utils.SoundManager.getInstance().playUiSfx(confirm);
+        }
         wasConfirmP1Pressed = p1ConfirmBtn;
 
         boolean p1CancelBtn = inputManager.isDefendButtonPressed(1); // Tasto "Cerchio"
@@ -937,6 +949,7 @@ public class GameController {
                     
                     if (p2CharIndex != oldCharIndex2) {
                         p2SkinIndex = 0;
+                        pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
                     }
                 }
 
@@ -951,7 +964,10 @@ public class GameController {
             }
 
             boolean p2ConfirmBtn = inputManager.isJumpButtonPressed(2);
-            if (p2ConfirmBtn && !wasConfirmP2Pressed) p2Confirmed = true;
+            if (p2ConfirmBtn && !wasConfirmP2Pressed){
+                p2Confirmed = true;
+                pgsf.utils.SoundManager.getInstance().playUiSfx(confirm);
+            }
             wasConfirmP2Pressed = p2ConfirmBtn;
 
             boolean p2CancelBtn = inputManager.isDefendButtonPressed(2);
@@ -1007,6 +1023,7 @@ public class GameController {
 
         // Se L1 è stato appena premuto, vai alla skin precedente
         if (isL1 && !wasL1) {
+            pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
             nextSkin--;
             if (nextSkin < 0) {
                 nextSkin = totalSkins - 1;
@@ -1015,6 +1032,7 @@ public class GameController {
 
         // Se R1 è stato appena premuto, vai alla skin successiva
         if (isR1 && !wasR1) {
+            pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
             nextSkin++;
             if (nextSkin >= totalSkins) {
                 nextSkin = 0;
@@ -1076,12 +1094,14 @@ public class GameController {
 
         boolean isConfirm = inputManager.isJumpButtonPressed(1);
         if (isConfirm && !wasConfirmPressed) {
-            confirmMapSelection(); 
+            confirmMapSelection();
+            pgsf.utils.SoundManager.getInstance().pauseBgm();
         }
         wasConfirmPressed = isConfirm;
     }
 
     private void selectMapAndPreview(int newIndex, long currentTimeMs){
+        pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
         updateMapSelectionUI();
         updateBackgroundPreview();	// Aggiorna la preview della mappa nello sfondo
         lastMenuInputTime = currentTimeMs;
@@ -1180,11 +1200,13 @@ public class GameController {
                 currentPauseIndex--;
                 if (currentPauseIndex < 0) currentPauseIndex = pauseButtons.size() - 1; // Ritorna all'ultimo
                 updatePauseMenuSelection();
+                pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
                 lastMenuInputTime = currentTimeMs;
             } else if (yInput > 0.5) { // Analogico verso il BASSO
                 currentPauseIndex++;
                 if (currentPauseIndex >= pauseButtons.size()) currentPauseIndex = 0; // Ritorna al primo
                 updatePauseMenuSelection();
+                pgsf.utils.SoundManager.getInstance().playUiSfx(cursor);
                 lastMenuInputTime = currentTimeMs;
             }
         }
@@ -1195,6 +1217,7 @@ public class GameController {
         boolean isConfirm = p1Confirm || p2Confirm;
 
         if (isConfirm && !wasConfirmPressed) {
+            pgsf.utils.SoundManager.getInstance().playUiSfx(confirm);
             // .fire() simula il click sul pulsante selezionato
             pauseButtons.get(currentPauseIndex).fire();
         }
