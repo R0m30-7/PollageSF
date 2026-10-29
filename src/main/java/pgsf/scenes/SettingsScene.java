@@ -22,7 +22,6 @@ public class SettingsScene {
     private static final double BASE_HEIGHT = 720;
 
     public Scene getSettingsScene(Stage stage, Scene previousScene) {
-
         StackPane root = new StackPane();
 
         // --- CONTENUTO: questo è il VBox che verrà scalato proporzionalmente ---
@@ -101,29 +100,63 @@ public class SettingsScene {
         // --- VOLUME MUSICA (BGM) ---
         Label bgmLabel = new Label("Volume Musica:");
         bgmLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        
         javafx.scene.control.Slider bgmSlider = new javafx.scene.control.Slider(0, 1, settings.getBgmVolume());
         bgmSlider.setBlockIncrement(0.1);
         bgmSlider.setMajorTickUnit(0.1);
-        bgmSlider.setMaxWidth(300); // Mantiene lo slider di dimensioni gestibili
+        bgmSlider.setMaxWidth(250);
         
-        // Listener per aggiornare il volume in tempo reale quando si trascina il pallino
+        javafx.scene.control.TextField bgmField = new javafx.scene.control.TextField(String.valueOf((int) Math.round(settings.getBgmVolume() * 100)));
+        bgmField.setPrefWidth(60);
+        bgmField.setAlignment(Pos.CENTER);
+        
+        // Affianchiamo slider e casella di testo
+        javafx.scene.layout.HBox bgmBox = new javafx.scene.layout.HBox(15, bgmSlider, bgmField);
+        bgmBox.setAlignment(Pos.CENTER);
+        
+        // Aggiorna casella e audio quando muovi lo slider
         bgmSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             settings.setBgmVolume(newVal.doubleValue());
             pgsf.utils.SoundManager.getInstance().setBgmVolume(newVal.doubleValue());
+            if (!bgmField.isFocused()) { // Aggiorna il testo solo se non ci stiamo scrivendo dentro
+                bgmField.setText(String.valueOf((int) Math.round(newVal.doubleValue() * 100)));
+            }
+        });
+        
+        // Aggiorna lo slider quando scrivi nel testo (premendo Invio o cliccando altrove)
+        bgmField.setOnAction(e -> updateSliderFromText(bgmField, bgmSlider));
+        bgmField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) updateSliderFromText(bgmField, bgmSlider); 
         });
 
         // --- VOLUME EFFETTI (SFX) ---
         Label sfxLabel = new Label("Volume Effetti (SFX):");
         sfxLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        
         javafx.scene.control.Slider sfxSlider = new javafx.scene.control.Slider(0, 1, settings.getSfxVolume());
         sfxSlider.setBlockIncrement(0.1);
         sfxSlider.setMajorTickUnit(0.1);
-        sfxSlider.setMaxWidth(300);
+        sfxSlider.setMaxWidth(250);
         
-        // Listener per aggiornare il volume degli effetti
+        javafx.scene.control.TextField sfxField = new javafx.scene.control.TextField(String.valueOf((int) Math.round(settings.getSfxVolume() * 100)));
+        sfxField.setPrefWidth(60);
+        sfxField.setAlignment(Pos.CENTER);
+        
+        // Affianchiamo slider e casella di testo
+        javafx.scene.layout.HBox sfxBox = new javafx.scene.layout.HBox(15, sfxSlider, sfxField);
+        sfxBox.setAlignment(Pos.CENTER);
+        
         sfxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             settings.setSfxVolume(newVal.doubleValue());
             pgsf.utils.SoundManager.getInstance().setSfxVolume(newVal.doubleValue());
+            if (!sfxField.isFocused()) {
+                sfxField.setText(String.valueOf((int) Math.round(newVal.doubleValue() * 100)));
+            }
+        });
+        
+        sfxField.setOnAction(e -> updateSliderFromText(sfxField, sfxSlider));
+        sfxField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) updateSliderFromText(sfxField, sfxSlider);
         });
 
         Label playersLabel = new Label("Numero Giocatori:");
@@ -179,7 +212,7 @@ public class SettingsScene {
         });
 
         content.getChildren().addAll(title, resLabel, resolutionBox, fullscreenCheck,
-                bgmLabel, bgmSlider, sfxLabel, sfxSlider,
+                bgmLabel, bgmBox, sfxLabel, sfxBox,
                 playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck, saveBackButton);
 
         Scene scene = new Scene(root, settings.getWindowWidth(), settings.getWindowHeight());
@@ -214,5 +247,18 @@ public class SettingsScene {
         updateScale.run();
 
         return scene;
+    }
+
+    // Metodo helper per aggiornare lo slider leggendo il testo inserito
+    private void updateSliderFromText(javafx.scene.control.TextField field, javafx.scene.control.Slider slider) {
+        try {
+            int value = Integer.parseInt(field.getText().trim());
+            value = Math.max(0, Math.min(100, value)); // Blocca il valore tra 0 e 100
+            slider.setValue(value / 100.0);
+            field.setText(String.valueOf(value));
+        } catch (NumberFormatException ex) {
+            // Se l'utente inserisce lettere o caratteri non validi, ripristina il valore attuale
+            field.setText(String.valueOf((int) Math.round(slider.getValue() * 100)));
+        }
     }
 }
