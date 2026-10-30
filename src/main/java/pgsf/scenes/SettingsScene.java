@@ -12,6 +12,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.paint.Color;
 import pgsf.utils.ScalableBackground;
 import pgsf.utils.Settings;
 
@@ -24,6 +26,22 @@ public class SettingsScene {
     
     private final Settings settings = Settings.getInstance();
 
+    // --- VARIABILI DI CLASSE PER I CONTROLLI DA SALVARE ---
+    // Invece di recuperarli tramite getChildren().get(x) che causa errori se cambia il layout,
+    // li memorizziamo qui così il pulsante Salva li trova sempre e in modo sicuro.
+    private ComboBox<String> resolutionBox;
+    private CheckBox fullscreenCheck;
+    private ComboBox<Integer> playersBox;
+    private ComboBox<Integer> fpsBox;
+    private CheckBox showFpsCheck;
+
+    // --- STILI CSS A TEMA CORNICE DI LEGNO E CIELO NOTTURNO ---
+    // -fx-base gestisce in automatico i colori del menu a tendina a comparsa (sfondo e testo)
+    private static final String COMBO_STYLE = "-fx-base: #5c3a21; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #8b5a2b; -fx-border-width: 2;";
+    // -fx-text-inner-color serve specificatamente per il testo digitabile nei TextField
+    private static final String TEXTFIELD_STYLE = "-fx-background-color: rgba(20, 15, 10, 0.8); -fx-text-inner-color: #f1c40f; -fx-font-weight: bold; -fx-border-color: #8b5a2b; -fx-border-radius: 4; -fx-background-radius: 4; -fx-font-size: 16px;";
+    private static final String LABEL_STYLE = "-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 5, 1.0, 2, 2);";
+
     public Scene getSettingsScene(Stage stage, Scene previousScene) {
         StackPane root = new StackPane();
 
@@ -31,25 +49,17 @@ public class SettingsScene {
         VBox content = createContentContainer();
 
         Label title = new Label("IMPOSTAZIONI");
-        title.setStyle("-fx-font-size: 36px; -fx-text-fill: white; -fx-font-weight: bold;");
+        // Titolo dorato con ombra pronunciata per risaltare sul cielo dello sfondo
+        title.setStyle("-fx-font-size: 46px; -fx-text-fill: #f1c40f; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 10, 0.7, 3, 3);");
 
-        // --- Sezione Risoluzione e Schermo ---
+        // --- Inizializzazione delle Sezioni ---
         VBox resolutionSection = createResolutionSection();
-        CheckBox fullscreenCheck = createFullscreenCheck();
-
-        // --- Sezione Audio ---
+        createFullscreenCheck();
         VBox audioSection = createAudioSection();
-
-        // --- Sezione Giocatori e FPS ---
         VBox otherSettingsSection = createOtherSettingsSection();
 
         // --- Pulsante di Salvataggio ---
-        Button saveBackButton = createSaveButton(stage, previousScene, 
-                (ComboBox<String>) resolutionSection.getChildren().get(1), 
-                fullscreenCheck, 
-                (ComboBox<Integer>) otherSettingsSection.getChildren().get(1), 
-                (ComboBox<Integer>) otherSettingsSection.getChildren().get(3), 
-                (CheckBox) otherSettingsSection.getChildren().get(4));
+        Button saveBackButton = createSaveButton(stage, previousScene);
 
         content.getChildren().addAll(title, resolutionSection, fullscreenCheck, audioSection, otherSettingsSection, saveBackButton);
 
@@ -66,24 +76,35 @@ public class SettingsScene {
     }
 
     private VBox createContentContainer() {
-        VBox content = new VBox(20);
+        VBox content = new VBox(22); 
         content.setAlignment(Pos.CENTER);
+        
         // Fissiamo il contenuto alla risoluzione di design: verrà "ingrandito/rimpicciolito"
         // tramite transform, non tramite layout, quindi resta sempre proporzionato.
         content.setPrefSize(BASE_WIDTH, BASE_HEIGHT);
-        content.setMaxSize(BASE_WIDTH, BASE_HEIGHT);
-        content.setMinSize(BASE_WIDTH, BASE_HEIGHT);
+        
+        // Dimensioniamo il contenuto in modo che stia circa dentro la cornice di legno dipinta
+        content.setMaxSize(BASE_WIDTH * 0.70, BASE_HEIGHT * 0.70); 
+        
+        content.setStyle("-fx-background-color: transparent; -fx-padding: 10;");
+
+        content.setTranslateX(28);
+                         
         return content;
     }
 
     private VBox createResolutionSection() {
-        VBox section = new VBox(5);
+        VBox section = new VBox(8);
         section.setAlignment(Pos.CENTER);
 
         // --- RISOLUZIONE ---
         Label resLabel = new Label("Risoluzione Finestra:");
-        resLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
-        ComboBox<String> resolutionBox = new ComboBox<>();
+        resLabel.setStyle(LABEL_STYLE);
+        
+        // Inizializza la variabile di classe
+        resolutionBox = new ComboBox<>();
+        resolutionBox.setStyle(COMBO_STYLE);
+        resolutionBox.setPrefWidth(200);
 
         // Mostriamo SEMPRE tutte le risoluzioni: quelle che non entrano nello schermo
         // disponibile (visualBounds esclude taskbar/barre di sistema) restano visibili
@@ -139,20 +160,18 @@ public class SettingsScene {
         return section;
     }
 
-    private CheckBox createFullscreenCheck() {
-        CheckBox fullscreenCheck = new CheckBox("Schermo Intero");
-        fullscreenCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+    private void createFullscreenCheck() {
+        fullscreenCheck = new CheckBox("Schermo Intero");
+        fullscreenCheck.setStyle(LABEL_STYLE);
         fullscreenCheck.setSelected(settings.isFullscreen());
-        return fullscreenCheck;
     }
 
     private VBox createAudioSection() {
         VBox section = new VBox(15);
         section.setAlignment(Pos.CENTER);
 
-        // --- VOLUME MUSICA (BGM) ---
+        // --- VOLUME MUSICA E SFX ---
         HBox bgmBox = createAudioSliderBox("Volume Musica:", settings.getBgmVolume(), true);
-        // --- VOLUME EFFETTI (SFX) ---
         HBox sfxBox = createAudioSliderBox("Volume Effetti (SFX):", settings.getSfxVolume(), false);
 
         section.getChildren().addAll(bgmBox, sfxBox);
@@ -162,18 +181,20 @@ public class SettingsScene {
     private HBox createAudioSliderBox(String labelText, double initialVolume, boolean isBgm) {
         VBox container = new VBox(5);
         container.setAlignment(Pos.CENTER);
+        container.setPrefWidth(250);
 
         Label label = new Label(labelText);
-        label.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        label.setStyle(LABEL_STYLE);
 
         javafx.scene.control.Slider slider = new javafx.scene.control.Slider(0, 1, initialVolume);
         slider.setBlockIncrement(0.1);
         slider.setMajorTickUnit(0.1);
-        slider.setMaxWidth(250);
+        slider.setPrefWidth(230);
 
         javafx.scene.control.TextField field = new javafx.scene.control.TextField(String.valueOf((int) Math.round(initialVolume * 100)));
         field.setPrefWidth(60);
         field.setAlignment(Pos.CENTER);
+        field.setStyle(TEXTFIELD_STYLE); // Usa lo stile specifico con -fx-text-inner-color
 
         // Aggiorna casella e audio quando muovi lo slider
         slider.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -204,34 +225,70 @@ public class SettingsScene {
     }
 
     private VBox createOtherSettingsSection() {
-        VBox section = new VBox(10);
+        VBox section = new VBox(15);
         section.setAlignment(Pos.CENTER);
 
-        Label playersLabel = new Label("Numero Giocatori:");
-        playersLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
-        ComboBox<Integer> playersBox = new ComboBox<>();
+        HBox combosBox = new HBox(40);
+        combosBox.setAlignment(Pos.CENTER);
+
+        // Blocco Giocatori
+        VBox playersSection = new VBox(5);
+        playersSection.setAlignment(Pos.CENTER);
+        Label playersLabel = new Label("Giocatori:");
+        playersLabel.setStyle(LABEL_STYLE);
+        
+        playersBox = new ComboBox<>();
         playersBox.getItems().addAll(1, 2);
         playersBox.setValue(settings.getNumberOfPlayers());
+        playersBox.setStyle(COMBO_STYLE);
+        playersBox.setPrefWidth(100);
+        playersSection.getChildren().addAll(playersLabel, playersBox);
 
-        Label fpsSettingLabel = new Label("FPS:");
-        fpsSettingLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
-        ComboBox<Integer> fpsBox = new ComboBox<>();
+        // Blocco FPS
+        VBox fpsSection = new VBox(5);
+        fpsSection.setAlignment(Pos.CENTER);
+        Label fpsSettingLabel = new Label("Max FPS:");
+        fpsSettingLabel.setStyle(LABEL_STYLE);
+        
+        fpsBox = new ComboBox<>();
         fpsBox.getItems().addAll(10, 15, 24, 30, 60, 120, 144, 200, 240);
         fpsBox.setValue(settings.getTargetFps());
+        fpsBox.setStyle(COMBO_STYLE);
+        fpsBox.setPrefWidth(120);
+        fpsSection.getChildren().addAll(fpsSettingLabel, fpsBox);
 
-        CheckBox showFpsCheck = new CheckBox("Mostra FPS");
-        showFpsCheck.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+        combosBox.getChildren().addAll(playersSection, fpsSection);
+
+        showFpsCheck = new CheckBox("Mostra contatore FPS in gioco");
+        showFpsCheck.setStyle(LABEL_STYLE);
         showFpsCheck.setSelected(settings.isShowFps());
 
-        section.getChildren().addAll(playersLabel, playersBox, fpsSettingLabel, fpsBox, showFpsCheck);
+        section.getChildren().addAll(combosBox, showFpsCheck);
         return section;
     }
 
-    private Button createSaveButton(Stage stage, Scene previousScene, ComboBox<String> resolutionBox, CheckBox fullscreenCheck, ComboBox<Integer> playersBox, ComboBox<Integer> fpsBox, CheckBox showFpsCheck) {
-        Button saveBackButton = new Button("Salva e Torna Indietro");
-        saveBackButton.setStyle("-fx-font-size: 20px; -fx-padding: 10 20; -fx-cursor: hand;");
+    private Button createSaveButton(Stage stage, Scene previousScene) {
+        Button saveBackButton = new Button("SALVA E TORNA AL MENU");
+        
+        String normalStyle = "-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 12 30; -fx-cursor: hand; " +
+                             "-fx-background-color: linear-gradient(#d35400, #a83200); " + // Arancione/Legno caldo
+                             "-fx-text-fill: white; -fx-background-radius: 8; -fx-border-color: #f1c40f; " + // Bordo dorato
+                             "-fx-border-radius: 6; -fx-border-width: 2;";
+                             
+        String hoverStyle = "-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 12 30; -fx-cursor: hand; " +
+                            "-fx-background-color: linear-gradient(#f1c40f, #f39c12); " + // Giallo luminoso al passaggio del mouse
+                            "-fx-text-fill: black; -fx-background-radius: 8; -fx-border-color: white; " +
+                            "-fx-border-radius: 6; -fx-border-width: 2;";
+
+        saveBackButton.setStyle(normalStyle);
+        saveBackButton.setEffect(new DropShadow(8, Color.BLACK));
+        
+        // Animazione CSS interattiva
+        saveBackButton.setOnMouseEntered(e -> saveBackButton.setStyle(hoverStyle));
+        saveBackButton.setOnMouseExited(e -> saveBackButton.setStyle(normalStyle));
 
         saveBackButton.setOnAction(e -> {
+            // Adesso legge tutto in totale sicurezza dalle variabili di classe
             String[] resParts = resolutionBox.getValue().split("x");
             double chosenWidth = Double.parseDouble(resParts[0]);
             double chosenHeight = Double.parseDouble(resParts[1]);
