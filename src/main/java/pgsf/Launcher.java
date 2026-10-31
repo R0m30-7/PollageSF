@@ -5,4 +5,4 @@ public class Launcher {
         // Avvio diretto del gioco.
         Main.main(args); 
     }
-}
+}   

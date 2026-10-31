@@ -27,18 +27,18 @@ public class SoundManager {
 
     private SoundManager() {
         loadSfx(SoundEvent.JUMP, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.PUNCH_SWING, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.HOOK_SWING, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.KICK_SWING, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.HADOUKEN, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.HIT, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.BLOCK, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.PARRY, "/Sounds/voices/2A_claw_yodel.wav");
-        loadSfx(SoundEvent.KO, "/Sounds/voices/2A_claw_yodel.wav");
+        loadSfx(SoundEvent.PUNCH_SWING, "/Sounds/voices/28_grunt_1.wav");
+        loadSfx(SoundEvent.HOOK_SWING, "/Sounds/voices/28_grunt_1.wav");
+        loadSfx(SoundEvent.KICK_SWING, "/Sounds/voices/21_grunt_1.wav");
+        loadSfx(SoundEvent.HADOUKEN, "/Sounds/Ryu/Ryu_001.wav");
+        loadSfx(SoundEvent.HIT, "/Sounds/sfx/14_attack_2.wav");
+        loadSfx(SoundEvent.BLOCK, "/Sounds/sfx/15_attack_3.wav");
+        loadSfx(SoundEvent.PARRY, "/Sounds/Ryu/Ryu_001.wav");
+        loadSfx(SoundEvent.KO, "/Sounds/Ryu/Ryu_004.wav");
 
         loadUiSfx("cursor", "/Sounds/UI/swipe.wav");
         loadUiSfx("confirm", "/Sounds/UI/confirm.wav");
-        loadUiSfx("cancel", "/Sounds/voices/2A_claw_yodel.wav");
+        loadUiSfx("cancel", "/Sounds/UI/swipe.wav");
 
         // Carichiamo i volumi salvati nelle impostazioni
         this.bgmVolume = pgsf.utils.Settings.getInstance().getBgmVolume();

@@ -143,7 +143,7 @@ public class GameController {
     private Label fpsLabel;
 
     // Eventuali variabili per suoni
-    private String menuOSTPath = "/Sounds/BG/ALGORITMI-Nodi-Rosso-Neri.wav";
+    private String menuOSTPath = "/Sounds/BG/Street_Fighter_II_SNES-Player_Select.wav";
     private String cursor = "cursor";    // Suono scorrimento cursore
     private String confirm = "confirm";  // Suono conferma bottone
 

@@ -5,6 +5,7 @@
 \usepackage{lmodern}
 \usepackage[a4paper, margin=2.5cm]{geometry}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{enumitem}
 \setlist[itemize]{label=-}
 \usepackage{amsmath}
@@ -109,6 +110,7 @@ L'applicazione \textbf{PollageSF} è stata progettata e realizzata per soddisfar
     \item \textbf{Scaling Nearest-Neighbor e Caching delle Texture:} Per preservare la nitidezza della pixel art a qualsiasi risoluzione dello schermo, il renderer deve ingrandire i fotogrammi tramite campionamento \emph{Nearest-Neighbor} via software, salvando le immagini risultanti in una struttura di cache (\texttt{HashMap}) indicizzata anche per palette di colore.
     \item \textbf{Interfaccia HUD e Risoluzione Indipendente:} L'interfaccia utente in partita (\texttt{HUDView}) deve mostrare barre della salute reattive (con riduzione speculare verso il centro dello schermo) e il timer di gioco, scalando proporzionalmente tutti gli elementi rispetto all'altezza della finestra.
     \item \textbf{Gestione Pausa e Fine Partita:} Il gioco deve consentire la messa in pausa tramite controller con navigazione dei pulsanti via levetta analogica e gestire la schermata di vittoria finale al raggiungimento di 0 punti vita da parte di uno dei contendenti.
+    \item \textbf{Sistema Audio Disaccoppiato (SFX e BGM):} Il sistema deve riprodurre effetti sonori a bassa latenza per le azioni di combattimento e musiche di sottofondo con memoria della posizione di riproduzione, mantenendo il \texttt{GameModel} disaccoppiato dalle librerie multimediali tramite una coda di eventi (\texttt{SoundEvent}).
 \end{enumerate}
 
 \newpage
@@ -119,19 +121,27 @@ L'applicazione \textbf{PollageSF} è stata progettata e realizzata per soddisfar
 \section{Progetto}
 Nel presente capitolo viene descritta nel dettaglio la progettazione del gioco \textbf{PollageSF}, analizzando l'architettura complessiva, le responsabilità dei singoli package (\texttt{Model}, \texttt{View}, \texttt{Controller}) e le soluzioni adottate per risolvere le principali problematiche tecniche emerse durante lo sviluppo.
 
-\subsection{Architettura del Sistema Software}
-Il sistema software è stato progettato adottando rigorosamente il pattern architetturale \textbf{Model-View-Controller (MVC)}, al fine di garantire un elevato grado di modularità, manutenibilità ed estendibilità del codice sorgente. La separazione delle responsabilità è così definita:
+\subsection{Architettura del Sistema Software e Relazioni UML}
+Il sistema software è stato progettato adottando rigorosamente il pattern architetturale \textbf{Model-View-Controller (MVC)}, al fine di garantire un elevato grado di modularità, manutenibilità ed estendibilità del codice sorgente, nonché il rispetto dell'\emph{Acyclic Dependencies Principle} (ADP). La separazione delle responsabilità e le relazioni strutturali tra i package (illustrate globalmente in Figura \ref{fig:mvc_arch}) sono così definite:
 
 \begin{itemize}
-    \item \textbf{Modulo Model (\texttt{application.Model}):} Contiene la logica di tutto il gioco, lo stato della partita, la cinematica dei corpi, la gestione delle animazioni a livello logico e il motore delle collisioni. Il Model non importa né utilizza alcun nodo grafico della libreria JavaFX (come \texttt{Pane}, \texttt{ImageView} o \texttt{Scene}), risultando completamente indipendente dalla tecnologia di visualizzazione.
-    \item \textbf{Modulo View (\texttt{application.View}):} Si occupa esclusivamente della rappresentazione visiva su schermo. Riceve in ingresso dal Controller un riferimento al Model tipizzato attraverso le interfacce di sola lettura \texttt{IReadOnlyGameModel} e \texttt{IReadOnlyPlayer}. In questo modo, la View può interrogare lo stato del mondo (posizioni, punti vita, stato dell'animazione corrente, posizione della telecamera) per disegnare i fotogrammi, ma le è impedito a livello di compilazione invocare metodi mutatori (come \texttt{takeDamage}, \texttt{moveHorizontal} o \texttt{spawnPlayers}).
-    \item \textbf{Modulo Controller (\texttt{application.Controller}):} Costituisce il coordinatore dell'applicazione. Gestisce il ciclo di vita della finestra (\texttt{Stage} e \texttt{Scene}), mantiene attivo il \emph{Game Loop} principale, interroga le periferiche hardware (gamepad) tramite \texttt{InputManager}, gestisce i menu sovrapposti alla scena e invoca ad ogni tick prima l'aggiornamento logico (\texttt{model.update(inputManager)}) e successivamente quello grafico (\texttt{view.render(model)}).
+    \item \textbf{Modulo Model (\texttt{pgsf.model}):} Contiene la logica di dominio, lo stato della partita, la cinematica dei corpi, la gestione delle animazioni a livello logico, la coda degli eventi sonori (\texttt{SoundEvent}) e il motore delle collisioni. Il Model non importa alcun nodo grafico né multimediale della libreria JavaFX (come \texttt{Pane}, \texttt{ImageView} o \texttt{MediaPlayer}), risultando completamente indipendente dalla tecnologia di presentazione.
+    \item \textbf{Modulo View (\texttt{pgsf.view}):} Si occupa esclusivamente della rappresentazione visiva su schermo. Riceve in ingresso dal Controller un riferimento al Model tipizzato attraverso le interfacce di sola lettura \texttt{IReadOnlyGameModel}, \texttt{IReadOnlyPlayer} e \texttt{IReadOnlyProjectile}. In questo modo la View interroga lo stato del mondo per disegnare i fotogrammi, ma le è impedito a livello di compilazione invocare metodi mutatori.
+    \item \textbf{Modulo Controller (\texttt{pgsf.controller}) e Utilities (\texttt{pgsf.utils}):} Costituisce il coordinatore dell'applicazione. Gestisce il ciclo di vita della finestra (\texttt{Stage} e \texttt{Scene}), mantiene attivo il \emph{Game Loop} principale, interroga le periferiche hardware tramite \texttt{InputManager}, governa il sottosistema audio (\texttt{SoundManager}) e invoca a ogni tick prima l'aggiornamento logico (\texttt{model.update(inputManager)}), poi il consumo degli eventi sonori (\texttt{model.pollSoundEvents()}) e infine il rendering grafico (\texttt{view.render(model)}).
 \end{itemize}
+
+Dal punto di vista dell'ingegneria del software, il diagramma delle classi in Figura \ref{fig:mvc_arch} mette in evidenza quattro tipologie di relazioni UML fondamentali che garantiscono il disaccoppiamento:
+\begin{enumerate}
+    \item \textbf{Realizzazione e Inversione delle Dipendenze (DIP):} Le classi di dominio \texttt{GameModel}, \texttt{Player} e \texttt{Projectile} realizzano rispettivamente le interfacce \texttt{IReadOnlyGameModel}, \texttt{IReadOnlyPlayer} e \texttt{IReadOnlyProjectile}. Analogamente, nel package \texttt{model} è definita l'interfaccia \texttt{IReadOnlyInput}, realizzata concretamente da \texttt{InputManager} nel package \texttt{controller}: grazie a questa inversione, \texttt{GameModel} dipende esclusivamente da un'astrazione appartenente al proprio stesso package, senza mai conoscere il \texttt{controller}.
+    \item \textbf{Composizione (\texttt{*--}):} Il \texttt{GameController} detiene il ciclo di vita esclusivo di \texttt{GameModel} e \texttt{GameView}. A sua volta, \texttt{GameModel} compone le due istanze di \texttt{Player}, mentre \texttt{GameView} compone i due \texttt{PlayerRenderer} e l'\texttt{HUDView}.
+    \item \textbf{Aggregazione (\texttt{o--}):} Il \texttt{GameModel} aggrega dinamicamente le istanze di \texttt{Projectile} in volo e gli eventi \texttt{SoundEvent} nella coda temporanea \texttt{soundQueue}, mentre \texttt{CharacterData} aggrega l'interfaccia funzionale \texttt{CharacterFactory}.
+    \item \textbf{Dipendenza d'uso (\texttt{..>}):} Le classi della View (\texttt{GameView}, \texttt{PlayerRenderer}, \texttt{HUDView}) presentano unicamente frecce tratteggiate di dipendenza verso le interfacce \texttt{IReadOnly*} del Model, certificando l'assenza di accoppiamento verso le implementazioni concrete.
+\end{enumerate}
 
 \begin{figure}[htbp]
 \centering
-\framebox[0.7\textwidth]{\rule{0pt}{3cm}Diagramma Architetturale MVC}
-\caption{Architettura Model-View-Controller del sistema PollageSF con interfacce di disaccoppiamento.}
+\includegraphics[width=1.0\textwidth]{figures/uml_full.png}
+\caption{Diagramma UML completo dell'architettura Model-View-Controller del sistema PollageSF e delle relazioni inter-package.}
 \label{fig:mvc_arch}
 \end{figure}
 
@@ -214,6 +224,13 @@ Tale primitiva geometrica viene impiegata in due contesti distinti:
     \end{equation}
 \end{enumerate}
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/uml_model.png}
+\caption{Dettaglio del diagramma delle classi per il package \texttt{pgsf.model}.}
+\label{fig:uml_model}
+\end{figure}
+
 \subsection{View}
 Il package \texttt{application.View} traduce lo stato logico del Model in elementi visivi JavaFX, occupandosi della telecamera, degli sprite e dell'interfaccia utente.
 
@@ -242,12 +259,30 @@ Poiché il ridimensionamento nativo delle immagini in JavaFX può introdurre art
 \end{equation}
 Per azzerare l'overhead computazionale che deriverebbe dal ricalcolo matriciale dei pixel a 60 FPS, ogni \texttt{WritableImage} generata viene memorizzata in una mappa di cache \texttt{Map<String, Image> frameCache} tramite il metodo \texttt{computeIfAbsent}, utilizzando una chiave univoca composta da \texttt{"minX\_minY\_width\_height\_scale"}. In questo modo il ritaglio viene calcolato una sola volta al primo utilizzo del fotogramma e restituito in tempo costante $O(1)$ per tutto il resto della partita.
 
+Infine, per risolvere il disallineamento geometrico dovuto alle dimensioni variabili dei riquadri di ritaglio $(W_{\text{frame}}, H_{\text{frame}})$ all'interno del manifesto JSON (ad esempio durante l'estensione del braccio nei pugni o l'oscillazione verticale della respirazione in \texttt{IDLE}), \texttt{TextureAtlas} associa a ciascun fotogramma un punto di ancoraggio $\mathbf{P} = (\text{pivot}_x, \text{pivot}_y)$, con fallback automatico posto al centro della base inferiore del corpo standard $(W_{\text{base}}/2, H_{\text{frame}}) = (23.5, H_{\text{frame}})$. 
+Partendo dalle coordinate base $(p_x, p_y) = (X_{\text{player}} - \text{offset}_x, Y_{\text{player}} - \text{offset}_y)$, il posizionamento finale su schermo applica la compensazione verticale ai piedi e la compensazione orizzontale simmetrica per l'inversione speculare (\texttt{setScaleX(-1)} quando il lottatore è rivolto a sinistra):
+\begin{equation}
+    p'_y = p_y + \left(H_{\text{base}} - \text{pivot}_y\right) \cdot s, \qquad
+    p'_x = 
+    \begin{cases}
+        p_x - \left(\text{pivot}_x - \frac{W_{\text{base}}}{2}\right) \cdot s & \text{se rivolto a destra} \\[6pt]
+        p_x - \left[\left(W_{\text{frame}} - \text{pivot}_x\right) - \frac{W_{\text{base}}}{2}\right] \cdot s & \text{se rivolto a sinistra}
+    \end{cases}
+\end{equation}
+
 \subsubsection{Interfaccia Utente in Partita (\texttt{HUDView})}
 La classe \texttt{HUDView} disegna nella parte superiore dello schermo i nomi dei giocatori, le barre della salute (\texttt{p1HealthFill}, \texttt{p2HealthFill} sovrapposte ai rispettivi sfondi rosso scuro), le barre secondarie del potere speciale e il contatore centrale del tempo. Nel metodo \texttt{update(IReadOnlyPlayer p1, IReadOnlyPlayer p2)}, mentre la barra della vita del Giocatore 1 si riduce semplicemente accorciando la propria larghezza da destra verso sinistra, per il Giocatore 2 viene applicata una traslazione compensativa sulla coordinata $X$:
 \begin{equation}
     W_{P2} = W_{\text{bar}} \cdot \frac{\text{HP}_{P2}}{\text{HP}_{\max, P2}}, \qquad X_{P2} = X_{\text{bg}, P2} + \left(W_{\text{bar}} - W_{P2}\right)
 \end{equation}
 ottenendo l'effetto classico dei picchiaduro arcade in cui entrambe le barre della salute si svuotano simmetricamente verso il timer centrale.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.80\textwidth]{figures/uml_view.png}
+\caption{Dettaglio del diagramma delle classi per il package \texttt{pgsf.view}.}
+\label{fig:uml_view}
+\end{figure}
 
 \subsection{Controller}
 Il package \texttt{application.Controller} coordina l'esecuzione temporale, le periferiche di input e la navigazione tra gli stati dell'applicazione.
@@ -279,6 +314,31 @@ La classe \texttt{InputManager} è implementata secondo il pattern creazionale *
     \item \textbf{Gancio pesante (\texttt{isHookButtonPressed}):} combinazione del grilletto destro ($\text{rightTrigger} > 0.5$, tasto \texttt{R2}) + tasto \texttt{X};
     \item \textbf{Mossa speciale Hadouken (\texttt{isHadoukenButtonPressed}):} combinazione del grilletto sinistro ($\text{leftTrigger} > 0.5$, tasto \texttt{L2}) + tasto \texttt{X}.
 \end{itemize}
+
+\subsubsection{Gestione Disaccoppiata del Comparto Audio (\texttt{SoundManager} e \texttt{SoundEvent})}
+L'integrazione degli effetti sonori di combattimento (SFX) e delle colonne sonore di sottofondo (BGM) è stata progettata preservando la totale indipendenza del package \texttt{model} dal modulo multimediale \texttt{javafx.scene.media}. Il meccanismo si articola su tre componenti cooperanti:
+
+\begin{enumerate}
+    \item \textbf{Dominio degli Eventi Sonori (\texttt{SoundEvent} e \texttt{soundQueue}):} All'interno di \texttt{pgsf.model} è definita l'enumerazione pura \texttt{SoundEvent} (\texttt{JUMP}, \texttt{PUNCH\_SWING}, \texttt{HOOK\_SWING}, \texttt{KICK\_SWING}, \texttt{HADOUKEN}, \texttt{HIT}, \texttt{BLOCK}, \texttt{PARRY}, \texttt{KO}). La classe \texttt{GameModel} mantiene una coda FIFO \texttt{Queue<SoundEvent> soundQueue} (\texttt{ArrayDeque}). Quando la logica fisica valida l'esecuzione di un salto o di un attacco in \texttt{handleStandingActions()} e \texttt{handleCrouchingActions()}, oppure rileva un impatto, una parata parziale, un \emph{Parry perfetto} o il \emph{KO} in \texttt{handleCombat()}, \texttt{resolveMeleeBlockOrParry()}, \texttt{resolveProjectileHit()} e \texttt{checkGameOver()}, il modello non riproduce alcun file audio ma accoda l'evento semantico corrispondente (\texttt{soundQueue.add(...)}).
+    \item \textbf{Consumo Sincrono nel Game Loop (\texttt{GameController}):} All'interno del ciclo a passo fisso \texttt{handleGameplayState()}, immediatamente dopo l'aggiornamento fisico \texttt{model.update(inputManager)}, il controller preleva e svuota gli eventi generati nel tick corrente tramite il metodo \texttt{model.pollSoundEvents()}, delegandone la riproduzione effettiva a \texttt{SoundManager}:
+\begin{verbatim}
+for (SoundEvent event : model.pollSoundEvents()) {
+    SoundManager.getInstance().playSfx(event);
+}
+\end{verbatim}
+    \item \textbf{Sottosistema Multimediale con Caching (\texttt{SoundManager}):} Implementata secondo il pattern \textbf{Singleton} nel package \texttt{pgsf.utils}, la classe \texttt{SoundManager} adotta due strategie distinte in base alla natura del flusso audio:
+    \begin{itemize}
+        \item \emph{Effetti Sonori a Bassa Latenza (\texttt{AudioClip}):} I campioni brevi di combattimento e di interfaccia utente (\texttt{cursor}, \texttt{confirm}, \texttt{cancel}) vengono pre-caricati in RAM all'avvio dentro una \texttt{EnumMap<SoundEvent, AudioClip> sfxCache} e una \texttt{HashMap<String, AudioClip> uiSfxCache}. Ciò consente riproduzioni multiple sovrapposte con latenza nulla tramite \texttt{clip.play(sfxVolume)}.
+        \item \emph{Musica di Sottofondo Persistente (\texttt{MediaPlayer}):} Le tracce musicali lunghe dei menu e delle arene vengono gestite in streaming tramite oggetti \texttt{MediaPlayer} configurati in ciclo continuo (\texttt{MediaPlayer.INDEFINITE}) e indicizzati in una mappa \texttt{Map<String, MediaPlayer> bgmCache}. Quando l'utente cambia schermata o mette in pausa l'incontro, la traccia precedente viene messa in stato \texttt{pause()} senza essere distrutta: in questo modo, tornando al menu o riprendendo la partita, la colonna sonora riparte esattamente dal secondo in cui era stata interrotta. Inoltre, i metodi \texttt{setBgmVolume()} e \texttt{setSfxVolume()} aggiornano in tempo reale il volume di tutte le istanze attive e in cache in risposta agli slider del menu impostazioni (\texttt{Settings}).
+    \end{itemize}
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/uml_controller.png}
+\caption{Dettaglio del diagramma delle classi per i package \texttt{pgsf.controller} e \texttt{pgsf.utils}.}
+\label{fig:uml_controller}
+\end{figure}
 
 \subsection{Problemi Riscontrati}
 Durante le fasi di sviluppo e integrazione dei moduli, sono emerse alcune problematiche architetturali e grafiche di rilievo, risolte mediante interventi mirati:
@@ -315,7 +375,6 @@ Tra i principali sviluppi futuri pianificati figurano:
 \begin{itemize}
     \item \textbf{Intelligenza Artificiale per Modalità Giocatore Singolo (CPU):} Implementazione di una macchina a stati decisionali (FSM) o di un albero di comportamento per consentire alla CPU di gestire reattivamente lo spacing, le parate su colpi in arrivo e le sequenze offensive di contrattacco;
     \item \textbf{Utilizzo della Barra del Potere Speciale (\emph{Super Meter}):} Attivazione dinamica della barra energetica secondaria (già predisposta graficamente in \texttt{HUDView}) caricabile mediante parate riuscite o colpi a segno, utile per abilitare tecniche speciali avanzate;
-    \item \textbf{Comparto Audio ed Effetti Particellari:} Integrazione di un gestore di campioni sonori dedicati (musiche di sottofondo, campioni vocali e impatti fisici) e di un generatore particellare per enfatizzare l'impatto dei colpi e l'esplosione dei proiettili.
 \end{itemize}
 
 \newpage

@@ -19,7 +19,7 @@ public class MainMenuScene {
 
     public Scene getScenaMenu(Stage stage) {
         // Facciamo partire la musica di background
-        pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/BG/ALGORITMI-Nodi-Rosso-Neri.wav");
+        pgsf.utils.SoundManager.getInstance().playBgm("/Sounds/BG/Street_Fighter_II_SNES-Opening_Title.wav");
 
         StackPane root = new StackPane();
 
