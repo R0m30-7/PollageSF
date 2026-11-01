@@ -102,7 +102,7 @@ Una volta avviato il match, i due contendenti si affrontano in un'arena più amp
 L'applicazione \textbf{PollageSF} è stata progettata e realizzata per soddisfare i seguenti requisiti funzionali e non funzionali, espressi in forma puntuale secondo lo standard di progetto:
 
 \begin{enumerate}
-    \item \textbf{Separazione srchitetturale MVC:} L'intero sistema software deve rispettare rigorosamente il pattern \emph{Model-View-Controller}, disaccoppiando la logica di simulazione fisica (\texttt{application.Model}) dalla rappresentazione grafica JavaFX (\texttt{application.View}) attraverso interfacce a sola lettura (\texttt{IReadOnlyGameModel} e \texttt{IReadOnlyPlayer}).
+    \item \textbf{Separazione architetturale MVC:} L'intero sistema software deve rispettare rigorosamente il pattern \emph{Model-View-Controller}, disaccoppiando la logica di simulazione fisica (\texttt{application.Model}) dalla rappresentazione grafica JavaFX (\texttt{application.View}) attraverso interfacce a sola lettura (\texttt{IReadOnlyGameModel} e \texttt{IReadOnlyPlayer}).
     \item \textbf{Game loop a passo fisso con accumulatore:} L'aggiornamento del motore fisico deve essere governato da un ciclo basato su \texttt{AnimationTimer} che utilizza un accumulatore temporale (\texttt{physicsAccumulator}) e un passo costante (\texttt{TIME\_PER\_TICK}), garantendo una simulazione deterministica indipendente dalla frequenza di rendering (\texttt{targetFps}).
     \item \textbf{Gestione multi-gamepad e drop-in dinamico:} Il sistema deve supportare l'input simultaneo e privo di latenza da due controller tramite la libreria SDL2/Jamepad, offrendo un menu iniziale di accoppiamento alla pressione di un tasto.
     \item \textbf{Sistema di sicurezza per disconnessione controller:} Durante il combattimento, l'applicazione deve monitorare costantemente lo stato fisico dei gamepad e, in caso di scollegamento accidentale, congelare immediatamente la fisica di gioco mostrando un overlay di emergenza con sfocatura gaussiana (\texttt{GaussianBlur}) fino alla riconnessione del dispositivo.
@@ -152,7 +152,7 @@ Dal punto di vista dell'ingegneria del software, il diagramma delle classi in Fi
 \restoregeometry
 
 \subsection{Model}
-Il package \texttt{application.Model} racchiude il cuore computazionale e fisico del picchiaduro. Di seguito vengono analizzate le classi fondamentali che lo compongono.
+Il package \texttt{pgsf.Model} racchiude il cuore computazionale e fisico del picchiaduro. Di seguito vengono analizzate le classi fondamentali che lo compongono.
 
 \subsubsection{Coordinamento del mondo e telecamera (\texttt{GameModel})}
 La classe \texttt{GameModel} (che implementa \texttt{IReadOnlyGameModel}) mantiene i riferimenti ai due contendenti (\texttt{player1} e \texttt{player2}), alla lista dinamica dei proiettili attivi (\texttt{List<Projectile> projectiles}) e alle dimensioni logiche dell'arena (\texttt{worldWidth} e \texttt{currentGroundLevel}). Tutte le entità vivono in un sistema di coordinate assolute espresso tramite la classe \texttt{Point(x, y)}.
@@ -240,7 +240,7 @@ Tale primitiva geometrica viene impiegata in due contesti distinti:
 \end{figure}
 
 \subsection{View}
-Il package \texttt{application.View} traduce lo stato logico del Model in elementi visivi JavaFX, occupandosi della telecamera, degli sprite e dell'interfaccia utente.
+Il package \texttt{pgsf.View} traduce lo stato logico del Model in elementi visivi JavaFX, occupandosi della telecamera, degli sprite e dell'interfaccia utente.
 
 \subsubsection{Gestione della scena e proiezione della telecamera (\texttt{GameView})}
 La classe \texttt{GameView} gestisce il contenitore radice (\texttt{Pane root}) sul quale vengono impilati i diversi livelli visivi: lo sfondo (\texttt{backgroundContainer} dotato di maschera di ritaglio \texttt{Rectangle clip}), i nodi grafici dei due lottatori (\texttt{PlayerRenderer}) e, in primo piano, l'interfaccia \texttt{HUDView} e l'overlay di fine partita (\texttt{victoryLayer}).
@@ -295,7 +295,7 @@ ottenendo l'effetto classico dei picchiaduro arcade in cui entrambe le barre del
 \end{figure}
 
 \subsection{Controller}
-Il package \texttt{application.Controller} coordina l'esecuzione temporale, le periferiche di input e la navigazione tra gli stati dell'applicazione.
+Il package \texttt{pgsf.Controller} coordina l'esecuzione temporale, le periferiche di input e la navigazione tra gli stati dell'applicazione.
 
 \subsubsection{Game loop a passo fisso e macchina a stati (\texttt{GameController})}
 La classe \texttt{GameController} costruisce nel metodo \texttt{startGame()} uno \texttt{StackPane} stratificato\newline(\texttt{mainRoot}) che impila sopra la \texttt{GameView} cinque menu sovrapposti (inizialmente nascosti o attivati in sequenza): \texttt{connectionMenu}, \texttt{charSelectionMenu}, \texttt{mapSelectionMenu}, \texttt{pauseMenu} e \texttt{disconnectMenu}, oltre all'etichetta diagnostica \texttt{fpsLabel}.
@@ -306,15 +306,15 @@ Il ciclo di vita dell'applicazione è scandito da un'istanza di \texttt{Animatio
     \item \textbf{Stato Connessione Controller (\texttt{waitingForControllers}):} Attende che i giocatori premano un pulsante sui rispettivi gamepad per passare alla selezione dei lottatori.
     \item \textbf{Stato Selezione Personaggi (\texttt{waitingForCharacterSelection}):} Permette ai due giocatori di muoversi sulla griglia \texttt{TilePane} con un tempo di debounce di $200\text{ ms}$, cambiare la skin con i tasti \texttt{L1}/\texttt{R1}, confermare con \texttt{X} o annullare la scelta con \texttt{O}. Contemporaneamente, il metodo \texttt{updatePreviews()} istanzia due oggetti \texttt{Player} in modalità menu (\texttt{inMenuMode = true}) associati a due \texttt{PlayerRenderer} dedicati sul livello trasparente \texttt{previewLayer}, riproducendo in tempo reale l'animazione "MENU IDLE" con la skin selezionata.
     \item \textbf{Stato Selezione Mappa (\texttt{waitingForMapSelection}):} Consente di scorrere le 10 arene in orizzontale e verticale, calcolando dinamicamente la posizione di scroll verticale\newline\texttt{mapScrollPane.setVvalue(...)} per mantenere sempre centrata la miniatura selezionata e aggiornando lo sfondo reale della \texttt{GameView} in anteprima. Alla conferma\newline(\texttt{confirmMapSelection()}), il controller estrae le due \texttt{CharacterFactory} scelte, ordina al Model di generare i lottatori (\texttt{model.spawnPlayers(...)}) iniettando anche gli indici di skin scelti (\texttt{skin1}, \texttt{skin2}), inizializza i renderer nella View e imposta il \texttt{groundLevelRatio} specifico della mappa.
-    \item \textbf{Stato di Gameplay e Combattimento (\texttt{handleGameplayState}):} Quando tutti i menu iniziali sono chiusi e il gioco non è in pausa, entra in funzione il **Game Loop con Accumulatore**. Il tempo trascorso $\Delta t_{\text{frame}}$ viene sommato a \texttt{physicsAccumulator} e \texttt{renderAccumulator}:
+    \item \textbf{Stato di Gameplay e Combattimento (\texttt{handleGameplayState}):} Quando tutti i menu iniziali sono chiusi e il gioco non è in pausa, entra in funzione il \textbf{game loop con accumulatore}. Il tempo trascorso $\Delta t_{\text{frame}}$ viene sommato a \texttt{physicsAccumulator} e \texttt{renderAccumulator}:
 \begin{verbatim}
 while (physicsAccumulator >= GameConfig.TIME_PER_TICK) {
     inputManager.update();
     model.update(inputManager);
     physicsAccumulator -= GameConfig.TIME_PER_TICK;
-}\
+}
 \end{verbatim}
-    Questo ciclo \texttt{while} garantisce che, se il computer subisce un rallentamento temporaneo, il motore isico esegua più passi discreti consecutivi di durata fissa \texttt{TIME\_PER\_TICK} per recuperare il tempo reale trascorso senza alterare la velocità percepita del gioco e senza causare tunnel geometrici nelle collisioni. Il rendering grafico viene invece eseguito solo quando \texttt{renderAccumulator} raggiunge la soglia $\text{targetFrameTime} = 10^9 / \text{targetFps}$.
+    Questo ciclo \texttt{while} garantisce che, se il computer subisce un rallentamento temporaneo, il motore fisico esegua più passi discreti consecutivi di durata fissa \texttt{TIME\_PER\_TICK} per recuperare il tempo reale trascorso senza alterare la velocità percepita del gioco e senza causare tunnel geometrici nelle collisioni. Il rendering grafico viene invece eseguito solo quando \texttt{renderAccumulator} raggiunge la soglia $\text{targetFrameTime} = 10^9 / \text{targetFps}$.
 \end{enumerate}
 
 \subsubsection{Gestione periferiche hardware (\texttt{InputManager})}
