@@ -231,7 +231,7 @@ public class GameView {
         this.rendererP2 = new PlayerRenderer(p2);
         
         // --- HUD ---
-        this.hud = new HUDView(p1.getMaxHealth(), p2.getMaxHealth());
+        this.hud = new HUDView(p1.getMaxHealth(), p2.getMaxHealth(), p1.getDisplayName(), p2.getDisplayName());
         
         // Inseriamo i giocatori nel Pane (dietro l'HUD, quindi agli indici 1 e 2 dopo lo sfondo)
         this.root.getChildren().add(1, rendererP1.getNode());

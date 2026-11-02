@@ -16,6 +16,7 @@ public interface IReadOnlyPlayer {
     Hitbox getBoundingBox();
     int getHealth();
     int getMaxHealth();         // usato da GameView.initPlayers per l'HUD
+    String getDisplayName();    // nome del personaggio mostrato nell'HUD
     // Metodi aggiunti per permettere al Renderer di calcolare il Pivot Point
     double getWidth();
     double getHeight();

@@ -40,7 +40,7 @@ public class HUDView {
     // Variabile dinamica che servirà per il metodo update() in tempo reale
     private double currentBarWidth = BASE_BAR_WIDTH;
 	
-	public HUDView(double p1MaxHealth, double p2MaxHealth) {
+	public HUDView(double p1MaxHealth, double p2MaxHealth, String p1Name, String p2Name) {
         // ... (IL COSTRUTTORE RIMANE IDENTICO A QUELLO CHE C'È GIÀ) ...
 		this.p1MaxHealth = p1MaxHealth;
 		this.p2MaxHealth = p2MaxHealth;
@@ -49,7 +49,7 @@ public class HUDView {
 		DropShadow shadow = new DropShadow(5, Color.BLACK);	// Effetto ombra per rendere testi e barre leggibili
 		
 		// ============== GIOCATORE 1 ==============
-		p1Label = new Text("Giocatore 1");
+		p1Label = new Text(p1Name);
 		p1Label.setFont(Font.font("Arial", FontWeight.BOLD, 24));
 		p1Label.setFill(Color.WHITE);
 		p1Label.setEffect(shadow);
@@ -68,7 +68,7 @@ public class HUDView {
         p1HealthFill.setY(BASE_TOP_MARGIN + 10);
         
         // ============== GIOCATORE 2 ==============
-        p2Label = new Text("Giocatore 2");
+        p2Label = new Text(p2Name);
         p2Label.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         p2Label.setFill(Color.WHITE);
         p2Label.setEffect(shadow);
