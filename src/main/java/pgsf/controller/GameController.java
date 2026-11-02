@@ -790,7 +790,11 @@ public class GameController {
 
         // Ricreiamo la scena del menu principale
         pgsf.scenes.MainMenuScene menu = new pgsf.scenes.MainMenuScene();
+        stage.setTitle("Main Menu");
         stage.setScene(menu.getScenaMenu(stage));
+
+        // Manteniamo le impostazioni di fullscreen (il cambio di scena le resetta)
+        stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
     }
 
     // --- TUTTI I METODI HELPER SONO LISTATI QUI SOTTO ---
