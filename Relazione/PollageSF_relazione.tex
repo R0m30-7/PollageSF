@@ -20,12 +20,6 @@
 \usepackage{pgf-umlsd}
 \usetikzlibrary{positioning, arrows.meta, shapes.multipart}
 
-% Segnaposto da completare (in rosso, cercare "daCompletare" prima della consegna)
-\newcommand{\daCompletare}[1]{\textcolor{red}{\textbf{[#1]}}}
-% Immagine se il file esiste, altrimenti riquadro segnaposto: il documento compila anche senza screenshot
-\newcommand{\figuraOSegnaposto}[3]{%
-	\IfFileExists{#1}{\includegraphics[width=#2]{#1}}{%
-		\fbox{\parbox[c][0.56#2][c]{#2}{\centering\small\textcolor{red}{Inserire screenshot:\\ \texttt{\detokenize{#1}}}\\[2pt]#3}}}}
 
 \newcommand{\hd}[1]{\begin{tabular}[c]{@{}c@{}}\bfseries #1\end{tabular}}
 
@@ -97,12 +91,12 @@
 		\centering
 		\begin{subfigure}[t]{0.48\textwidth}
 			\centering
-			\figuraOSegnaposto{figures/sf_originale_combattimento.png}{\textwidth}{combattimento nel gioco originale}
+			\includegraphics[width=\textwidth]{figures/sf_originale_combattimento.png}
 			\caption{}
 		\end{subfigure}\hfill
 		\begin{subfigure}[t]{0.48\textwidth}
 			\centering
-			\figuraOSegnaposto{figures/sf_originale_selezione.png}{\textwidth}{selezione del personaggio nel gioco originale}
+			\includegraphics[width=\textwidth]{figures/sf_originale_menu.png}
 			\caption{}
 		\end{subfigure}
 		\caption{Due schermate del videogioco \emph{Street Fighter} originale [1]. La schermata (a) mostra un incontro tra due lottatori, con le barre della salute e il timer nella parte superiore; la schermata (b) mostra il menu di selezione del personaggio.}
@@ -121,7 +115,7 @@
 	
 	Una volta avviato il match, i due contendenti si affrontano in un'arena più ampia della singola schermata visibile. Una telecamera virtuale dinamica segue l'azione calcolando il punto medio tra i lottatori e applicando una zona morta centrale (\emph{deadzone}) combinata con un'interpolazione lineare (\emph{LERP}) per garantire movimenti di inquadratura fluidi. Il sistema di combattimento integra attacchi in piedi e accovacciati (\emph{crouch}), proiettili energetici e una meccanica avanzata di difesa che distingue tra parata parziale (con riduzione progressiva del danno) e \emph{Parry perfetto} (che azzera il danno subito e stordisce temporaneamente l'attaccante).
 	
-	L'applicazione è stata sviluppata e testata su \daCompletare{sistema operativo e versione, es. Windows 11 / macOS 15}, utilizzando gamepad \daCompletare{modelli usati, es. DualShock 4 e controller Xbox}.
+	L'applicazione è stata sviluppata e testata su Windows 11 Pro e linux Arch e Mint, i controller usati sono dual shock 4 e dual sense 5 (PlayStation 5).
 	
 	In Figura \ref{fig:pollagesf_screens} sono riportate alcune schermate di PollageSF che illustrano il flusso completo, dal collegamento dei controller fino al combattimento.
 	
@@ -129,22 +123,22 @@
 		\centering
 		\begin{subfigure}[t]{0.48\textwidth}
 			\centering
-			\figuraOSegnaposto{figures/screen_connessione.png}{\textwidth}{menu di connessione dei controller}
+			\includegraphics[width=\textwidth]{figures/screen_connessione.png}
 			\caption{Connessione dei controller}
 		\end{subfigure}\hfill
 		\begin{subfigure}[t]{0.48\textwidth}
 			\centering
-			\figuraOSegnaposto{figures/screen_selezione_personaggio.png}{\textwidth}{selezione lottatore e skin}
+			\includegraphics[width=\textwidth]{figures/screen_selezione_personaggio.png}
 			\caption{Selezione del lottatore e della skin}
 		\end{subfigure}\\[0.4cm]
 		\begin{subfigure}[t]{0.48\textwidth}
 			\centering
-			\figuraOSegnaposto{figures/screen_selezione_arena.png}{\textwidth}{selezione dell'arena}
+			\includegraphics[width=\textwidth]{figures/screen_selezione_arena.png}
 			\caption{Selezione dell'arena}
 		\end{subfigure}\hfill
 		\begin{subfigure}[t]{0.48\textwidth}
 			\centering
-			\figuraOSegnaposto{figures/screen_combattimento.png}{\textwidth}{combattimento con HUD}
+			\includegraphics[width=\textwidth]{figures/screen_combattimento.png}
 			\caption{Combattimento in corso}
 		\end{subfigure}
 		\caption{Schermate dell'applicazione PollageSF.}
@@ -439,7 +433,7 @@
 	\end{figure}
 	
 	\subsubsection{Menu principale e impostazioni (\texttt{MainMenuScene}, \texttt{SettingsScene})}
-	All'avvio l'applicazione mostra il menu principale (\texttt{MainMenuScene}), da cui si accede alla partita o alla schermata delle impostazioni (\texttt{SettingsScene}). I valori scelti dall'utente (risoluzione della finestra, schermo intero, volume di musica ed effetti, numero di giocatori e FPS) sono conservati nella classe \texttt{Settings}, implementata come \textbf{Singleton} in modo che ogni componente legga la stessa configurazione. Il cambio di risoluzione sfrutta il meccanismo di adattamento della View descritto nella Sezione \ref{sec:gameview}, mentre gli slider del volume agiscono direttamente su \texttt{SoundManager} (Sezione \ref{sec:audio}). \daCompletare{verificare/completare con i dettagli reali, es. come viene scalata l'interfaccia dei menu}
+	All'avvio l'applicazione mostra il menu principale (\texttt{MainMenuScene}), da cui si accede alla partita o alla schermata delle impostazioni (\texttt{SettingsScene}). I valori scelti dall'utente (risoluzione della finestra, schermo intero, volume di musica ed effetti, numero di giocatori e FPS) sono conservati nella classe \texttt{Settings}, implementata come \textbf{Singleton} in modo che ogni componente legga la stessa configurazione. Il cambio di risoluzione sfrutta il meccanismo di adattamento della View descritto nella Sezione \ref{sec:gameview}, mentre gli slider del volume agiscono direttamente su \texttt{SoundManager} (Sezione \ref{sec:audio}). 
 	
 	\subsubsection{Gestione periferiche hardware (\texttt{InputManager})}
 	La classe \texttt{InputManager} è implementata secondo il pattern creazionale \textbf{Singleton}\newline(\texttt{InputManager.getInstance()}) per garantire un unico punto di accesso centralizzato al sottosistema nativo \texttt{ControllerManager} della libreria \emph{Jamepad} (SDL2) [3]. La classe mantiene gli indici fisici dei controller assegnati ai due giocatori (\texttt{p1Index} e \texttt{p2Index}, inizializzati a $-1$), gestisce l'accoppiamento automatico alla pressione dei tasti principali, applica una zona morta hardware del $15\%$ (\texttt{Math.abs(stick) > 0.15}) sugli assi analogici per eliminare il fenomeno dello \emph{stick drift} e fornisce metodi semantici ad alto livello per le azioni di combattimento:
@@ -546,9 +540,9 @@
 		\item OpenJFX Documentation. \emph{JavaFX 17 / 21 Official API Documentation and Scene Graph Reference}, 2026. [Online \url{https://openjfx.io/}]. Documentazione ufficiale utilizzata per la costruzione della scena, il rendering degli sprite e il sottosistema audio (\texttt{AudioClip}, \texttt{MediaPlayer}).
 		\item Hartman, W. \emph{Jamepad: A library for using gamepads in Java based on SDL2 GameController API}, GitHub Repository. [Online \url{https://github.com/williamahartman/Jamepad}]. Libreria utilizzata dalla classe \texttt{InputManager} per la lettura dei gamepad.
 		\item Nystrom, R. \emph{Game Programming Patterns} (Capitolo \emph{Game Loop -- Fixed Time Step with Accumulator}). Genever Benning, 2014. [Online \url{https://gameprogrammingpatterns.com/game-loop.html}]. Riferimento per la progettazione del game loop a passo fisso.
-		\item \daCompletare{Fonte degli sprite di Ryu e Ken (sito/autore e URL)}.
-		\item \daCompletare{Fonte delle immagini delle arene e delle musiche/effetti sonori}.
-		\item \daCompletare{Libreria usata per leggere il manifest JSON del TextureAtlas, se presente (es. Jackson o Gson)}.
+		\item Capcom. \emph{streetfighter2} [online \url{https://www.spriters-resource.com/arcade/streetfighter2/}]. Texture e suoni ufficiali dei fighter Ryu e Ken.
+		\item Google. \emph{Gemini nano banana} [Online \url{https://gemini.google/overview/image-generation/}] Per la generazione delle immagini delle arene.
+		\item JSON object. [Online \url{https://docs.oracle.com/javaee/7/api/javax/json/JsonObject.html}] Per leggere il manifest JSON del TextureAtlas.
 	\end{enumerate}
 	
 	\newpage
