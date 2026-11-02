@@ -32,5 +32,9 @@ public enum AnimState {
     CROUCH_BLOCK_LEFT,
 
     HURT_RIGHT,
-    HURT_LEFT, HURT_CROUCH_RIGHT, HURT_CROUCH_LEFT, HADOUKEN_RIGHT, HADOUKEN_LEFT
+    HURT_LEFT, HURT_CROUCH_RIGHT, HURT_CROUCH_LEFT, HADOUKEN_RIGHT, HADOUKEN_LEFT,
+
+    // PROIETTILE: animazione in volo del proiettile (non del giocatore).
+    // Lo sprite nell'atlas guarda a destra, il renderer lo specchia se va a sinistra.
+    PROJECTILE
 }

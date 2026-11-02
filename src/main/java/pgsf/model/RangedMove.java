@@ -52,14 +52,25 @@ public class RangedMove extends Move {
         if (!hasFired) {
             hasFired = true; // Si attiva una sola volta per mossa
 
+            // La hitbox si adatta alla grafica come per i giocatori: primo frame
+            // dell'animazione del proiettile per la scala di render, ristretta al 70%
+            double projW = 40, projH = 30; // Fallback se manca l'animazione
+            AnimData projAnim = user.getProjectileAnimData();
+            if (projAnim != null) {
+                javafx.geometry.Rectangle2D frame = user.getAtlas().getFrame(projAnim.row, projAnim.startCol, 0);
+                projW = frame.getWidth() * user.getRenderScale() * 0.70;
+                projH = frame.getHeight() * user.getRenderScale() * 0.70;
+            }
+
             // Posizione di spawn davanti alle mani/faccia del player
-            double spawnX = user.isFacingRight() 
-                ? user.getPosition().getX() + user.getWidth() 
-                : user.getPosition().getX() - 40; 
-            double spawnY = user.getPosition().getY() + (user.getHeight() * 0.3);
+            double spawnX = user.isFacingRight()
+                ? user.getPosition().getX() + user.getWidth()
+                : user.getPosition().getX() - projW;
+            // Centro verticale del proiettile all'altezza delle mani (35% dell'altezza del player)
+            double spawnY = user.getPosition().getY() + (user.getHeight() * 0.35) - (projH / 2.0);
 
             // Creiamo il proiettile passandogli anche il proprietario (user) così sapremo chi ha sparato
-            return new Projectile(new Point(spawnX, spawnY), user.isFacingRight(), projectileSpeed, damage, 40, 30, user);
+            return new Projectile(new Point(spawnX, spawnY), user.isFacingRight(), projectileSpeed, damage, projW, projH, user);
         }
         return null;
     }

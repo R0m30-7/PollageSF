@@ -45,8 +45,18 @@ public class Projectile implements IReadOnlyProjectile{
     public boolean isActive() {return active; } // Placeholder, implementa la logica per determinare se il proiettile è ancora attivo
 
     @Override
-    public boolean isMovingRight() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isMovingRight'");
-    }
+    public boolean isMovingRight() { return movingRight; }
+
+    // --- Dati grafici: il proiettile usa l'atlas e la skin di chi lo ha sparato ---
+    @Override
+    public AnimData getAnimData() { return owner.getProjectileAnimData(); }
+
+    @Override
+    public TextureAtlas getAtlas() { return owner.getAtlas(); }
+
+    @Override
+    public String getAtlasPath() { return owner.getAtlasPath(); }
+
+    @Override
+    public double getRenderScale() { return owner.getRenderScale(); }
 }
