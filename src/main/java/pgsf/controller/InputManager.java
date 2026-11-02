@@ -53,10 +53,10 @@ public class InputManager implements IReadOnlyInput {
                     
                     if (p1Index == -1 && i != p2Index) {
                         p1Index = i;
-                        System.out.println("Giocatore 1 UNITO! (Pad index: " + i + ")");
+                        System.out.println("Giocatore 1 UNITO (Pad index: " + i + ")");
                     } else if (p2Index == -1 && i != p1Index) {
                         p2Index = i;
-                        System.out.println("Giocatore 2 UNITO! (Pad index: " + i + ")");
+                        System.out.println("Giocatore 2 UNITO (Pad index: " + i + ")");
                     }
                 }
             }

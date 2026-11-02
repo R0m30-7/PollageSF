@@ -1,7 +1,7 @@
 package pgsf.model;
 
 public enum AnimState {
-    IDLE_LEFT,         // Il nuovo idle stazionario/respirazione
+    IDLE_LEFT,         // Idle stazionario
     IDLE_RIGHT,
     MENU_IDLE,
     
@@ -14,7 +14,7 @@ public enum AnimState {
     BLOCK_LEFT,                   // La parata specifica
     BLOCK_RIGHT,
     
-    PUNCH_LEFT,                   // (Manteniamo questi come placeholder futuri)
+    PUNCH_LEFT,
     PUNCH_RIGHT,
     PUNCH_CROUCH_LEFT,
     PUNCH_CROUCH_RIGHT,
