@@ -92,6 +92,7 @@ public class Ken extends Player {
         animations.put(AnimState.HADOUKEN_LEFT, new AnimData(4, 5, 4, this.projectileAnimFrameDuration, false));
 
         animations.put(AnimState.PROJECTILE, new AnimData(4, 6, 2, 80, true));
+        animations.put(AnimState.PROJECTILE_IMPACT, new AnimData(4, 7, 1, 150, false));
         
         // --- INIZIO CODICE COLORI DELLE SKIN ---
         this.availableSkins.add("/Sprites/paletteDiverseKen/ken_brown_chromakey.png");      // 0: Marrone

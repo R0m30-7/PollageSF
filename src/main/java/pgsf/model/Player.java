@@ -388,6 +388,7 @@ public class Player implements IReadOnlyPlayer{
     public AnimState getCurrentAnimState() { return currentAnimState; }
     public AnimData getCurrentAnimData() { return animations.get(currentAnimState); }
     public AnimData getProjectileAnimData() { return animations.get(AnimState.PROJECTILE); }
+    public AnimData getProjectileImpactAnimData() { return animations.get(AnimState.PROJECTILE_IMPACT); }
     
     public Hitbox getBoundingBox() { return boundingBox; }
     public void setPosition(Point newPosition) { position = newPosition; }

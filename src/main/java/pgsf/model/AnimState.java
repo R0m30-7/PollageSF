@@ -36,5 +36,6 @@ public enum AnimState {
 
     // PROIETTILE: animazione in volo del proiettile (non del giocatore).
     // Lo sprite nell'atlas guarda a destra, il renderer lo specchia se va a sinistra.
-    PROJECTILE
+    PROJECTILE,
+    PROJECTILE_IMPACT             // Esplosione del proiettile quando colpisce o viene parato
 }

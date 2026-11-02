@@ -26,6 +26,7 @@ public class ProjectileRenderer {
     // Gestione dell'animazione
     private int currentFrame = 0;
     private long lastFrameTime;
+    private AnimData lastAnimData = null; // Per accorgersi del passaggio volo -> impatto
 
     public ProjectileRenderer(IReadOnlyProjectile projectile) {
         this.atlasPath = projectile.getAtlasPath();
@@ -53,10 +54,17 @@ public class ProjectileRenderer {
         AnimData data = projectile.getAnimData();
         if (atlasImage == null || data == null) return;
 
+        // Se è cambiata animazione (da volo a impatto) si riparte dal primo frame
+        long now = System.nanoTime();
+        if (data != lastAnimData) {
+            currentFrame = 0;
+            lastFrameTime = now;
+            lastAnimData = data;
+        }
+
         // ==========================================
         // AVANZAMENTO DEI FRAME
         // ==========================================
-        long now = System.nanoTime();
         if (now - lastFrameTime > data.speedNs) {
             if (data.loop) {
                 currentFrame = (currentFrame + 1) % data.frameCount;

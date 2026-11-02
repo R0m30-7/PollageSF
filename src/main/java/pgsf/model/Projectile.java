@@ -11,6 +11,12 @@ public class Projectile implements IReadOnlyProjectile{
     private Player owner;
     private boolean active = true; // Stato del proiettile, se è ancora in gioco o no
 
+    // --- Impatto ---
+    // Dopo aver colpito, il proiettile si ferma e resta in gioco (senza più fare danno)
+    // finché non finisce l'animazione d'impatto; poi diventa inattivo e viene rimosso
+    private boolean impacting = false;
+    private long impactStartNs = 0;
+
     public Projectile(Point position, boolean movingRight, double speed, double damage, double width, double height, Player owner) {
         this.position = position;
         this.movingRight = movingRight;
@@ -25,10 +31,29 @@ public class Projectile implements IReadOnlyProjectile{
     public Point getPosition() {return position; }
 
     public void update() {
+        if (impacting) {
+            // Fermo sul punto d'impatto: si spegne quando l'animazione è finita
+            AnimData impactAnim = owner.getProjectileImpactAnimData();
+            long durationNs = (impactAnim != null) ? impactAnim.frameCount * impactAnim.speedNs : 0;
+            if (System.nanoTime() - impactStartNs >= durationNs) {
+                active = false;
+            }
+            return;
+        }
+
         double deltaX = movingRight ? speed : -speed;
         position = position.add(deltaX, 0);
         boundingBox.updatePosition(position);
     }
+
+    // Chiamato dal GameModel quando il proiettile colpisce (o viene parato)
+    public void startImpact() {
+        if (impacting) return;
+        impacting = true;
+        impactStartNs = System.nanoTime();
+    }
+
+    public boolean isImpacting() { return impacting; }
 
     public Hitbox getBoundingBox() {
         return boundingBox;
@@ -49,7 +74,10 @@ public class Projectile implements IReadOnlyProjectile{
 
     // --- Dati grafici: il proiettile usa l'atlas e la skin di chi lo ha sparato ---
     @Override
-    public AnimData getAnimData() { return owner.getProjectileAnimData(); }
+    public AnimData getAnimData() {
+        // In volo o in fase d'impatto: la View disegna semplicemente l'animazione corrente
+        return impacting ? owner.getProjectileImpactAnimData() : owner.getProjectileAnimData();
+    }
 
     @Override
     public TextureAtlas getAtlas() { return owner.getAtlas(); }

@@ -502,6 +502,10 @@ public class GameModel implements IReadOnlyGameModel{
         for (Projectile p : projectiles) {
             p.update();
 
+            // In fase d'impatto non si muove e non fa più danno: aspetta solo
+            // la fine dell'animazione (gestita da Projectile.update())
+            if (p.isImpacting()) continue;
+
             // Controllo uscita dai muri
             if (p.getPosition().getX() < 0 || p.getPosition().getX() > worldWidth) {
                 p.setActive(false);
@@ -533,7 +537,9 @@ public class GameModel implements IReadOnlyGameModel{
             soundQueue.add(SoundEvent.HIT);
         }
 
-        p.setActive(false);
+        // Non lo rimuoviamo subito: parte l'animazione d'impatto,
+        // al termine della quale il proiettile si disattiva da solo
+        p.startImpact();
     }
 
     // Riutilizzabile sia per i proiettili sia per gli attacchi corpo a corpo

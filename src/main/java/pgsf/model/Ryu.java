@@ -87,6 +87,7 @@ public class Ryu extends Player {
         animations.put(AnimState.HADOUKEN_LEFT, new AnimData(5, 0, 5, this.projectileAnimFrameDuration, false));
 
         animations.put(AnimState.PROJECTILE, new AnimData(5, 1, 2, 80, true));
+        animations.put(AnimState.PROJECTILE_IMPACT, new AnimData(5, 3, 4, 70, false));
         
         // --- INIZIO CODICE COLORI DELLE SKIN ---
         this.availableSkins.add("/Sprites/paletteDiverseRyu/ryu_darkgreen_chromakey.png"); // 0: Dark green
