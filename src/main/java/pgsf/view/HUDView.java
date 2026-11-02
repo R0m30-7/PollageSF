@@ -18,13 +18,13 @@ public class HUDView {
 	
 	// HUD giocatore 1
 	private Rectangle p1HealthBg, p1HealthFill;
-	private Rectangle p1PowerBg, p1PowerFill;
+	//private Rectangle p1PowerBg, p1PowerFill;
 	private Text p1Label;
 	private double p1MaxHealth;
 	
 	// HUD giocatore 2
 	private Rectangle p2HealthBg, p2HealthFill;
-	private Rectangle p2PowerBg, p2PowerFill;
+	//private Rectangle p2PowerBg, p2PowerFill;
 	private Text p2Label;
 	private double p2MaxHealth;
 	
@@ -34,7 +34,6 @@ public class HUDView {
 	// Costanti di BASE (per risoluzione 1080p)
 	private static final double BASE_BAR_WIDTH = 400.0;
 	private static final double BASE_HEALTH_HEIGHT = 35.0;
-	private static final double BASE_POWER_HEIGHT = 15.0;
 	private static final double BASE_TOP_MARGIN = 30.0;
 	private static final double BASE_SIDE_MARGIN = 50.0;
 	
@@ -67,16 +66,6 @@ public class HUDView {
         p1HealthFill = new Rectangle(BASE_BAR_WIDTH, BASE_HEALTH_HEIGHT, Color.LIMEGREEN);
         p1HealthFill.setX(BASE_SIDE_MARGIN);
         p1HealthFill.setY(BASE_TOP_MARGIN + 10);
-
-        // Potere Speciale P1 (Azzurra)
-        p1PowerBg = new Rectangle(BASE_BAR_WIDTH * 0.7, BASE_POWER_HEIGHT, Color.DARKBLUE);
-        p1PowerBg.setX(BASE_SIDE_MARGIN);
-        p1PowerBg.setY(BASE_TOP_MARGIN + 10 + BASE_HEALTH_HEIGHT + 5);
-        p1PowerBg.setStroke(Color.BLACK);
-
-        p1PowerFill = new Rectangle(BASE_BAR_WIDTH * 0.7, BASE_POWER_HEIGHT, Color.CYAN);
-        p1PowerFill.setX(BASE_SIDE_MARGIN);
-        p1PowerFill.setY(BASE_TOP_MARGIN + 10 + BASE_HEALTH_HEIGHT + 5);
         
         // ============== GIOCATORE 2 ==============
         p2Label = new Text("Giocatore 2");
@@ -93,13 +82,6 @@ public class HUDView {
         p2HealthFill = new Rectangle(BASE_BAR_WIDTH, BASE_HEALTH_HEIGHT, Color.LIMEGREEN);
         p2HealthFill.setY(BASE_TOP_MARGIN + 10);
 
-        p2PowerBg = new Rectangle(BASE_BAR_WIDTH * 0.7, BASE_POWER_HEIGHT, Color.DARKBLUE);
-        p2PowerBg.setStroke(Color.BLACK);
-        p2PowerBg.setY(BASE_TOP_MARGIN + 10 + BASE_HEALTH_HEIGHT + 5);
-        
-        p2PowerFill = new Rectangle(BASE_BAR_WIDTH * 0.7, BASE_POWER_HEIGHT, Color.CYAN);
-        p2PowerFill.setY(BASE_TOP_MARGIN + 10 + BASE_HEALTH_HEIGHT + 5);
-
         // ================= TIMER =================
         timerLabel = new Text("120");
         timerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 50));
@@ -109,8 +91,8 @@ public class HUDView {
         
         // Aggiungiamo tutto alla root
         hudRoot.getChildren().addAll(
-        	p1Label, p1HealthBg, p1HealthFill, p1PowerBg, p1PowerFill,
-            p2Label, p2HealthBg, p2HealthFill, p2PowerBg, p2PowerFill,
+        	p1Label, p1HealthBg, p1HealthFill, //p1PowerBg, p1PowerFill,
+            p2Label, p2HealthBg, p2HealthFill, //p2PowerBg, p2PowerFill,
             timerLabel
         );
 	}
@@ -124,7 +106,6 @@ public class HUDView {
         // Ricalcoliamo tutte le dimensioni moltiplicandole per lo zoom
         currentBarWidth = BASE_BAR_WIDTH * scaleFactor;
         double currentHealthHeight = BASE_HEALTH_HEIGHT * scaleFactor;
-        double currentPowerHeight = BASE_POWER_HEIGHT * scaleFactor;
         double currentTopMargin = BASE_TOP_MARGIN * scaleFactor;
         double currentSideMargin = BASE_SIDE_MARGIN * scaleFactor;
 
@@ -140,21 +121,11 @@ public class HUDView {
         p2HealthBg.setHeight(currentHealthHeight);
         p2HealthFill.setHeight(currentHealthHeight);
 
-        p1PowerBg.setHeight(currentPowerHeight);
-        p1PowerFill.setHeight(currentPowerHeight);
-        p2PowerBg.setHeight(currentPowerHeight);
-        p2PowerFill.setHeight(currentPowerHeight);
-
         // Aggiorniamo Larghezze Sfondi
         p1HealthBg.setWidth(currentBarWidth);
-        p1PowerBg.setWidth(currentBarWidth * 0.7);
         p2HealthBg.setWidth(currentBarWidth);
-        p2PowerBg.setWidth(currentBarWidth * 0.7);
-
         // Aggiorniamo le Y
         double healthY = currentTopMargin + (10 * scaleFactor);
-        double powerY = healthY + currentHealthHeight + (5 * scaleFactor);
-
         p1Label.setY(currentTopMargin);
         p2Label.setY(currentTopMargin);
         timerLabel.setY(currentTopMargin + (40 * scaleFactor));
@@ -164,21 +135,13 @@ public class HUDView {
         p2HealthBg.setY(healthY);
         p2HealthFill.setY(healthY);
 
-        p1PowerBg.setY(powerY);
-        p1PowerFill.setY(powerY);
-        p2PowerBg.setY(powerY);
-        p2PowerFill.setY(powerY);
-
         // Aggiorniamo le X
         p1Label.setX(currentSideMargin);
         p1HealthBg.setX(currentSideMargin);
         p1HealthFill.setX(currentSideMargin);
-        p1PowerBg.setX(currentSideMargin);
-        p1PowerFill.setX(currentSideMargin);
 
         // Calcoli per tenere P2 ancorato a destra
         double p2X = screenWidth - currentSideMargin - currentBarWidth;
-        double p2PowerX = screenWidth - currentSideMargin - (currentBarWidth * 0.7);
 
         p2Label.setX(p2X);
         p2Label.setWrappingWidth(currentBarWidth); 
@@ -186,8 +149,6 @@ public class HUDView {
         
         p2HealthBg.setX(p2X);
         p2HealthFill.setX(p2X);
-        p2PowerBg.setX(p2PowerX);
-        p2PowerFill.setX(p2PowerX);
 
         // Centratura del timer a prescindere dal numero di cifre che lo compongono
         double timerBoxWidth = 140 * scaleFactor;
@@ -202,8 +163,6 @@ public class HUDView {
         double p1HpRatio = Math.max(0, (double) p1.getHealth() / p1MaxHealth);
         p1HealthFill.setWidth(currentBarWidth * p1HpRatio); // Usiamo currentBarWidth
         
-        p1PowerFill.setWidth(0); 
-
         // --- Aggiorna P2 ---
         double p2HpRatio = Math.max(0, (double) p2.getHealth() / p2MaxHealth);
         double newWidthP2 = currentBarWidth * p2HpRatio; // Usiamo currentBarWidth
@@ -211,9 +170,7 @@ public class HUDView {
         p2HealthFill.setWidth(newWidthP2);
         p2HealthFill.setX(p2HealthBg.getX() + (currentBarWidth - newWidthP2));
 
-        p2PowerFill.setWidth(0);
-        p2PowerFill.setX(p2PowerBg.getX() + ((currentBarWidth * 0.7) - 0));
-
+    
         // --- Aggiorna Timer ---
         timerLabel.setText(String.valueOf(remainingSeconds));
         if (remainingSeconds <= 10) {
