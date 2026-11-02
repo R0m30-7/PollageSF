@@ -10,7 +10,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
@@ -23,7 +22,12 @@ public class SettingsScene {
     // La UI viene scalata rispetto a queste, a prescindere dalla finestra attuale.
     private static final double BASE_WIDTH = 1280;
     private static final double BASE_HEIGHT = 720;
-    
+
+    // Scostamento orizzontale del menu rispetto al centro, in unità di design (1280x720).
+    // Viene moltiplicato per il fattore di scala, quindi è coerente a ogni risoluzione.
+    // 14 riproduce la posizione che prima era corretta a 1366x768; usare 0 per la centratura perfetta.
+    private static final double FRAME_OFFSET_X = 14;
+
     private final Settings settings = Settings.getInstance();
 
     // --- VARIABILI DI CLASSE PER I CONTROLLI DA SALVARE ---
@@ -88,8 +92,6 @@ public class SettingsScene {
         
         content.setStyle("-fx-background-color: transparent; -fx-padding: 10;");
 
-        content.setTranslateX(28);
-                         
         return content;
     }
 
@@ -323,11 +325,8 @@ public class SettingsScene {
 
     private void applyScaling(Scene scene, VBox content) {
         // --- SCALING DEL CONTENUTO ---
-        // Il contenuto viene "clippato" alla dimensione di design (BASE_WIDTH x BASE_HEIGHT)
-        // e poi scalato con una Scale transform in base al rapporto tra la dimensione
-        // reale della finestra e quella di design.
-        Scale scale = new Scale(1, 1, BASE_WIDTH / 2, BASE_HEIGHT / 2);
-        content.getTransforms().add(scale);
+        // Il contenuto viene scalato in base al rapporto tra la dimensione reale
+        // della finestra e quella di design.
 
         // Fattore UNICO per X e Y, e soprattutto lo STESSO tipo di calcolo usato per
         // lo sfondo (Math.max = "cover"). Se usassimo Math.min ("contain") qui, il
@@ -338,8 +337,10 @@ public class SettingsScene {
             double factorX = scene.getWidth() / BASE_WIDTH;
             double factorY = scene.getHeight() / BASE_HEIGHT;
             double factor = Math.max(factorX, factorY);
-            scale.setX(factor);
-            scale.setY(factor);
+            content.setScaleX(factor);
+            content.setScaleY(factor);
+            // Lo scostamento è in unità di design: scala insieme a sfondo e menu
+            content.setTranslateX(FRAME_OFFSET_X * factor);
         };
 
         scene.widthProperty().addListener((obs, oldVal, newVal) -> updateScale.run());
