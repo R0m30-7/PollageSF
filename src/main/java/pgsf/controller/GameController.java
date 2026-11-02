@@ -215,9 +215,8 @@ public class GameController {
         mapScrollPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.65));
         
         // --- ASCOLTATORI DI RIDIMENSIONAMENTO ---
-        //! In realtà non servirebbe più, perché la finestra è bloccata, ma lasciamoli per sicurezza
+        //! Serve per far funzionare il ridimensionamento delle finestre a schermo intero
         // Se l'utente allarga o stringe la finestra...
-        /*
         scene.widthProperty().addListener((obs, oldVal, newVal) -> {
             double newW = newVal.doubleValue();
             double currentH = scene.getHeight(); // Prendiamo l'altezza attuale
@@ -240,7 +239,7 @@ public class GameController {
             // Diciamo poi al Model di aggiornare i limiti passando il nuovo bgWidth della View
             model.updateWindowSize(currentW, newH, view.getBgWidth(), view.getScale());	
         });
-        */
+       
 
         // Impostiamo la finestra e avviamo il gioco
         stage.setTitle(GameConfig.GAME_TITLE_STRING);
