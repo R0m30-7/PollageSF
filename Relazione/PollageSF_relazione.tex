@@ -108,12 +108,12 @@
 	
 	Il flusso operativo dell'applicazione accompagna gli utenti attraverso una sequenza strutturata di menu interattivi prima di avviare lo scontro:
 	\begin{enumerate}
-		\item \textbf{Menu di Connessione Controller (\emph{Drop-in}):} L'applicazione rileva in tempo reale i gamepad collegati via USB o Bluetooth. I giocatori si uniscono alla sessione premendo un tasto d'azione, con supporto sia per la modalità a due giocatori umani sia per la configurazione a giocatore singolo.
-		\item \textbf{Menu di Selezione del Lottatore e delle Skin:} Una griglia interattiva consente ai giocatori di muovere indipendentemente i propri cursori (\texttt{P1} rosso e \texttt{P2} blu) tra i personaggi del roster (\emph{Ryu}, \emph{Ken}). Durante la selezione, vengono mostrate in tempo reale le anteprime animate dei lottatori scelti, potendo decidere il colore della skin (\emph{skin}) tramite i tasti dorsali \texttt{L1} e \texttt{R1}.
-		\item \textbf{Menu di Selezione dell'Arena:} I giocatori scelgono lo scenario di combattimento tra dieci mappe differenti (tra cui \emph{UniPG}, \emph{Fight Club}, \emph{Paradise \& Hell}, \emph{Villaggio incantato}), ciascuna dotata di una propria immagine panoramica ad alta risoluzione e di una specifica altezza prospettica del piano di calpestio (\texttt{groundLevelRatio}).
+		\item \textbf{Menu di connessione controller (\emph{Drop-in}):} L'applicazione rileva in tempo reale i gamepad collegati via USB o Bluetooth. I giocatori si uniscono alla sessione premendo un tasto d'azione, con supporto sia per la modalità a due giocatori umani sia per la configurazione a giocatore singolo.
+		\item \textbf{Menu di Selezione del lottatore e delle skin:} Una griglia interattiva consente ai giocatori di muovere indipendentemente i propri cursori (\texttt{P1} rosso e \texttt{P2} blu) tra i personaggi del roster (\emph{Ryu}, \emph{Ken}). Durante la selezione, vengono mostrate in tempo reale le anteprime animate dei lottatori scelti, potendo decidere il colore della skin (\emph{skin}) tramite i tasti dorsali \texttt{L1} e \texttt{R1}.
+		\item \textbf{Menu di selezione dell'arena:} I giocatori scelgono lo scenario di combattimento tra dieci mappe differenti (tra cui \emph{UniPG}, \emph{Fight Club}, \emph{Paradise \& Hell}, \emph{Villaggio incantato}), ciascuna dotata di una propria immagine panoramica ad alta risoluzione e di una specifica altezza prospettica del piano di calpestio (\texttt{groundLevelRatio}).
 	\end{enumerate}
 	
-	Una volta avviato il match, i due contendenti si affrontano in un'arena più ampia della singola schermata visibile. Una telecamera virtuale dinamica segue l'azione calcolando il punto medio tra i lottatori e applicando una zona morta centrale (\emph{deadzone}) combinata con un'interpolazione lineare (\emph{LERP}) per garantire movimenti di inquadratura fluidi. Il sistema di combattimento integra attacchi in piedi e accovacciati (\emph{crouch}), proiettili energetici e una meccanica avanzata di difesa che distingue tra parata parziale (con riduzione progressiva del danno) e \emph{Parry perfetto} (che azzera il danno subito e stordisce temporaneamente l'attaccante).
+	Una volta avviato il match, i due contendenti si affrontano in un'arena più ampia della singola schermata visibile. Una telecamera virtuale dinamica segue l'azione calcolando il punto medio tra i lottatori e applicando una zona morta centrale (\emph{deadzone}) combinata con un'interpolazione lineare (\emph{LERP}) per garantire movimenti di inquadratura fluidi. Il sistema di combattimento integra attacchi in piedi e accovacciati (\emph{crouch}), proiettili energetici e una meccanica avanzata di difesa che distingue tra parata parziale (con riduzione progressiva del danno) e \emph{parry perfetto} (che azzera il danno subito e stordisce temporaneamente l'attaccante).
 	
 	L'applicazione è stata sviluppata e testata su Windows 11 Pro e linux Arch e Mint, i controller usati sono dual shock 4 e dual sense 5 (PlayStation 5).
 	
@@ -158,7 +158,7 @@
 		\item \textbf{Gestione della disconnessione:} Se un controller si scollega durante la partita, il gioco si blocca e mostra un avviso finché il dispositivo non viene ricollegato.
 		\item \textbf{Menu principale e impostazioni:} Dal menu principale si accede a una schermata di impostazioni da cui regolare risoluzione della finestra, modalità a schermo intero, volume di musica ed effetti sonori, numero di giocatori e frequenza di aggiornamento (FPS).
 		\item \textbf{Selezione del lottatore e della skin:} Ogni giocatore sceglie in modo indipendente il proprio lottatore (Ryu o Ken) e il colore della skin, vedendone un'anteprima animata.
-		\item \textbf{Selezione dell'arena:} I giocatori scelgono lo scenario dell'incontro tra dieci arene, con anteprima della mappa selezionata.
+		\item \textbf{Selezione dell'arena:} I giocatori scelgono lo scenario dell'incontro tra sette arene, con anteprima della mappa selezionata.
 		\item \textbf{Movimento e salto:} I lottatori camminano, si accovacciano e saltano; l'altezza del salto dipende da quanto a lungo viene tenuto premuto il tasto.
 		\item \textbf{Attacchi:} Ogni lottatore dispone di pugno, gancio, calcio, pugno basso e di un attacco a distanza (\emph{Hadouken}). Un colpo infligge danno solo se raggiunge effettivamente l'avversario.
 		\item \textbf{Parata e parry:} La parata riduce il danno ricevuto; una parata effettuata con il giusto tempismo (\emph{parry perfetto}) annulla il danno e stordisce temporaneamente l'attaccante.
@@ -166,7 +166,7 @@
 		\item \textbf{Telecamera dinamica:} L'arena è più ampia dello schermo; l'inquadratura segue in modo fluido i due lottatori mantenendoli entrambi visibili.
 		\item \textbf{Animazioni e grafica pixel art:} I personaggi sono animati in modo coerente con l'azione in corso e la pixel art rimane nitida a qualsiasi risoluzione della finestra.
 		\item \textbf{HUD:} Durante l'incontro vengono mostrati i nomi dei giocatori, le barre della salute e il tempo residuo; l'interfaccia si adatta alla dimensione della finestra.
-		\item \textbf{Pausa e fine partita:} La partita può essere messa in pausa dal controller; quando la salute di un lottatore si azzera viene mostrata la schermata di vittoria.
+		\item \textbf{Pausa e fine partita:} La partita può essere messa in pausa dal controller. L'incontro dura 120 secondi: quando la salute di un lottatore si azzera viene mostrata la schermata di vittoria dell'avversario, mentre in caso di doppio KO o di tempo scaduto viene dichiarato il pareggio. Trascorsi 2 secondi, la pressione del tasto di salto o di pugno riporta al menu principale.
 		\item \textbf{Audio:} Musiche di sottofondo per menu e arene ed effetti sonori per le azioni di combattimento; la musica riprende dal punto in cui era stata interrotta.
 	\end{enumerate}
 	
@@ -186,7 +186,7 @@
 	\begin{itemize}
 		\item \textbf{Modulo model (\texttt{pgsf.model}):} Contiene la logica di dominio, lo stato della partita, la cinematica dei corpi, la gestione delle animazioni a livello logico, la coda degli eventi sonori (\texttt{SoundEvent}) e il motore delle collisioni. Il Model non importa alcun nodo grafico né multimediale della libreria JavaFX (come \texttt{Pane}, \texttt{ImageView} o \texttt{MediaPlayer}), risultando completamente indipendente dalla tecnologia di presentazione.
 		\item \textbf{Modulo view (\texttt{pgsf.view}):} Si occupa esclusivamente della rappresentazione visiva su schermo. Riceve in ingresso dal Controller un riferimento al Model tipizzato attraverso le interfacce di sola lettura \texttt{IReadOnlyGameModel}, \texttt{IReadOnlyPlayer} e \texttt{IReadOnlyProjectile}. In questo modo la View interroga lo stato del mondo per disegnare i fotogrammi, ma le è impedito a livello di compilazione invocare metodi mutatori.
-		\item \textbf{Modulo controller (\texttt{pgsf.controller}) e Utilities (\texttt{pgsf.utils}):} Costituisce il coordinatore dell'applicazione. Gestisce il ciclo di vita della finestra (\texttt{Stage} e \texttt{Scene}), mantiene attivo il \emph{Game Loop} principale, interroga le periferiche hardware tramite \texttt{InputManager}, governa il sottosistema audio (\texttt{SoundManager}) e invoca a ogni tick prima l'aggiornamento logico (\texttt{model.update(inputManager)}), poi il consumo degli eventi sonori\newline(\texttt{model.pollSoundEvents()}) e infine il rendering grafico (\texttt{view.render(model)}).
+		\item \textbf{Modulo controller (\texttt{pgsf.controller}) e utilities (\texttt{pgsf.utils}):} Costituisce il coordinatore dell'applicazione. Gestisce il ciclo di vita della finestra (\texttt{Stage} e \texttt{Scene}), mantiene attivo il \emph{Game Loop} principale, interroga le periferiche hardware tramite \texttt{InputManager}, governa il sottosistema audio (\texttt{SoundManager}) e invoca a ogni tick prima l'aggiornamento logico (\texttt{model.update(inputManager)}), poi il consumo degli eventi sonori\newline(\texttt{model.pollSoundEvents()}) e infine il rendering grafico (\texttt{view.render(model)}).
 	\end{itemize}
 	
 	La Figura \ref{fig:mvc_semplificato} riassume le dipendenze tra i tre package e le interfacce attraverso cui comunicano.
@@ -257,7 +257,7 @@
 	La classe \texttt{Player} modella un generico combattente implementando l'interfaccia \texttt{IReadOnlyPlayer}. Essa gestisce:
 	\begin{itemize}
 		\item \textbf{Cinematica e Salto Adattivo:} Nel metodo \texttt{applyPhysics(double groundLevelY, boolean isJumpHeld)}, la velocità verticale \texttt{velocityY} viene incrementata ad ogni tick del valore \texttt{gravity}. Se tuttavia il personaggio sta salendo ($\text{velocityY} < 0$) ma l'utente ha già rilasciato il tasto di salto (\texttt{!isJumpHeld}), il sistema applica una gravità amplificata ($\text{velocityY} \mathrel{+}= \text{gravity} \cdot 2.5$), permettendo di eseguire salti bassi tattici (\emph{short hop}) o salti completi in base alla durata della pressione.
-		\item \textbf{Accovacciamento e Ricalcolo Hurtbox:} Il metodo \texttt{setCrouching(boolean)} riduce l'altezza del personaggio al $60\%$ dell'altezza normale ($\text{targetHeight} = 0.6 \cdot \text{normalHeight}$) e trasla simultaneamente la coordinata $Y$ verso il basso della differenza $\Delta H = \text{normalHeight} - \text{targetHeight}$, garantendo che i piedi rimangano saldamente ancorati al pavimento mentre la testa scende per schivare colpi alti.
+		\item \textbf{Accovacciamento e Ricalcolo Hurtbox:} Il metodo \texttt{setCrouching(boolean)} riduce l'altezza del personaggio al $70\%$ dell'altezza normale ($\text{targetHeight} = 0.6 \cdot \text{normalHeight}$) e trasla simultaneamente la coordinata $Y$ verso il basso della differenza $\Delta H = \text{normalHeight} - \text{targetHeight}$, garantendo che i piedi rimangano saldamente ancorati al pavimento mentre la testa scende per schivare colpi alti.
 		\item \textbf{Macchina a Stati delle Animazioni:} Il metodo \texttt{updateAnimationState()} determina a ogni tick quale valore dell'enumerazione \texttt{AnimState} assegnare al giocatore, seguendo una rigorosa gerarchia di priorità:
 		\begin{enumerate}
 			\item \emph{Stordimento (\texttt{isStunned()}):} priorità assoluta; congela il lottatore nel fotogramma corrente;
@@ -343,22 +343,27 @@
 	\end{equation}
 	Per azzerare l'overhead computazionale che deriverebbe dal ricalcolo matriciale dei pixel a 60 FPS, ogni \texttt{WritableImage} generata viene memorizzata in una mappa di cache \texttt{Map<String, Image> frameCache} tramite il metodo \texttt{computeIfAbsent}, utilizzando una chiave univoca composta da \texttt{"minX\_minY\_width\_height\_scale"}. In questo modo il ritaglio viene calcolato una sola volta al primo utilizzo del fotogramma e restituito in tempo costante $O(1)$ per tutto il resto della partita.
 	
-	Infine, per risolvere il disallineamento geometrico dovuto alle dimensioni variabili dei riquadri di ritaglio $(W_{\text{frame}}, H_{\text{frame}})$ all'interno del manifesto JSON (ad esempio durante l'estensione del braccio nei pugni o l'oscillazione verticale della respirazione in \texttt{IDLE}), \texttt{TextureAtlas} associa a ciascun fotogramma un punto di ancoraggio $\mathbf{P} = (\text{pivot}_x, \text{pivot}_y)$, con fallback automatico posto al centro della base inferiore del corpo standard $(W_{\text{base}}/2, H_{\text{frame}}) = (23.5, H_{\text{frame}})$. 
-	Partendo dalle coordinate base $(p_x, p_y) = (X_{\text{player}} - \text{offset}_x, Y_{\text{player}} - \text{offset}_y)$, il posizionamento finale su schermo applica la compensazione verticale ai piedi e la compensazione orizzontale simmetrica per l'inversione speculare (\texttt{setScaleX(-1)} quando il lottatore è rivolto a sinistra):
+	Infine, per risolvere il disallineamento geometrico dovuto alle dimensioni variabili dei riquadri di ritaglio all'interno del manifesto JSON (ad esempio durante l'estensione del braccio nei pugni o l'oscillazione verticale della respirazione in \texttt{IDLE}), lo sprite viene ancorato alla hitbox logica del lottatore anziché all'angolo superiore sinistro del fotogramma. Il metodo \texttt{getCroppedFrame} esegue innanzitutto un \textbf{auto-trim inferiore}: scorrendo il riquadro dal basso verso l'alto individua l'ultima riga contenente almeno un pixel non trasparente (canale alfa $> 0$) e scarta le righe vuote sottostanti, così che l'altezza effettiva $H_{\text{eff}}$ (usata al posto di $H_{\text{src}}$ nel calcolo di $H_{\text{dst}}$) termini esattamente sotto i piedi del personaggio.
+
+	Indicate con $X$ e $Y$ le coordinate della hitbox, con $W_{\text{hit}}$ e $H_{\text{hit}}$ le sue dimensioni, con $W_{\text{spr}}$ e $H_{\text{spr}}$ le dimensioni dello sprite già scalato e con $W_{\text{base}}$ la larghezza del fotogramma di riferimento \texttt{IDLE} $(0, 0, 0)$, il posizionamento verticale allinea la base dello sprite alla base della hitbox, mentre quello orizzontale mantiene fissa la schiena del lottatore tramite il margine posteriore $m$:
 	\begin{equation}
-		p'_y = p_y + \left(H_{\text{base}} - \text{pivot}_y\right) \cdot s, \qquad
-		p'_x = 
+		p_y = Y + H_{\text{hit}} - H_{\text{spr}} - \text{offset}_y \cdot s, \qquad
+		m = \frac{W_{\text{base}} \cdot s - W_{\text{hit}}}{2} + \text{offset}_x \cdot s
+	\end{equation}
+	\begin{equation}
+		p_x =
 		\begin{cases}
-			p_x - \left(\text{pivot}_x - \frac{W_{\text{base}}}{2}\right) \cdot s & \text{se rivolto a destra} \\[6pt]
-			p_x - \left[\left(W_{\text{frame}} - \text{pivot}_x\right) - \frac{W_{\text{base}}}{2}\right] \cdot s & \text{se rivolto a sinistra}
+			X - m & \text{se rivolto a destra} \\[6pt]
+			X + W_{\text{hit}} + m - W_{\text{spr}} & \text{se rivolto a sinistra (\texttt{setScaleX(-1)})}
 		\end{cases}
 	\end{equation}
+	In questo modo qualsiasi variazione di altezza del fotogramma sposta la testa e non i piedi, e i fotogrammi più larghi (pugni e calci) si estendono solo in avanti, nella direzione verso cui il lottatore è rivolto, senza traslare il corpo. Le coordinate finali vengono arrotondate all'intero (\texttt{Math.round}) per evitare sfocature dovute al posizionamento sub-pixel.
 	
 	\subsubsection{Rendering dei proiettili (\texttt{ProjectileRenderer})}
 	I proiettili in volo, come l'\emph{Hadouken}, hanno un ciclo di vita più breve di quello dei lottatori: vengono creati e distrutti dal Model durante l'incontro. Per questo motivo la \texttt{GameView} mantiene una mappa \texttt{Map<IReadOnlyProjectile, ProjectileRenderer>} che associa a ogni proiettile attivo il relativo renderer. A ogni chiamata di \texttt{render}, la View crea un nuovo \texttt{ProjectileRenderer} per i proiettili appena comparsi e rimuove dalla scena quelli non più presenti nel Model. Ciascun renderer disegna lo sprite del proiettile tramite il metodo \texttt{render(IReadOnlyProjectile proj, double camX)}, applicando la stessa traslazione $-\text{cameraX}$ usata per i lottatori.
 	
 	\subsubsection{Interfaccia utente in partita (\texttt{HUDView})}
-	La classe \texttt{HUDView} disegna nella parte superiore dello schermo i nomi dei giocatori, le barre della salute (\texttt{p1HealthFill}, \texttt{p2HealthFill} sovrapposte ai rispettivi sfondi rosso scuro), le barre secondarie del potere speciale e il contatore centrale del tempo. Nel metodo\newline\texttt{update(IReadOnlyPlayer p1, IReadOnlyPlayer p2)}, mentre la barra della vita del Giocatore 1 si riduce semplicemente accorciando la propria larghezza da destra verso sinistra, per il Giocatore 2 viene applicata una traslazione compensativa sulla coordinata $X$:
+	La classe \texttt{HUDView} disegna nella parte superiore dello schermo i nomi dei giocatori, le barre della salute (\texttt{p1HealthFill}, \texttt{p2HealthFill} sovrapposte ai rispettivi sfondi rosso scuro) e il contatore centrale del tempo, che diventa rosso negli ultimi 10 secondi. Nel metodo \texttt{update(p1, p2, remainingSeconds)}, mentre la barra della vita del Giocatore 1 si riduce semplicemente accorciando la propria larghezza da destra verso sinistra, per il Giocatore 2 viene applicata una traslazione compensativa sulla coordinata $X$:
 	\begin{equation}
 		W_{P2} = W_{\text{bar}} \cdot \frac{\text{HP}_{P2}}{\text{HP}_{\max, P2}}, \qquad X_{P2} = X_{\text{bg}, P2} + \left(W_{\text{bar}} - W_{P2}\right)
 	\end{equation}
@@ -523,7 +528,7 @@
 	Tra i principali sviluppi futuri pianificati figurano:
 	\begin{itemize}
 		\item \textbf{Intelligenza Artificiale per Modalità Giocatore Singolo (CPU):} implementazione di una macchina a stati decisionali (FSM) o di un albero di comportamento per consentire alla CPU di gestire reattivamente lo spacing, le parate su colpi in arrivo e le sequenze offensive di contrattacco;
-		\item \textbf{Utilizzo della Barra del Potere Speciale (\emph{Super Meter}):} attivazione dinamica della barra energetica secondaria (già predisposta graficamente in \texttt{HUDView}) caricabile mediante parate riuscite o colpi a segno, utile per abilitare tecniche speciali avanzate;
+		\item \textbf{Utilizzo della Barra del Potere Speciale (\emph{Super Meter}):} introduzione nell'\texttt{HUDView} di una barra energetica secondaria caricabile mediante parate riuscite o colpi a segno, utile per abilitare tecniche speciali avanzate;
 		\item \textbf{Ampliamento del roster:} aggiunta di nuovi lottatori, resa immediata dalla gerarchia \texttt{Player} e dal meccanismo di \texttt{CharacterFactory};
 		\item \textbf{Incontri a round e combo:} suddivisione del match in più round e riconoscimento di sequenze di input per mosse speciali e combo;
 		\item \textbf{Supporto alla tastiera:} una seconda implementazione di \texttt{IReadOnlyInput} permetterebbe di giocare anche senza gamepad, senza modificare il Model.
@@ -542,7 +547,7 @@
 		\item Nystrom, R. \emph{Game Programming Patterns} (Capitolo \emph{Game Loop -- Fixed Time Step with Accumulator}). Genever Benning, 2014. [Online \url{https://gameprogrammingpatterns.com/game-loop.html}]. Riferimento per la progettazione del game loop a passo fisso.
 		\item Capcom. \emph{streetfighter2} [online \url{https://www.spriters-resource.com/arcade/streetfighter2/}]. Texture e suoni ufficiali dei fighter Ryu e Ken.
 		\item Google. \emph{Gemini nano banana} [Online \url{https://gemini.google/overview/image-generation/}] Per la generazione delle immagini delle arene.
-		\item JSON object. [Online \url{https://docs.oracle.com/javaee/7/api/javax/json/JsonObject.html}] Per leggere il manifest JSON del TextureAtlas.
+		\item JSON-java (\texttt{org.json}). \emph{A reference implementation of a JSON package in Java}, GitHub Repository. [Online \url{https://github.com/stleary/JSON-java}]. Libreria (\texttt{JSONObject}) utilizzata per leggere il manifest JSON del \texttt{TextureAtlas}.
 	\end{enumerate}
 	
 	\newpage

@@ -15,8 +15,9 @@ public class RangedMove extends Move {
         this.damage = damage;
         this.projectileSpeed = projectileSpeed;
 
-        // Calcoliamo la durata totale in base ai dati dell'animazione del player
-        AnimData anim = user.getCurrentAnimData();
+        // Calcoliamo la durata totale in base all'animazione della mossa stessa
+        // (non a quella corrente del player, che al momento della pressione è ancora IDLE/WALK)
+        AnimData anim = user.animations.get(animState);
 
         if (anim != null) {
             this.durationNs = (long) anim.frameCount * anim.speedNs;
@@ -47,9 +48,17 @@ public class RangedMove extends Move {
         return animState;
     }
 
+    // Il proiettile parte quando l'animazione raggiunge l'ultimo frame (mani in avanti),
+    // con la stessa logica dei frame attivi di MeleeMove
+    public boolean isReadyToFire() {
+        AnimData anim = user.animations.get(animState);
+        if (anim == null) return true;
+        return (System.nanoTime() - startTimeNs) >= (anim.frameCount - 1) * anim.speedNs;
+    }
+
     // Metodo chiamato dal GameModel per generare il proiettile nel momento esatto
     public Projectile createProjectile() {
-        if (!hasFired) {
+        if (!hasFired && isReadyToFire()) {
             hasFired = true; // Si attiva una sola volta per mossa
 
             // La hitbox si adatta alla grafica come per i giocatori: primo frame

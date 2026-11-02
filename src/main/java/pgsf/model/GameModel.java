@@ -37,13 +37,6 @@ public class GameModel implements IReadOnlyGameModel{
     private boolean wasP1HadoukenHeld = false;
     private boolean wasP2HadoukenHeld = false;
 
-    // Variabili per gestire la fine dell'animazione per lo spawn del proiettile
-    private boolean p1BulletCreationDelay = false;
-    private long p1StartProjectileCountdown = 0;
-
-    private boolean p2BulletCreationDelay = false;
-    private long p2StartProjectileCountdown = 0;
-    
     // Memorizzazione dimensioni per l'aggiornamento in tempo reale della finestra
     private double currentWindowWidth = 1920;
     private double currentWindowHeight = 1080;
@@ -322,45 +315,12 @@ public class GameModel implements IReadOnlyGameModel{
     public int getWinner() { return winner; }
 
     // --- Metodi helper ---
-    private void checkForProjectileSpawn(int playerNum) {
+    private void checkForProjectileSpawn(Player currentPlayer) {
         // --- GESTIONE PROIETTILI PLAYER ---
-        // bulletCreationDelay = true significa che non è il primo frame della mossa
-        Player currentPlayer = (playerNum == 1) ? player1 : player2;
-        boolean delayFlag = (playerNum == 1) ? p1BulletCreationDelay : p2BulletCreationDelay;
-        long startCountdown = (playerNum == 1) ? p1StartProjectileCountdown : p2StartProjectileCountdown;
-
-        if (!(currentPlayer.getActiveMove() instanceof RangedMove)) {
-            if (playerNum == 1) {
-                p1BulletCreationDelay = false;
-            } else {
-                p2BulletCreationDelay = false;
-            }
-            return;
-        }
-
-        // Se è il primo frame della RangedMove, avviamo il timer
-        if (!delayFlag) {
-            startCountdown = System.nanoTime();
-            if (playerNum == 1) {
-                p1BulletCreationDelay = true;
-                p1StartProjectileCountdown = startCountdown;
-            } else {
-                p2BulletCreationDelay = true;
-                p2StartProjectileCountdown = startCountdown;
-            }
-        }
-
-        // 4 sta per il numero di frame mentre 1_000_000 serve per convertire da millisecondi a nanosecondi
-        // Controlla se sono passati i 4 frame mentre la mossa è ancora attiva
-        if (delayFlag && System.nanoTime() - startCountdown >= currentPlayer.projectileAnimFrameDuration * 4 * 1_000_000L) {
-            if (playerNum == 1) {
-                p1BulletCreationDelay = false;
-            } else {
-                p2BulletCreationDelay = false;
-            }
-
-            RangedMove ranged = (RangedMove) currentPlayer.getActiveMove();
-            Projectile p = ranged.createProjectile(); // Restituisce il proiettile una sola volta grazie a hasFired
+        // La RangedMove decide da sola quando sparare (ultimo frame dell'animazione)
+        // e restituisce il proiettile una sola volta grazie a hasFired
+        if (currentPlayer.getActiveMove() instanceof RangedMove ranged) {
+            Projectile p = ranged.createProjectile();
             if (p != null) {
                 projectiles.add(p);
             }
@@ -496,8 +456,8 @@ public class GameModel implements IReadOnlyGameModel{
 
     // Controlla spawn, movimento, collisioni e rimozione dei proiettili
     private void updateProjectiles() {
-        checkForProjectileSpawn(1);
-        checkForProjectileSpawn(2);
+        checkForProjectileSpawn(player1);
+        checkForProjectileSpawn(player2);
 
         for (Projectile p : projectiles) {
             p.update();
