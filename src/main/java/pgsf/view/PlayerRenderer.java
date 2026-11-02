@@ -5,9 +5,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import pgsf.model.Hitbox;
+//import javafx.scene.paint.Color;
+//import javafx.scene.shape.Rectangle;
+//import pgsf.model.Hitbox;
 import pgsf.model.IReadOnlyPlayer;
 
 public class PlayerRenderer {
@@ -29,7 +29,7 @@ public class PlayerRenderer {
     private long lastFrameTime = 0;
     
     //! Per visualizzare l'hitbox del giocatore
-    private Rectangle hitboxVisual;
+    //private Rectangle hitboxVisual;
 
     public PlayerRenderer(IReadOnlyPlayer player) {
         rootNode = new Pane(); 
@@ -47,16 +47,16 @@ public class PlayerRenderer {
         }
         
         //! Visualizzazione hitbox
-        hitboxVisual = new Rectangle();
-        hitboxVisual.setFill(null);           // Niente riempimento
-        hitboxVisual.setStroke(Color.RED);          // Bordo rosso
-        hitboxVisual.setStrokeWidth(2);      // Spessore del bordo
+        //hitboxVisual = new Rectangle();
+        //hitboxVisual.setFill(null);           // Niente riempimento
+        //hitboxVisual.setStroke(Color.RED);          // Bordo rosso
+        //hitboxVisual.setStrokeWidth(2);      // Spessore del bordo
 
         // Aggiungiamo tutto al rootNode (lo sprite prende il posto del bodyContainer)
         if (spriteView != null){
             rootNode.getChildren().add(spriteView);
         }
-        rootNode.getChildren().add(hitboxVisual);	//! Visualizzazione hitbox
+        //rootNode.getChildren().add(hitboxVisual);	//! Visualizzazione hitbox
     }
 
     public Pane getNode() {
@@ -98,7 +98,7 @@ public class PlayerRenderer {
                 } else {
                     // Aggiorniamo comunque il timer nascosto. Così quando finisce lo stun, 
                     // l'animazione non "salta" in avanti recuperando il tempo perso
-                    //! Modificare qui per aggiungere animazione stun
+                    //! Modificare qui per aggiungere eventuale animazione stun
                     lastFrameTime = now; 
                 }
 
@@ -153,16 +153,16 @@ public class PlayerRenderer {
         //! Mostra hitbox
         //! ==========================================
         //! Recuperiamo la Hitbox fisica reale dal Model
-        Hitbox physBox = player.getBoundingBox();
+        //Hitbox physBox = player.getBoundingBox();
         
         //! Aggiorniamo il rettangolo rosso per farlo combaciare millimetricamente
-        hitboxVisual.setX(Math.round(physBox.getX()));
-        hitboxVisual.setY(Math.round(physBox.getY()));
-        hitboxVisual.setWidth(physBox.getWidth());
-        hitboxVisual.setHeight(physBox.getHeight());
+        //hitboxVisual.setX(Math.round(physBox.getX()));
+        //hitboxVisual.setY(Math.round(physBox.getY()));
+        //hitboxVisual.setWidth(physBox.getWidth());
+        //hitboxVisual.setHeight(physBox.getHeight());
         
         //! Lo portiamo in primo piano per vederlo sopra lo sprite
-        hitboxVisual.toFront();
+        //hitboxVisual.toFront();
     }
 
     // Metodo helper per renderizzare le texture in HD (Nearest-Neighbor via Software)
@@ -222,7 +222,7 @@ public class PlayerRenderer {
     }
     
     // Metodo speciale da chiamare quando renderizziamo il personaggio nel Menu
-    public void setMenuMode() {
+    /* public void setMenuMode() {
         this.hitboxVisual.setVisible(false);
-    }
+    } */
 }

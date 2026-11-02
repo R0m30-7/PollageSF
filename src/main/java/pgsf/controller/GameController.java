@@ -741,13 +741,13 @@ public class GameController {
         if (p1Changed || scaleChanged) {
             p1Preview = createMenuPreviewPlayer(p1CharIndex, p1SkinIndex, currentScale, true);
             p1PreviewRenderer = new pgsf.view.PlayerRenderer(p1Preview);
-            p1PreviewRenderer.setMenuMode();
+            //p1PreviewRenderer.setMenuMode();  //! Usato per visualizzare hitbox
         }
 
         if (p2Changed || scaleChanged) {
             p2Preview = createMenuPreviewPlayer(p2CharIndex, p2SkinIndex, currentScale, false);
             p2PreviewRenderer = new pgsf.view.PlayerRenderer(p2Preview);
-            p2PreviewRenderer.setMenuMode();
+            //p2PreviewRenderer.setMenuMode();  //! Usato per visualizzare hitbox
         }
 
         // --- AGGIORNAMENTO GRAFICO (svuotiamo e riempiamo il livello) ---
