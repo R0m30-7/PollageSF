@@ -1,6 +1,6 @@
 package pgsf.model;
 
-import javafx.geometry.Rectangle2D;
+import pgsf.utils.Rect;
 import pgsf.utils.Point;
 
 import org.json.JSONObject; //libreria per leggere il JSON
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TextureAtlas {
-    private Map<String, Rectangle2D> frames = new HashMap<>();
+    private Map<String, Rect> frames = new HashMap<>();
 
     public TextureAtlas(String jsonFilePath) {
         // Usiamo un try-with-resources per chiudere automaticamente l'InputStream
@@ -35,7 +35,7 @@ public class TextureAtlas {
                 double w = frameData.getDouble("w");
                 double h = frameData.getDouble("h");
                 
-                frames.put(key, new Rectangle2D(x, y, w, h));
+                frames.put(key, new Rect(x, y, w, h));
             }
         } catch (Exception e) {
             System.out.println("Errore nel caricamento del JSON: " + jsonFilePath);
@@ -44,15 +44,15 @@ public class TextureAtlas {
     }
 
     // Ricostruisce la chiave del JSON: es. "row00_col00_frame00"
-    public Rectangle2D getFrame(int row, int col, int frameIndex) {
+    public Rect getFrame(int row, int col, int frameIndex) {
 
         String frameKey = String.format("row%02d_col%02d_frame%02d", row, col, frameIndex);
-        return frames.getOrDefault(frameKey, new Rectangle2D(0, 0, 1, 1));
+        return frames.getOrDefault(frameKey, new Rect(0, 0, 1, 1));
     }
 
     public Point getPivot(int row, int startCol, int currentFrame) {
         String pivotKey = String.format("row%02d_col%02d_frame%02d_pivot", row, startCol, currentFrame);
-        Rectangle2D pivotRect = frames.get(pivotKey);
+        Rect pivotRect = frames.get(pivotKey);
         
         if (pivotRect != null) {
             return new Point(pivotRect.getMinX(), pivotRect.getMinY());

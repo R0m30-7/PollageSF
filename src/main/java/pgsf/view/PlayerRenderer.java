@@ -1,6 +1,6 @@
 package pgsf.view;
 
-import javafx.geometry.Rectangle2D;
+import pgsf.utils.Rect;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -103,7 +103,7 @@ public class PlayerRenderer {
                 }
 
                 // Prendiamo dal TextureAtlas le coordinate del frame esatto e la scala
-                Rectangle2D frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
+                Rect frameRect = player.getAtlas().getFrame(currentData.row, currentData.startCol, currentFrame);
                 double currentScale = player.getRenderScale();
 
                 // Prendiamo l'immagine scalata e ne leggiamo le dimensioni effettive in pixel
@@ -126,7 +126,7 @@ public class PlayerRenderer {
                 // PIVOT ORIZZONTALE E FLIP DIREZIONALE
                 // ==========================================
                 // Calcoliamo la sporgenza posteriore dello sprite rispetto alla hitbox usando il frame Idle (0,0,0)
-                Rectangle2D baseFrame = player.getAtlas().getFrame(0, 0, 0);
+                Rect baseFrame = player.getAtlas().getFrame(0, 0, 0);
                 double baseSpriteW = baseFrame.getWidth() * currentScale;
                 double backMargin = ((baseSpriteW - player.getWidth()) / 2.0) + (player.getRenderOffsetX() * currentScale);
 
@@ -167,7 +167,7 @@ public class PlayerRenderer {
 
     // Metodo helper per renderizzare le texture in HD (Nearest-Neighbor via Software)
     // Con AUTO-TRIM inferiore: rimuove eventuali righe vuote sotto i piedi presenti nello spritesheet
-    private Image getCroppedFrame(Rectangle2D rect, double scale) {
+    private Image getCroppedFrame(Rect rect, double scale) {
         // Generiamo chiave univoca (dipendente da posizione di partenza, dimensione del ritaglio e la scala di
         // ingradimento/riduzione) in modo da non dover ricalcolare più volte lo stesso frame, dato che lo salviamo in cache
         String key = (int) rect.getMinX() + "_" + (int) rect.getMinY() + "_"

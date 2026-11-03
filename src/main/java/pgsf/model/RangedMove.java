@@ -1,6 +1,7 @@
 package pgsf.model;
 
 import pgsf.utils.Point;
+import pgsf.utils.Rect;
 
 public class RangedMove extends Move {
     private AnimState animState;
@@ -66,7 +67,7 @@ public class RangedMove extends Move {
             double projW = 40, projH = 30; // Fallback se manca l'animazione
             AnimData projAnim = user.getProjectileAnimData();
             if (projAnim != null) {
-                javafx.geometry.Rectangle2D frame = user.getAtlas().getFrame(projAnim.row, projAnim.startCol, 0);
+                Rect frame = user.getAtlas().getFrame(projAnim.row, projAnim.startCol, 0);
                 projW = frame.getWidth() * user.getRenderScale() * 0.70;
                 projH = frame.getHeight() * user.getRenderScale() * 0.70;
             }

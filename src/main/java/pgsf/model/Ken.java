@@ -1,6 +1,6 @@
 package pgsf.model;
 
-import javafx.geometry.Rectangle2D;
+import pgsf.utils.Rect;
 import pgsf.utils.Point;
 
 public class Ken extends Player {
@@ -40,7 +40,7 @@ public class Ken extends Player {
         this.baseRenderScale = 4;
         this.renderScale = this.baseRenderScale;
        
-        Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
+        Rect defaultFrame = this.atlas.getFrame(0, 0, 0);
 
         this.width = defaultFrame.getWidth() * 0.70 * this.renderScale;
         this.height = defaultFrame.getHeight() * this.renderScale;

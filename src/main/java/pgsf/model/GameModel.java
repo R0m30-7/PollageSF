@@ -258,11 +258,11 @@ public class GameModel implements IReadOnlyGameModel{
         // Sistema di sicurezza: se il giocatore rimpicciolisce la finestra di scatto,
         // i personaggi potrebbero trovarsi "sotto" al pavimento. Li tiriamo su.
         if (player1.getPosition().getY() + player1.getHeight() > this.currentGroundLevel) {
-            player1.setPosition(new javafx.geometry.Point2D(player1.getPosition().getX(), this.currentGroundLevel - player1.getHeight()));
+            player1.setPosition(new Point(player1.getPosition().getX(), this.currentGroundLevel - player1.getHeight()));
             player1.getBoundingBox().updatePosition(player1.getPosition());
         }
         if (player2.getPosition().getY() + player2.getHeight() > this.currentGroundLevel) {
-            player2.setPosition(new javafx.geometry.Point2D(player2.getPosition().getX(), this.currentGroundLevel - player2.getHeight()));
+            player2.setPosition(new Point(player2.getPosition().getX(), this.currentGroundLevel - player2.getHeight()));
             player2.getBoundingBox().updatePosition(player2.getPosition());
         }
         */

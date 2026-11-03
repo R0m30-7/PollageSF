@@ -1,6 +1,6 @@
 package pgsf.view;
 
-import javafx.geometry.Rectangle2D;
+import pgsf.utils.Rect;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -75,7 +75,7 @@ public class ProjectileRenderer {
         }
 
         // Prendiamo dal TextureAtlas le coordinate del frame esatto e la scala
-        Rectangle2D frameRect = projectile.getAtlas().getFrame(data.row, data.startCol, currentFrame);
+        Rect frameRect = projectile.getAtlas().getFrame(data.row, data.startCol, currentFrame);
         Image croppedFrame = getCroppedFrame(frameRect, projectile.getRenderScale());
         spriteView.setImage(croppedFrame);
 
@@ -101,7 +101,7 @@ public class ProjectileRenderer {
 
     // Stesso Nearest-Neighbor via software di PlayerRenderer, ma senza auto-trim
     // dei piedi (il proiettile è centrato, non appoggiato a terra)
-    private Image getCroppedFrame(Rectangle2D rect, double scale) {
+    private Image getCroppedFrame(Rect rect, double scale) {
         String key = atlasPath + "_" + (int) rect.getMinX() + "_" + (int) rect.getMinY() + "_"
                    + (int) rect.getWidth() + "_" + (int) rect.getHeight() + "_" + scale;
 
