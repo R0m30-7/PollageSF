@@ -159,6 +159,7 @@ public class GameController {
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
         availableMaps.add(new MapData("UniPG", "/Arenas/uni.jpeg", 0.9));
+        availableMaps.add(new MapData("Dragon City", "/Arenas/trainYourDragon.png", 0.9));
         availableMaps.add(new MapData("Koloxtol", "/Arenas/villaggioRurale.jpeg", 0.9));
         availableMaps.add(new MapData("Paradise & Hell", "/Arenas/doubleSide.png", 0.815));
         availableMaps.add(new MapData("Rifugio dell'amicizia", "/Arenas/broBase.jpeg", 0.83));
