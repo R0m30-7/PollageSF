@@ -32,12 +32,13 @@
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
-        <!-- <dependency>
+
+        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
             <classifier>win</classifier>
-        </dependency> -->
+        </dependency>
 
         <!-- <dependency>
             <groupId>org.openjfx</groupId>
