@@ -3,6 +3,7 @@ package pgsf;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import pgsf.scenes.MainMenuScene;
+import pgsf.utils.FullscreenHelper;
 import pgsf.utils.Settings;
 
 
@@ -22,9 +23,10 @@ public class Main extends Application {
         
         // Blocco del ridimensionamento manuale
         primaryStage.setResizable(false);
+        FullscreenHelper.install(primaryStage);
         
         // Applichiamo lo schermo intero se l'utente l'aveva salvato
-        primaryStage.setFullScreen(config.isFullscreen());
+        FullscreenHelper.apply(primaryStage, config.isFullscreen());
         
         primaryStage.show();
     }

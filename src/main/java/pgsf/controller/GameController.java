@@ -155,6 +155,7 @@ public class GameController {
         
         availableCharacters.add(new CharacterData("Ryu", "/Sprites/ryuPFP.png", pgsf.model.Ryu::new));
         availableCharacters.add(new CharacterData("Ken", "/Sprites/kenPFP.png", pgsf.model.Ken::new));
+        availableCharacters.add(new CharacterData("paolo", "/Sprites/paoloPFP.png", pgsf.model.paolo::new));
 
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));
@@ -342,7 +343,7 @@ public class GameController {
             stage.setScene(mainMenu.getScenaMenu(stage));
             
             // Manteniamo le impostazioni di fullscreen
-            stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
+            pgsf.utils.FullscreenHelper.apply(stage, pgsf.utils.Settings.getInstance().isFullscreen());
         });
 
         connectionMenu.getChildren().addAll(title, p1Label, p2Label, backToMenuBtn);
@@ -507,7 +508,7 @@ public class GameController {
             pgsf.scenes.MainMenuScene mainMenu = new pgsf.scenes.MainMenuScene();
             stage.setTitle("Main Menu");
             stage.setScene(mainMenu.getScenaMenu(stage));
-            stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
+            pgsf.utils.FullscreenHelper.apply(stage, pgsf.utils.Settings.getInstance().isFullscreen());
         });
 
         // Niente più resumeBtn qui
@@ -659,7 +660,7 @@ public class GameController {
             pgsf.scenes.MainMenuScene mainMenu = new pgsf.scenes.MainMenuScene();
             stage.setTitle("Main Menu");
             stage.setScene(mainMenu.getScenaMenu(stage));
-            stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
+            pgsf.utils.FullscreenHelper.apply(stage, pgsf.utils.Settings.getInstance().isFullscreen());
         });
 
         Button quitBtn = new Button("Esci dal Gioco");
@@ -795,7 +796,7 @@ public class GameController {
         stage.setScene(menu.getScenaMenu(stage));
 
         // Manteniamo le impostazioni di fullscreen (il cambio di scena le resetta)
-        stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
+        pgsf.utils.FullscreenHelper.apply(stage, pgsf.utils.Settings.getInstance().isFullscreen());
     }
 
     // --- TUTTI I METODI HELPER SONO LISTATI QUI SOTTO ---

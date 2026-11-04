@@ -317,7 +317,7 @@ public class SettingsScene {
             stage.setWidth(settings.getWindowWidth());
             stage.setHeight(settings.getWindowHeight());
             stage.centerOnScreen();
-            stage.setFullScreen(settings.isFullscreen());
+            pgsf.utils.FullscreenHelper.apply(stage, settings.isFullscreen());
         });
 
         return saveBackButton;

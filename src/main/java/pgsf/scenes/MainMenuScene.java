@@ -53,7 +53,7 @@ public class MainMenuScene {
             GameController controller = new GameController(stage);
             controller.startGame();
             stage.centerOnScreen();
-            stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
+            pgsf.utils.FullscreenHelper.apply(stage, pgsf.utils.Settings.getInstance().isFullscreen());
         });
         MenuButList[1].setAction(() -> {
             stage.setTitle("Settings Menu");
@@ -62,7 +62,7 @@ public class MainMenuScene {
             Scene currentMenuScene = root.getScene();
 
             stage.setScene(settingsScene.getSettingsScene(stage, currentMenuScene));
-            stage.setFullScreen(pgsf.utils.Settings.getInstance().isFullscreen());
+            pgsf.utils.FullscreenHelper.apply(stage, pgsf.utils.Settings.getInstance().isFullscreen());
         });
         MenuButList[2].setAction(() -> {
             System.exit(0);

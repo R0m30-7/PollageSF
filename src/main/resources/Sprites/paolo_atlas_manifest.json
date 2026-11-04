@@ -1,0 +1,51 @@
+{
+  "frames": {
+    "row00_col00_frame00": {
+      "frame": {
+        "x": 4,
+        "y": 8,
+        "w": 38,
+        "h": 87
+      },
+      "section_row": 0,
+      "section_col": 0
+    },
+    "row00_col00_frame01": {
+      "frame": {
+        "x": 46,
+        "y": 5,
+        "w": 40,
+        "h": 90
+      },
+      "section_row": 0,
+      "section_col": 0
+    },
+    "row00_col00_frame02": {
+      "frame": {
+        "x": 90,
+        "y": 8,
+        "w": 38,
+        "h": 87
+      },
+      "section_row": 0,
+      "section_col": 0
+    },
+    "row00_col00_frame03": {
+      "frame": {
+        "x": 132,
+        "y": 4,
+        "w": 39,
+        "h": 91
+      },
+      "section_row": 0,
+      "section_col": 0
+    }
+  },
+  "meta": {
+    "image": "paolo_chromakey.png",
+    "size": {
+      "w": 175,
+      "h": 99
+    }
+  }
+}
