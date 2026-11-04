@@ -155,7 +155,7 @@ public class GameController {
         
         availableCharacters.add(new CharacterData("Ryu", "/Sprites/ryuPFP.png", pgsf.model.Ryu::new));
         availableCharacters.add(new CharacterData("Ken", "/Sprites/kenPFP.png", pgsf.model.Ken::new));
-        availableCharacters.add(new CharacterData("paolo", "/Sprites/paoloPFP.png", pgsf.model.paolo::new));
+        availableCharacters.add(new CharacterData("paolo", "/Sprites/ryuPFP.png", pgsf.model.paolo::new));
 
         // Caricamento delle mappe in memoria
         availableMaps.add(new MapData("Fight Club", "/Arenas/fightClub.jpeg", 0.72));

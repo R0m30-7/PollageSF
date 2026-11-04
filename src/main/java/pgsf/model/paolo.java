@@ -1,6 +1,6 @@
 package pgsf.model;
 
-import javafx.geometry.Rectangle2D;
+import pgsf.utils.Rect;
 import pgsf.utils.Point;
 
 public class paolo extends Player {
@@ -38,7 +38,7 @@ public class paolo extends Player {
         this.renderScale = this.baseRenderScale;
        
         // Chiedi all'atlas le dimensioni del primo frame (es. riga 0, colonna 0)
-        Rectangle2D defaultFrame = this.atlas.getFrame(0, 0, 0);
+        Rect defaultFrame = this.atlas.getFrame(0, 0, 0);
 
         // La Hitbox si adatta matematicamente alla grafica usando la stessa scala
         // Quel .70 stringe un po la hitbox
